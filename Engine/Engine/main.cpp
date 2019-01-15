@@ -1,5 +1,5 @@
-#include <iostream>
-#include <windows.h>
+﻿#include <iostream>
+#include "windows.h"
 #include <stdint.h>
 
 LRESULT CALLBACK WndProc(HWND, uint32_t, WPARAM, LPARAM);
@@ -41,7 +41,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
-	if (!RegisterEngineWindow(hInstance))
+	if (RegisterEngineWindow(hInstance))
 	{
 		MessageBox(NULL, "Класс не зарегистрирован", "Ошибка", MB_OK);
 		return 0;
@@ -59,7 +59,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 		0
 	);
 	
-	if (hWnd == 0)
+	if (hWnd)
 	{
 		MessageBox(hWnd, "Ошибка", "Окно не создано", MB_OK);
 		return 0;

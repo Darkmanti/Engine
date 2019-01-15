@@ -1,1 +1,1 @@
-// gameObject - игровой объект имеющий location(pos, rot) физику, звук, меш.
+﻿// gameObject - игровой объект имеющий location(pos, rot) физику, звук, меш.
