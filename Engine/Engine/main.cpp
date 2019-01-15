@@ -5,7 +5,7 @@
 LRESULT CALLBACK WndProc(HWND, uint32_t, WPARAM, LPARAM);
 
 //Указатель на структуру
-WNDCLASSA* g_pWndClass;
+WNDCLASSA* g_pWndClass = new WNDCLASSA;
 
 ATOM RegisterEngineWindow(HINSTANCE hInstance)
 {
