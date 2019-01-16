@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClCompile Include="gameObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="moduleGraphix.cpp" />
     <ClCompile Include="objectManager.cpp" />
     <ClCompile Include="resourceManager.cpp" />
     <ClCompile Include="wndInit.cpp" />

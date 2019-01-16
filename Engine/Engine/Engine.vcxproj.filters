@@ -30,6 +30,9 @@
     <ClCompile Include="wndInit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="moduleGraphix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gameObject.h">

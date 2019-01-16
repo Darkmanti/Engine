@@ -1,5 +1,6 @@
 ﻿#include "windows.h"
 #include "stdint.h"
+#include "moduleGraphix.cpp"
 
 // Пошли предварительные объявления
 // Объявляем глобальную переменную
