@@ -87,6 +87,8 @@ int main()
 
 	// подключене шейдера
 	Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
+	Shader lightShader("Shader//LampShader.vs", "Shader//LampShader.fs");
+	Shader lightObjectShader("Shader//lightShader.vs", "Shader//lightShader.fs");
 
 	// функция чтобы объекты который перекрывает другой объект, не прорисовывался
 	glEnable(GL_DEPTH_TEST);
@@ -171,6 +173,17 @@ int main()
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
+
+	//// VAO для света
+	//GLuint lightVAO;
+	//glGenVertexArrays(1, &lightVAO);
+	//glBindVertexArray(lightVAO);
+	//// Так как VBO объекта-контейнера уже содержит все необходимые данные, то нам нужно только связать с ним новый VAO 
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//// Настраиваем атрибуты (нашей лампе понадобятся только координаты вершин)
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(0);
+	//glBindVertexArray(0);
 
 	// ПЕРВАЯ ТЕКСТУРА
 	GLuint texture1, texture2, texture3, texture4, texture5;
@@ -268,6 +281,8 @@ int main()
 
 	std::vector<bullet_object> bullets;
 	std::vector<cube_object>cube_random;
+
+	glm::vec3 sourceColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -404,6 +419,54 @@ int main()
 				bullets.erase(bullets.begin() + i);
 			}
 		}
+
+		// Шейдер источника света
+		lightShader.Use();
+
+		modelLoc = glGetUniformLocation(lightShader.Program, "model");
+		viewLoc = glGetUniformLocation(lightShader.Program, "view");
+		projLoc = glGetUniformLocation(lightShader.Program, "projection");
+		transformLoc = glGetUniformLocation(lightShader.Program, "transform");
+
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+		GLint lightColorLoc = glGetUniformLocation(lightShader.Program, "lightColor");
+		glUniform3fv(lightColorLoc, 1, glm::value_ptr(sourceColor));
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -5.0f));
+		trans = glm::mat4(1.0f);
+		trans = glm::scale(trans, glm::vec3(4.0, 4.0, 4.0));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Шейдер объектов под освещением
+		lightObjectShader.Use();
+
+		modelLoc = glGetUniformLocation(lightObjectShader.Program, "model");
+		viewLoc = glGetUniformLocation(lightObjectShader.Program, "view");
+		projLoc = glGetUniformLocation(lightObjectShader.Program, "projection");
+		transformLoc = glGetUniformLocation(lightObjectShader.Program, "transform");
+
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+		GLint objectColorLoc = glGetUniformLocation(lightObjectShader.Program, "objectColor");
+		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
+		lightColorLoc = glGetUniformLocation(lightObjectShader.Program, "lightColor");
+		glUniform3fv(lightColorLoc, 1, glm::value_ptr(sourceColor));
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f));
+		trans = glm::mat4(1.0f);
+		trans = glm::scale(trans, glm::vec3(4.0, 4.0, 4.0));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
 
