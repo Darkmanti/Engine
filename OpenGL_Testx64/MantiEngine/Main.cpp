@@ -36,7 +36,7 @@ GLfloat lastFrame = 0.0f;
 GLfloat yaw = -90.0f;
 GLfloat pitch = 0.0f;
 
-GLfloat opacity = 0.0f;
+GLfloat opacity = 1.0f;
 bool spawn = false;
 
 struct bullet_object
@@ -282,7 +282,7 @@ int main()
 	std::vector<bullet_object> bullets;
 	std::vector<cube_object>cube_random;
 
-	glm::vec3 sourceColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 sourceColor = glm::vec3(0.0f, 1.0f, 1.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -301,13 +301,7 @@ int main()
 
 		ourShader.Use();
 
-		// связывание двух текстур у маленьких кубов
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 0);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture2"), 1);
 
 		glm::mat4 view = glm::mat4(1.0f);
 		view = camera.GetViewMatrix();
@@ -351,6 +345,8 @@ int main()
 			}
 			else
 			{
+				glBindTexture(GL_TEXTURE_2D, texture1);
+				glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
 				model = glm::rotate(model, (GLfloat)sin(glfwGetTime()) * 1.8f, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
