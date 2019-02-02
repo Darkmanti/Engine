@@ -21,14 +21,15 @@ namespace Output
 
 
 	 GLuint			vArrayObject;			// VAO
+	 GLuint			vBufferObject;			// VBO
 	 GLuint			shaderProgram;			// Шейдерная программа
 
 
 	// Различные дескрипторы
 	 HDC			hDC;						// Дескриптор устройства
-	 HGLRC		hRC;						// Дескпритор ...
+	 HGLRC			hRC;						// Дескпритор ...
 
-	 HWND hWnd;								// Главное окно редактора
+	 HWND hWnd;									// Главное окно редактора
 	 HWND hWindowRender;						// Окно рендера внутри редактора
 
 	// Регистрация класса
@@ -36,7 +37,7 @@ namespace Output
 	{
 		// Описываем поля структур
 		pWndClassEx.cbSize = sizeof(WNDCLASSEX),						// Размер в байтах структуры класса
-		pWndClassEx.style = CS_VREDRAW | CS_HREDRAW | CS_DROPSHADOW;	// Стиль окна
+		pWndClassEx.style = CS_VREDRAW | CS_HREDRAW;					// Стиль окна
 		pWndClassEx.lpfnWndProc = WndProc;								// Указатель на оконную процедуру
 		pWndClassEx.hInstance = hInstance;								// Дескриптор приложения
 		pWndClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);				// Подгружам курсор
@@ -186,18 +187,14 @@ namespace Output
 				glGenVertexArrays(1, &vArrayObject);
 				glBindVertexArray(vArrayObject);
 
-				// VBO
-				GLuint vBufferObject;
-
 				glGenBuffers(1, &vBufferObject); // Сгенерировали ID объекта буфера
 				glBindBuffer(GL_ARRAY_BUFFER, vBufferObject); // Привязка буфера
 				glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // GL_ARRAY_BUFFER, 
 
 				// Обычно должно стоять сразу после Шейдерной программы
-				glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)0); // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-				glEnableVertexAttribArray(0);
-
-				glBindVertexArray(0);
+				glEnableVertexAttribArray(0); // Указываем, что первым буфером атрибутов будут вершины
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+				//glBindVertexArray(0);
 
 				//delete	[]vertices;
 			}
@@ -208,7 +205,11 @@ namespace Output
 			break;
 
 		case WM_SIZE: // Реакция на смену размера окна
-			MoveWindow(hWindowRender, 0, 16, LOWORD(lParam), HIWORD(lParam), true);
+			MoveWindow(hWindowRender, 0, Input::sizeButton, LOWORD(lParam), HIWORD(lParam), true);
+			Output::windowWidth = LOWORD(lParam);
+			Output::windowHeight = HIWORD(lParam);
+			Output::windowRenderWidth = LOWORD(lParam);
+			Output::windowRenderHeight = HIWORD(lParam) - Input::sizeButton;
 			break;
 
 		case WM_DESTROY: // Реакция на сообщение
@@ -238,14 +239,14 @@ namespace Output
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 
-			glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+			glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
-
+			
 			glUseProgram(shaderProgram);
-			glBindVertexArray(vArrayObject);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, vBufferObject);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
+			glDrawArrays(GL_TRIANGLES, 0, 3);
 			SwapBuffers(Output::hDC);
 		}
 	}
@@ -258,7 +259,7 @@ namespace Output
 			HWND &hBtn(hWindowRender);
 			hBtn = CreateWindow("BUTTON", "",
 				WS_CHILD | WS_VISIBLE | WS_BORDER,
-				0, 16, windowRenderWidth, windowRenderHeight, hWnd, 0, Engine::hInstance, NULL);
+				0, Input::sizeButton, windowRenderWidth, windowRenderHeight, hWnd, 0, Engine::hInstance, NULL);
 
 			// Возврат номера интерфейса который не создан
 			if (!hBtn)
@@ -274,7 +275,7 @@ namespace Output
 			HWND &hBtn(Input::hBtn_OpenModel);
 			hBtn = CreateWindow("BUTTON", "Открыть модель",
 				WS_CHILD | WS_VISIBLE | WS_BORDER,
-				0, 0, 16, 16, hWnd, 0, Engine::hInstance, NULL);
+				0, 0, Input::sizeButton, Input::sizeButton, hWnd, 0, Engine::hInstance, NULL);
 
 			if (!hBtn)
 			{
@@ -294,15 +295,16 @@ namespace Output
 	void EnableOpenGL()
 	{
 		PIXELFORMATDESCRIPTOR pfd;
+
 		int iFormat;
 
 		hDC = GetDC(hWindowRender);
 
 		ZeroMemory(&pfd, sizeof(pfd));
+
 		pfd.nSize = sizeof(pfd);
 		pfd.nVersion = 1;
-		pfd.dwFlags = PFD_DRAW_TO_WINDOW |
-			PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		pfd.iPixelType = PFD_TYPE_RGBA;
 		pfd.cColorBits = 24;
 		pfd.cDepthBits = 16;

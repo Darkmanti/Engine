@@ -8,17 +8,18 @@
 // Все что связанно с окном и выводом winapi
 namespace Output
 {
-	extern GLuint			windowWidth;			// Ширина окна редактора
-	extern GLuint			windowHeight;			// Высота окна редактора
+	extern uint32_t			windowWidth;			// Ширина окна редактора
+	extern uint32_t			windowHeight;			// Высота окна редактора
 
-	extern GLuint			windowRenderWidth;		// Ширина окна рендера. Изменяется относительно размера
-	extern GLuint			windowRenderHeight;		// Высота окна рендера. Изменяется относительно размера
+	extern uint32_t			windowRenderWidth;		// Ширина окна рендера. Изменяется относительно размера
+	extern uint32_t			windowRenderHeight;		// Высота окна рендера. Изменяется относительно размера
 
 
 	extern WNDCLASSEX		pWndClassEx;			// Структура класса окна
 
 
 	extern GLuint			vArrayObject;			// VAO
+	extern GLuint			vBufferObject;			// VBO
 	extern GLuint			shaderProgram;			// Шейдерная программа
 
 
