@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,19 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="buttons.cpp" />
-    <ClCompile Include="globals.cpp" />
-    <ClCompile Include="interface.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="wndInit.cpp" />
+    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Output.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertex.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="buttons.h" />
-    <ClInclude Include="globals.h" />
-    <ClInclude Include="interface.h" />
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Output.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -135,7 +131,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>

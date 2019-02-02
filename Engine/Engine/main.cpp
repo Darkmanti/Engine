@@ -1,107 +1,41 @@
-п»ї// GLFWwindow* window = glfwCreateWindow(800, 600, "Engine", nullptr, nullptr);
-// РќР•РћР‘РҐРћР”РРњРћ РРќРР¦РРђР›РР—РР РћР’РђРўР¬ РѕРєРЅРѕ РџР•Р Р•Р” glewInit Рё РџРћРЎР›Р• glfwWindowHint();
-
 #define GLEW_STATIC
 
 #include "GLEW/glew.h"
-//#include <GL/glu.h>
-
-#include "globals.h"
-#include "interface.h"
-#include "buttons.h"
 
 #include <windows.h>
-//#include <iostream>
-//#include <fstream>
-//#include <string>
 #include <stdint.h>
-#include <string>
 #include <shlobj.h>
+#include <string>
 
-// РџРѕС€Р»Рё РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Рµ РѕР±СЉСЏРІР»РµРЅРёСЏ
-extern HINSTANCE	hInstance;		// Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
-extern HDC			hDC;			// Р”РµСЃРєСЂРёРїС‚РѕСЂ СѓСЃС‚СЂРѕР№СЃС‚РІР°
-extern HGLRC		hRC;			// Р”РµСЃРєРїСЂРёС‚РѕСЂ ...
-extern GLuint		shaderProgram;	// РЁРµР№РґРµСЂРЅР°СЏ РїСЂРѕРіСЂР°РјРјР° РїРµСЂРµРґР°РµС‚СЃСЏ РІ wndInit.cpp
-
-
-// РћР±СЉСЏРІРёР»Рё Р±СѓРґСѓС‰РёР№ РјРµС‚РѕРґ РґР»СЏ РїРѕСЃР»РµРґСѓСЋС‰РµР№ РїРµСЂРµРґР°С‡Рё РµРіРѕ СѓРєР°Р·Р°С‚РµР»СЏ РІ СЃС‚СЂСѓРєС‚СѓСЂСѓ WNDCLASSA
-LRESULT WndProc(HWND, uint32_t, WPARAM, LPARAM);
-
-// РћР±СЉСЏРІРёР»Рё РјРµС‚РѕРґ СЂРµРіРёСЃС‚СЂР°С†РёРё РѕРєРЅР° РґР»СЏ СЃРµРјР°РЅС‚РёС‡РµСЃРєРѕР№ РіСЂСѓРїРїРёСЂРѕРІРєРё СЃС‚РµР№С‚РјРµРЅС‚РѕРІ
-ATOM RegisterEngineWindow(const HINSTANCE);
-
-// РћР±СЉСЏРІРёР»Рё СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
-uint8_t CreateEngineWindow(const int32_t);
-
-// РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РїСЂРѕРіСЂР°РјРјС‹
-void Loop();
-
+#include "Engine.h"
+#include "Output.h"
+#include "Input.h"
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
 	{
-		// РќР°С…РѕР¶РґРµРЅРёРµ РїСѓС‚Рё РґР°РЅРЅС‹С… РїСЂРѕРіСЂР°РјРјС‹
-		std::string &dirAppData = getDirAppData();
+		// Нахождение пути данных программы
 		char file[255];
 
 		GetModuleFileName(NULL, file, 255);
 
-		dirAppData = static_cast<std::string>(file);
-		dirAppData = dirAppData.substr(0, dirAppData.find_last_of("\\"));
+		Engine::dirAppData = file;
+		Engine::dirAppData = Engine::dirAppData.substr(0, Engine::dirAppData.find_last_of("\\"));
+		Engine::dirAppData = Engine::dirAppData;
 	}
 
-	// Р·Р°РіСЂСѓР·РєР° РїСЂРѕРіСЂР°РјРјС‹
-	LoadConfigSettingsInterface();
+	// загрузка программы
+	Engine::LoadConfigSettingsInterface();
 
-	// РћС‚РїСЂР°РІР»СЏРµРј РґРµСЃРєСЂРёРїС‚РѕСЂ РІ С„Р°Р№Р» wndInit
-	hInstance = hInst;
+	// Отправляем дескриптор в файл wndInit
+	Engine::hInstance = hInst;
 
-	if (!RegisterEngineWindow(hInst)) return 1; // РџСЂРѕРІРµСЂРєР° РЅР° РІР°Р»РёРґРЅРѕСЃС‚СЊ СЂРµРіРёСЃС‚СЂР°С†РёРё РѕРєРЅР°
-	if (!CreateEngineWindow(nCmdShow)) return 1; // РџСЂРѕРІРµСЂРєР° РЅР° РІР°Р»РёРґРЅРѕСЃС‚СЊ СЂРµРіРёСЃС‚СЂР°С†РёРё РѕРєРЅР°
+	if (!Output::RegisterEngineWindow(hInst)) return 1; // Проверка на валидность регистрации окна
+	if (!Output::CreateEngineWindow(nCmdShow)) return 1; // Проверка на валидность регистрации окна
 
-	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ OpenGL
-	PIXELFORMATDESCRIPTOR pfd;
-	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+	// Инициализация OpenGL
+	Output::EnableOpenGL();
 
-	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 16;
-	pfd.cDepthBits = 16;
-
-	hDC = GetDC(getHBtnWindowRender());
-	GLuint iPixelFormat = ChoosePixelFormat(hDC, &pfd);
-
-	if (iPixelFormat != 0)
-	{
-		PIXELFORMATDESCRIPTOR bestMatch_pfd;
-		DescribePixelFormat(hDC, iPixelFormat, sizeof(pfd), &bestMatch_pfd);
-
-		if (bestMatch_pfd.cDepthBits < pfd.cDepthBits)
-		{
-			return 1;
-		}
-
-		if (SetPixelFormat(hDC, iPixelFormat, &pfd) == FALSE)
-		{
-			DWORD dwErrorCode = GetLastError();
-			return 1;
-		}
-	}
-	else
-	{
-		DWORD dwErrorCode = GetLastError();
-		return 1;
-	}
-
-	hRC = wglCreateContext(hDC);
-	wglMakeCurrent(hDC, hRC);
-
-
-
-	
 	//glfwInit();
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -111,7 +45,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//GLFWwindow* window(glfwCreateWindow(800, 600, "Engine", nullptr, nullptr));
 	//if (!window)
 	//{
-	//	MessageBox(NULL, "РћРєРЅРѕ РЅРµ СЃРѕР·РґР°РЅРѕ", "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
+	//	MessageBox(NULL, "Окно не создано", "Ошибка", MB_ICONERROR | MB_OK);
 	//	glfwTerminate();
 	//	return 1;
 	//}
@@ -121,21 +55,21 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	glewExperimental = GL_TRUE;
 	if (glewInit())
 	{
-		MessageBox(NULL, "Glew РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕР°РЅ", "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
+		MessageBox(NULL, "Glew не инициализироан", "Ошибка", MB_ICONERROR | MB_OK);
 		//glfwTerminate();
 		return 1;
 	}
 
-	// Р Р°Р±РѕС‚Р° СЃ Р±РѕРєРѕРІРѕР№ РїР°РЅРµР»СЊСЋ
+	// Работа с боковой панелью
 	//glViewport(256, 0, 800, 600);
 
-	// Р Р°Р±РѕС‚Р° СЃ РІРµСЂС…РЅРµР№ РїР°РЅРµР»СЊСЋ
-	//glViewport(0, 0, 1366, 768 - 64);
+	// Работа с верхней панелью
+	glViewport(0, 0, 1366, 768 - 16);
 
-	// РЁРµР№РґРµСЂРЅР°СЏ РїСЂРѕРіСЂР°РјРјР°
-	shaderProgram = glCreateProgram();
+	// Шейдерная программа
+	Output::shaderProgram = glCreateProgram();
 
-	// РЁРµР№РґРµСЂС‹
+	// Шейдеры
 	{
 		GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 		const GLchar* vertexShaderSource = "#version 330 core\n"
@@ -149,12 +83,12 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 
 		GLint iError;
 		glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &iError);
-		
+
 		if (!iError)
 		{
 			GLchar infoLog[512];
 			glGetShaderInfoLog(vertexShaderID, 512, NULL, infoLog);
-			MessageBox(NULL, "Р’РµСЂС‚РµРєСЃРЅС‹Р№ С€РµР№РґРµСЂ РЅРµ СЃРєРѕРјРїРёР»РёСЂРѕРІР°Р»СЃСЏ" + *infoLog, "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
+			MessageBox(NULL, "Вертексный шейдер не скомпилировался" + *infoLog, "Ошибка", MB_ICONERROR | MB_OK);
 		}
 
 		GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -173,30 +107,30 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 		{
 			GLchar infoLog[512];
 			glGetShaderInfoLog(fragmentShaderID, 512, NULL, infoLog);
-			MessageBox(NULL, "Р¤СЂР°РіРјРµРЅС‚РЅС‹Р№ С€РµР№РґРµСЂ РЅРµ СЃРєРѕРјРїРёР»РёСЂРѕРІР°Р»СЃСЏ" + *infoLog, "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
+			MessageBox(NULL, "Фрагментный шейдер не скомпилировался" + *infoLog, "Ошибка", MB_ICONERROR | MB_OK);
 		}
 
-		glAttachShader(shaderProgram, vertexShaderID);
-		glAttachShader(shaderProgram, fragmentShaderID);
-		glLinkProgram(shaderProgram);
+		glAttachShader(Output::shaderProgram, vertexShaderID);
+		glAttachShader(Output::shaderProgram, fragmentShaderID);
+		glLinkProgram(Output::shaderProgram);
 
 
-		glGetProgramiv(shaderProgram, GL_COMPILE_STATUS, &iError);
+		glGetProgramiv(Output::shaderProgram, GL_COMPILE_STATUS, &iError);
 
 		if (!iError)
 		{
 			GLchar infoLog[512];
-			glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-			MessageBox(NULL, "РЁРµР№РґРµСЂРЅР°СЏ РїСЂРѕРіСЂР°РјРјР° РЅРµ СЃРѕР±СЂР°РЅР°" + *infoLog, "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
+			glGetProgramInfoLog(Output::shaderProgram, 512, NULL, infoLog);
+			MessageBox(NULL, "Шейдерная программа не собрана" + *infoLog, "Ошибка", MB_ICONERROR | MB_OK);
 		}
 
-		glUseProgram(shaderProgram);
+		glUseProgram(Output::shaderProgram);
 
 		glDeleteShader(vertexShaderID);
 		glDeleteShader(fragmentShaderID);
 	}
 
-	Loop();
+	Output::Loop();
 
 	//while (!glfwWindowShouldClose(window))
 	//{
@@ -214,8 +148,8 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//}
 
 	//glfwTerminate();
-	
-	SaveConfigSettingsInterface();
 
-	return 0;
+	Output::DisableOpenGL();
+
+	Engine::SaveConfigSettingsInterface();
 }
