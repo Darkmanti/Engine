@@ -43,7 +43,7 @@ namespace Output
 	void Loop();
 
 	// Инициализация интерфейса
-	int16_t InitInterface();
+	int16_t InitInterface(const int32_t);
 
 	void EnableOpenGL();
 	void DisableOpenGL();
