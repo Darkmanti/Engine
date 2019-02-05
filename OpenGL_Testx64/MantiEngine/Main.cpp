@@ -179,7 +179,7 @@ int main()
 	glBindVertexArray(0);
 
 	// ПЕРВАЯ ТЕКСТУРА
-	GLuint texture1, texture2, texture3, texture4, texture5;
+	GLuint texture1, texture2, texture3, texture4, texture5, texture6, texture7;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
@@ -194,7 +194,6 @@ int main()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// ВТОРАЯ ТЕКСТУРА
@@ -210,10 +209,9 @@ int main()
 	image = stbi_load("Resource/228.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ТРЕТЬЯ ТЕКСТУРА
+	// ТРЕТЬЯ ТЕКСТУРА
 	glGenTextures(1, &texture3);
 	glBindTexture(GL_TEXTURE_2D, texture3);
 
@@ -226,10 +224,9 @@ int main()
 	image = stbi_load("Resource/grass.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ЧЕТВЁРТАЯ ТЕКСТУРА
+	// ЧЕТВЁРТАЯ ТЕКСТУРА
 	glGenTextures(1, &texture4);
 	glBindTexture(GL_TEXTURE_2D, texture4);
 
@@ -242,10 +239,9 @@ int main()
 	image = stbi_load("Resource/bullet.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ПЯТАЯ ТЕКСТУРА
+	// ПЯТАЯ ТЕКСТУРА
 	glGenTextures(1, &texture5);
 	glBindTexture(GL_TEXTURE_2D, texture5);
 
@@ -256,6 +252,38 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	image = stbi_load("Resource/fire.jpg", &w, &h, &comp, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// ШЕСТАЯ ТЕКСТУРА
+	glGenTextures(1, &texture6);
+	glBindTexture(GL_TEXTURE_2D, texture6);
+
+	image = stbi_load("Resource/container2.png", &w, &h, &comp, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// СЕДЬМАЯ ТЕКСТУРА |||||||ПОРА ПИСАТЬ ФУНКЦИЮ ЗАГРУЗКИ А ТО ЭТОТ КОД УЖЕ НЕЧИТАЕМЫЙ!!!!ЭЭ!ЭЭ||||||
+	glGenTextures(1, &texture7);
+	glBindTexture(GL_TEXTURE_2D, texture7);
+
+	image = stbi_load("Resource/container2_specular.png", &w, &h, &comp, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(image);
@@ -295,7 +323,7 @@ int main()
 
 		ourShader.use();
 
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE0);
 
 		// обновление матриц проекции и вида
 		glm::mat4 view = glm::mat4(1.0f);
@@ -310,6 +338,9 @@ int main()
 		// отправка в uniform матрицы прозрачности текстуры
 		ourShader.setUniform("opacity", opacity);
 
+		// указание места текстуры
+		ourShader.setUniform("ourTexture1", 0);
+
 		trans = glm::mat4(1.0f);
 
 		glBindVertexArray(VAO);
@@ -323,24 +354,22 @@ int main()
 			{
 				trans = glm::scale(trans, glm::vec3(4.0, 4.0, 4.0));
 				glBindTexture(GL_TEXTURE_2D, texture2);
-				ourShader.setUniform("ourTexture1", 1);
 			}
 			else if (i == 11)
 			{
 				trans = glm::scale(trans, glm::vec3(20.0, 0.0, 20.0));
 				glBindTexture(GL_TEXTURE_2D, texture3);
-				ourShader.setUniform("ourTexture1", 1);
 			}
 			else
 			{
 				glBindTexture(GL_TEXTURE_2D, texture1);
-				ourShader.setUniform("ourTexture1", 1);
 				model = glm::rotate(model, (GLfloat)sin(glfwGetTime()) * 1.8f, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
 			ourShader.setUniform("model", model);
 			ourShader.setUniform("transform", trans);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		// Спавн пуль если нажата ЛКМ
 		if (spawn == true)
@@ -371,10 +400,10 @@ int main()
 				cube_random[i].cube_world = cube_random[i].cube_world * glm::translate(glm::mat4(1.0f), glm::vec3(sin(glfwGetTime()) * 0.5f, 0, 0));
 				trans = glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0, 2.0));
 				glBindTexture(GL_TEXTURE_2D, texture5);
-				ourShader.setUniform("ourTexture1", 1);
 				ourShader.setUniform("model", cube_random[i].cube_world);
 				ourShader.setUniform("transform", trans);
 				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 			else
 			{
@@ -389,7 +418,6 @@ int main()
 
 			trans = glm::scale(glm::mat4(1.0f), glm::vec3(0.2, 0.2, 1.0));
 			glBindTexture(GL_TEXTURE_2D, texture4);
-			ourShader.setUniform("ourTexture1", 1);
 			ourShader.setUniform("model", bullets[i].bullet_world);
 			ourShader.setUniform("transform", trans);
 
@@ -402,9 +430,10 @@ int main()
 			{
 				bullets.erase(bullets.begin() + i);
 			}
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
-		sourceLightPos = glm::vec3(0.0f + (cos(glfwGetTime()) * 20), 10.0f, -5.0f);
+		//sourceLightPos = glm::vec3(0.0f + (cos(glfwGetTime()) * 20), 10.0f, -5.0f);
 
 		// Шейдер источника света
 		lightShader.use();
@@ -422,6 +451,7 @@ int main()
 		lightShader.setUniform("transform", trans);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Шейдер объектов под освещением
 		lightObjectShader.use();
@@ -430,19 +460,20 @@ int main()
 		lightObjectShader.setUniform("projection", projection);
 
 		lightObjectShader.setUniform("light.position", sourceLightPos);
-		lightObjectShader.setUniform("light.ambient", 1.0f, 1.0f, 1.0f);
+		lightObjectShader.setUniform("light.ambient", 0.2f, 0.2f, 0.2f);
 		lightObjectShader.setUniform("light.diffuse", 0.5f, 0.5f, 0.5f);
 		lightObjectShader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
 
 		lightObjectShader.setUniform("viewPos", camera.Position);
+		
+		lightObjectShader.setUniform("material.diffuse", 0);
+		lightObjectShader.setUniform("material.specular", 1);
 
-		lightObjectShader.setUniform("material.ambient", 0.1f, 0.1f, 0.1f);
-		lightObjectShader.setUniform("material.diffuse", 0.5f, 0.5f, 0.5f);
-		lightObjectShader.setUniform("material.specular", 0.5f, 0.5f, 0.5f);
-		lightObjectShader.setUniform("material.shininess", 32.0f);
-
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		lightObjectShader.setUniform("ourTexture1", 1);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture6);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture7);
+		lightObjectShader.setUniform("material.shininess", 8.0f);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-2.0f, 9.0f, 0.0f));
@@ -452,6 +483,7 @@ int main()
 		lightObjectShader.setUniform("transform", trans);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glBindVertexArray(0);
 
