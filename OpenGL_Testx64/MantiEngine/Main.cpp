@@ -83,6 +83,7 @@ int main()
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
 	// подключене шейдера
@@ -178,7 +179,7 @@ int main()
 	glBindVertexArray(0);
 
 	// ПЕРВАЯ ТЕКСТУРА
-	GLuint texture1, texture2, texture3, texture4, texture5;
+	GLuint texture1, texture2, texture3, texture4, texture5, texture6, texture7;
 	glGenTextures(1, &texture1);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 
@@ -193,7 +194,6 @@ int main()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// ВТОРАЯ ТЕКСТУРА
@@ -209,10 +209,9 @@ int main()
 	image = stbi_load("Resource/228.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ТРЕТЬЯ ТЕКСТУРА
+	// ТРЕТЬЯ ТЕКСТУРА
 	glGenTextures(1, &texture3);
 	glBindTexture(GL_TEXTURE_2D, texture3);
 
@@ -225,10 +224,9 @@ int main()
 	image = stbi_load("Resource/grass.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ЧЕТВЁРТАЯ ТЕКСТУРА
+	// ЧЕТВЁРТАЯ ТЕКСТУРА
 	glGenTextures(1, &texture4);
 	glBindTexture(GL_TEXTURE_2D, texture4);
 
@@ -241,10 +239,9 @@ int main()
 	image = stbi_load("Resource/bullet.jpg", &w, &h, &comp, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//ПЯТАЯ ТЕКСТУРА
+	// ПЯТАЯ ТЕКСТУРА
 	glGenTextures(1, &texture5);
 	glBindTexture(GL_TEXTURE_2D, texture5);
 
@@ -255,6 +252,38 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	image = stbi_load("Resource/fire.jpg", &w, &h, &comp, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// ШЕСТАЯ ТЕКСТУРА
+	glGenTextures(1, &texture6);
+	glBindTexture(GL_TEXTURE_2D, texture6);
+
+	image = stbi_load("Resource/container2.png", &w, &h, &comp, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// СЕДЬМАЯ ТЕКСТУРА |||||||ПОРА ПИСАТЬ ФУНКЦИЮ ЗАГРУЗКИ А ТО ЭТОТ КОД УЖЕ НЕЧИТАЕМЫЙ!!!!ЭЭ!ЭЭ||||||
+	glGenTextures(1, &texture7);
+	glBindTexture(GL_TEXTURE_2D, texture7);
+
+	image = stbi_load("Resource/container2_specular.png", &w, &h, &comp, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(image);
@@ -274,8 +303,8 @@ int main()
 	std::vector<bullet_object> bullets;
 	std::vector<cube_object>cube_random;
 
-	glm::vec3 sourceColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, -5.0f);
+	glm::vec3 sourceLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 sourceLightPos = glm::vec3(0.0f, 10.0f, -5.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -292,28 +321,25 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ourShader.Use();
+		ourShader.use();
 
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE0);
 
+		// обновление матриц проекции и вида
 		glm::mat4 view = glm::mat4(1.0f);
 		view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(camera.Zoom, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 
-		// привязка переменных программы к uniform в шейдере
-		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
-		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
-		GLint projLoc = glGetUniformLocation(ourShader.Program, "projection");
-		GLint transformLoc = glGetUniformLocation(ourShader.Program, "transform");
-		GLint opacityLoc = glGetUniformLocation(ourShader.Program, "opacity");
-
 		// отправка в uniform матриц проекции и обзора
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		ourShader.setUniform("view", view);
+		ourShader.setUniform("projection", projection);
 
 		// отправка в uniform матрицы прозрачности текстуры
-		glUniform1f(opacityLoc, opacity);
+		ourShader.setUniform("opacity", opacity);
+
+		// указание места текстуры
+		ourShader.setUniform("ourTexture1", 0);
 
 		trans = glm::mat4(1.0f);
 
@@ -328,24 +354,22 @@ int main()
 			{
 				trans = glm::scale(trans, glm::vec3(4.0, 4.0, 4.0));
 				glBindTexture(GL_TEXTURE_2D, texture2);
-				glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
 			}
 			else if (i == 11)
 			{
 				trans = glm::scale(trans, glm::vec3(20.0, 0.0, 20.0));
 				glBindTexture(GL_TEXTURE_2D, texture3);
-				glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
 			}
 			else
 			{
 				glBindTexture(GL_TEXTURE_2D, texture1);
-				glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
 				model = glm::rotate(model, (GLfloat)sin(glfwGetTime()) * 1.8f, glm::vec3(0.0f, 1.0f, 0.0f));
 			}
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+			ourShader.setUniform("model", model);
+			ourShader.setUniform("transform", trans);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		// Спавн пуль если нажата ЛКМ
 		if (spawn == true)
@@ -376,10 +400,10 @@ int main()
 				cube_random[i].cube_world = cube_random[i].cube_world * glm::translate(glm::mat4(1.0f), glm::vec3(sin(glfwGetTime()) * 0.5f, 0, 0));
 				trans = glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0, 2.0));
 				glBindTexture(GL_TEXTURE_2D, texture5);
-				glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
-				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(cube_random[i].cube_world));
-				glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+				ourShader.setUniform("model", cube_random[i].cube_world);
+				ourShader.setUniform("transform", trans);
 				glDrawArrays(GL_TRIANGLES, 0, 36);
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 			else
 			{
@@ -394,9 +418,8 @@ int main()
 
 			trans = glm::scale(glm::mat4(1.0f), glm::vec3(0.2, 0.2, 1.0));
 			glBindTexture(GL_TEXTURE_2D, texture4);
-			glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 1);
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bullets[i].bullet_world));
-			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+			ourShader.setUniform("model", bullets[i].bullet_world);
+			ourShader.setUniform("transform", trans);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			for (int j = 0; j < cube_random.size(); j++)
@@ -407,64 +430,60 @@ int main()
 			{
 				bullets.erase(bullets.begin() + i);
 			}
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
-		lightPos = glm::vec3(0.0f + (cos(glfwGetTime()) * 20), 10.0f, -5.0f);
+		//sourceLightPos = glm::vec3(0.0f + (cos(glfwGetTime()) * 20), 10.0f, -5.0f);
 
 		// Шейдер источника света
-		lightShader.Use();
+		lightShader.use();
 
-		modelLoc = glGetUniformLocation(lightShader.Program, "model");
-		viewLoc = glGetUniformLocation(lightShader.Program, "view");
-		projLoc = glGetUniformLocation(lightShader.Program, "projection");
-		transformLoc = glGetUniformLocation(lightShader.Program, "transform");
+		lightShader.setUniform("view", view);
+		lightShader.setUniform("projection", projection);
 
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		GLint lightColorLoc = glGetUniformLocation(lightShader.Program, "lightColor");
-		glUniform3fv(lightColorLoc, 1, glm::value_ptr(sourceColor));
+		lightShader.setUniform("lightColor", sourceLightColor);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(lightPos));
+		model = glm::translate(model, glm::vec3(sourceLightPos));
 		trans = glm::mat4(1.0f);
 		trans = glm::scale(trans, glm::vec3(2.0, 2.0, 2.0));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		lightShader.setUniform("model", model);
+		lightShader.setUniform("transform", trans);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Шейдер объектов под освещением
-		lightObjectShader.Use();
+		lightObjectShader.use();
 
-		modelLoc = glGetUniformLocation(lightObjectShader.Program, "model");
-		viewLoc = glGetUniformLocation(lightObjectShader.Program, "view");
-		projLoc = glGetUniformLocation(lightObjectShader.Program, "projection");
-		transformLoc = glGetUniformLocation(lightObjectShader.Program, "transform");
+		lightObjectShader.setUniform("view", view);
+		lightObjectShader.setUniform("projection", projection);
 
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		lightObjectShader.setUniform("light.position", sourceLightPos);
+		lightObjectShader.setUniform("light.ambient", 0.2f, 0.2f, 0.2f);
+		lightObjectShader.setUniform("light.diffuse", 0.5f, 0.5f, 0.5f);
+		lightObjectShader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
 
-		GLint objectColorLoc = glGetUniformLocation(lightObjectShader.Program, "objectColor");
-		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-		lightColorLoc = glGetUniformLocation(lightObjectShader.Program, "lightColor");
-		glUniform3fv(lightColorLoc, 1, glm::value_ptr(sourceColor));
-		GLint lightPosLoc = glGetUniformLocation(lightObjectShader.Program, "lightPos");
-		glUniform3fv(lightPosLoc, 1, glm::value_ptr(lightPos));
-		GLint viewPosLoc = glGetUniformLocation(lightObjectShader.Program, "viewPos");
-		glUniform3fv(viewPosLoc, 1, glm::value_ptr(camera.Position));
+		lightObjectShader.setUniform("viewPos", camera.Position);
+		
+		lightObjectShader.setUniform("material.diffuse", 0);
+		lightObjectShader.setUniform("material.specular", 1);
 
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glUniform1i(glGetUniformLocation(lightObjectShader.Program, "ourTexture1"), 1);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture6);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture7);
+		lightObjectShader.setUniform("material.shininess", 8.0f);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-2.0f, 7.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-2.0f, 9.0f, 0.0f));
 		trans = glm::mat4(1.0f);
-		trans = glm::scale(trans, glm::vec3(30.0, 20.0, 4.0));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		trans = glm::scale(trans, glm::vec3(8.0, 8.0, 4.0));
+		lightObjectShader.setUniform("model", model);
+		lightObjectShader.setUniform("transform", trans);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glBindVertexArray(0);
 
@@ -482,9 +501,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		camera.Zoom = 45.0f; std::cout << "dwad" << std::endl;
-	}
 	if (key >= 0 && key < 1024)
 	{
 		if (action == GLFW_PRESS)
