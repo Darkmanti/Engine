@@ -23,9 +23,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_button_callback(GLFWwindow* window, int key, int action, int mode);
 void Do_Movement();
 
-
 // глобальные переменные
-Camera camera(glm::vec3(0.0f, 2.0f, 30.0f));
+Camera camera(glm::vec3(0.0f, 7.0f, 15.0f));
 bool keys[1024];
 GLfloat lastX = 640, lastY = 360;
 bool firstMouse = true;
@@ -304,7 +303,14 @@ int main()
 	std::vector<cube_object>cube_random;
 
 	glm::vec3 sourceLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	glm::vec3 sourceLightPos = glm::vec3(0.0f, 10.0f, -5.0f);
+	glm::vec3 sourceLightPos = glm::vec3(-1.0f, 10.0f, -8.0f);
+
+	lightObjectShader.use();
+	lightObjectShader.setUniform("material.diffuse", 0);
+	lightObjectShader.setUniform("material.specular", 1);
+
+	ourShader.use();
+	ourShader.setUniform("ourTexture1", 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -329,7 +335,7 @@ int main()
 		glm::mat4 view = glm::mat4(1.0f);
 		view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(camera.Zoom, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+		projection = glm::perspective(camera.Zoom, (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
 
 		// отправка в uniform матриц проекции и обзора
 		ourShader.setUniform("view", view);
@@ -339,7 +345,6 @@ int main()
 		ourShader.setUniform("opacity", opacity);
 
 		// указание места текстуры
-		ourShader.setUniform("ourTexture1", 0);
 
 		trans = glm::mat4(1.0f);
 
@@ -388,7 +393,7 @@ int main()
 		if (cube_random.size() < 10 && (int)glfwGetTime() % 20 == 1)
 		{
 			cube_object temp;
-			glm::mat4 cube_world = glm::translate(glm::mat4(1.0f), glm::vec3((rand() % 20) - 30.0f, rand() % 10, rand() % 20));
+			glm::mat4 cube_world = glm::translate(glm::mat4(1.0f), glm::vec3((rand() % 20) - 30.0f, rand() % 10, 30+(rand() % 20)));
 			temp.cube_world = cube_world;
 			cube_random.push_back(temp);
 		}
@@ -464,10 +469,16 @@ int main()
 		lightObjectShader.setUniform("light.diffuse", 0.5f, 0.5f, 0.5f);
 		lightObjectShader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
 
+		lightObjectShader.setUniform("light.constant", 1.0f);
+		lightObjectShader.setUniform("light.linear", 0.0014f);
+		lightObjectShader.setUniform("light.quadratic", 0.0007f);
+
+		lightObjectShader.setUniform("light.positionFlashLight", camera.Position);
+		lightObjectShader.setUniform("light.direction", camera.Front);
+		lightObjectShader.setUniform("light.cutOff", glm::cos(glm::radians(12.5f)));
+		lightObjectShader.setUniform("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
 		lightObjectShader.setUniform("viewPos", camera.Position);
-		
-		lightObjectShader.setUniform("material.diffuse", 0);
-		lightObjectShader.setUniform("material.specular", 1);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture6);
@@ -475,14 +486,17 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture7);
 		lightObjectShader.setUniform("material.shininess", 8.0f);
 
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-2.0f, 9.0f, 0.0f));
-		trans = glm::mat4(1.0f);
-		trans = glm::scale(trans, glm::vec3(8.0, 8.0, 4.0));
-		lightObjectShader.setUniform("model", model);
-		lightObjectShader.setUniform("transform", trans);
+		for (int i = 0; i < 100; i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(-40.0f + i*8, 2.0f, 0.0f));
+			trans = glm::mat4(1.0f);
+			trans = glm::scale(trans, glm::vec3(4.0, 4.0, 4.0));
+			lightObjectShader.setUniform("model", model);
+			lightObjectShader.setUniform("transform", trans);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glBindVertexArray(0);
