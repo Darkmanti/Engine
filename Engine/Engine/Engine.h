@@ -9,7 +9,7 @@
 // Настройки движка, winapi и прочее такое
 namespace Engine
 {
-	extern HINSTANCE hInstance;		// Дескриптор приложения
+	extern HINSTANCE hInstance;			// Дескриптор приложения
 
 	extern std::string dirAppData;		// Дирректория данных приложения
 

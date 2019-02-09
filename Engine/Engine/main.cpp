@@ -2,14 +2,12 @@
 
 #include "GLEW/glew.h"
 
-#include <windows.h>
-#include <stdint.h>
 #include <shlobj.h>
-#include <string>
 
+#include "Graphics.h"
 #include "Engine.h"
-#include "Output.h"
-#include "Input.h"
+#include "WinApi.h"
+#include "Shader.h"
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
@@ -30,16 +28,32 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	// Отправляем дескриптор в файл wndInit
 	Engine::hInstance = hInst;
 
-	// Подгружаем остальной интерфейс (кнопки, хуепки, inputText и пр.)
-	if (int16_t iError = Output::InitInterface(nCmdShow)) // Проверка на ошибки создания интерфейса
+	// Создаем интерфейс (кнопки, хуепки, inputText и пр.)
+	if (int16_t iError = WinApi::InitInterface()) // Проверка на создание интерфейса
 	{
-		MessageBox(Output::hWnd, "Интерфейс не создан. Код ошибки - " + iError, "Ошибка", MB_OK);
+		std::string out("Ошибка ");
+
+		out += std::to_string(iError);
+		
+		MessageBox(WinApi::hWndRender, "Интерфейс не создан", out.c_str(), MB_OK);
+
+		return 0;
+	}
+
+	// Показываем интерфейс
+	if (int16_t iError = WinApi::ShowInterface(nCmdShow))
+	{
+		std::string out("Ошибка ");
+
+		out += std::to_string(iError);
+
+		MessageBox(WinApi::hWndRender, "Интерфейс не отобразился", out.c_str(), MB_OK);
 
 		return 0;
 	}
 
 	// Инициализация OpenGL
-	Output::EnableOpenGL();
+	Graphics::EnableOpenGL();
 
 	//glfwInit();
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -58,14 +72,18 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
-	if (glewInit())
+	if (int16_t iError = glewInit())
 	{
-		MessageBox(NULL, "Glew не инициализироан", "Ошибка", MB_ICONERROR | MB_OK);
+		char out[64];
+
+		//sprintf(out, "Ошибка %d", iError);
+
+		MessageBox(NULL, "Glew не инициализироан", out, MB_ICONERROR | MB_OK);
 		//glfwTerminate();
 		return 1;
 	}
 
-	Output::Loop();
+	WinApi::Loop();
 
 	//while (!glfwWindowShouldClose(window))
 	//{
@@ -84,7 +102,9 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 
 	//glfwTerminate();
 
-	Output::DisableOpenGL();
+	Graphics::DisableOpenGL();
 
 	Engine::SaveConfigSettingsInterface();
+
+	return 0;
 }

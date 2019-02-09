@@ -18,13 +18,19 @@
     <ClCompile Include="Main.cpp">
       <Filter>Файлы исходников</Filter>
     </ClCompile>
-    <ClCompile Include="Output.cpp">
-      <Filter>Файлы исходников</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Файлы исходников</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
+    <ClCompile Include="WinApi.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
       <Filter>Файлы исходников</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,13 +38,19 @@
     <ClInclude Include="Engine.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="Output.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApi.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
