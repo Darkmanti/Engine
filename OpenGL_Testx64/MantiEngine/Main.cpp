@@ -305,13 +305,6 @@ int main()
 	glm::vec3 sourceLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 sourceLightPos = glm::vec3(-1.0f, 10.0f, -8.0f);
 
-	lightObjectShader.use();
-	lightObjectShader.setUniform("material.diffuse", 0);
-	lightObjectShader.setUniform("material.specular", 1);
-
-	ourShader.use();
-	ourShader.setUniform("ourTexture1", 0);
-
 	while (!glfwWindowShouldClose(window))
 	{
 		// расчёт времени затраченного на кадр
@@ -328,6 +321,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ourShader.use();
+		ourShader.setUniform("ourTexture1", 0);
 
 		glActiveTexture(GL_TEXTURE0);
 
@@ -464,27 +458,45 @@ int main()
 		lightObjectShader.setUniform("view", view);
 		lightObjectShader.setUniform("projection", projection);
 
-		lightObjectShader.setUniform("light.position", sourceLightPos);
-		lightObjectShader.setUniform("light.ambient", 0.2f, 0.2f, 0.2f);
-		lightObjectShader.setUniform("light.diffuse", 0.5f, 0.5f, 0.5f);
-		lightObjectShader.setUniform("light.specular", 1.0f, 1.0f, 1.0f);
+		// Направленный свет (типо Солнце)
+		lightObjectShader.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		lightObjectShader.setUniform("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+		lightObjectShader.setUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		lightObjectShader.setUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
 
-		lightObjectShader.setUniform("light.constant", 1.0f);
-		lightObjectShader.setUniform("light.linear", 0.0014f);
-		lightObjectShader.setUniform("light.quadratic", 0.0007f);
+		// Источник света №1
+		lightObjectShader.setUniform("pointLights[0].position", sourceLightPos);
+		lightObjectShader.setUniform("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+		lightObjectShader.setUniform("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+		lightObjectShader.setUniform("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+		lightObjectShader.setUniform("pointLights[0].constant", 1.0f);
+		lightObjectShader.setUniform("pointLights[0].linear", 0.0014f);
+		lightObjectShader.setUniform("pointLights[0].quadratic", 0.0007f);
 
-		lightObjectShader.setUniform("light.positionFlashLight", camera.Position);
-		lightObjectShader.setUniform("light.direction", camera.Front);
-		lightObjectShader.setUniform("light.cutOff", glm::cos(glm::radians(12.5f)));
-		lightObjectShader.setUniform("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+		// Фонарик
+		lightObjectShader.setUniform("spotLight.position", camera.Position);
+		lightObjectShader.setUniform("spotLight.direction", camera.Front);
+		lightObjectShader.setUniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+		lightObjectShader.setUniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+		lightObjectShader.setUniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		lightObjectShader.setUniform("spotLight.constant", 1.0f);
+		lightObjectShader.setUniform("spotLight.linear", 0.009f);
+		lightObjectShader.setUniform("spotLight.quadratic", 0.012f);
+		lightObjectShader.setUniform("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		lightObjectShader.setUniform("spotLight.outerCutOff", glm::cos(glm::radians(18.0f)));
 
+		// Местоположение камеры
 		lightObjectShader.setUniform("viewPos", camera.Position);
+
+		// Материал объекта
+		lightObjectShader.setUniform("material.diffuse", 0);
+		lightObjectShader.setUniform("material.specular", 1);
+		lightObjectShader.setUniform("material.shininess", 8.0f);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture6);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture7);
-		lightObjectShader.setUniform("material.shininess", 8.0f);
 
 		for (int i = 0; i < 100; i++)
 		{
