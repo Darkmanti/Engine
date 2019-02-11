@@ -12,8 +12,27 @@ GameObject::GameObject()
 
 GameObject::~GameObject()
 {
-	delete shader;
-	delete texture;
+	if (!V) delete[] V;
+	if (!VT) delete[] VT;
+	if (!F) delete[] F;
+	if (!FT) delete[] FT;
+
+	if (!shader) delete shader;
+	if (!texture) delete texture;
+}
+
+GLuint &GameObject::GetVAO()
+{
+	return VAO;
+}
+GLuint &GameObject::GetVBO()
+{
+	return VBO;
+}
+
+GLuint &GameObject::GetEBO()
+{
+	return EBO;
 }
 
 int32_t &GameObject::GetCountV()
@@ -31,43 +50,82 @@ int32_t &GameObject::GetCountF()
 	return countF;
 }
 
-float *GetV()
+float *GameObject::GetV()
+{
+	return V;
+}
+
+float *GameObject::GetVT()
+{
+	return VT;
+}
+
+int32_t *GameObject::GetF()
+{
+	return F;
+}
+
+int32_t *GameObject::GetFT()
+{
+	return FT;
+}
+
+void GameObject::SetV(float *v)
+{
+	V = v;
+}
+
+void GameObject::SetVT(float *vt)
+{
+	VT = vt;
+}
+
+void GameObject::SetF(int32_t *f)
+{
+	F = f;
+}
+
+void GameObject::SetFT(int32_t *ft)
+{
+	FT = ft;
+}
+
+void GameObject::Start()
 {
 
 }
 
-float *GetVT()
-{
-
-}
-
-int32_t *GetF()
-{
-
-}
-
-int32_t *GetFT()
+void GameObject::Update()
 {
 
 }
 
 void GameObject::Render()
 {
-	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glm::mat4 view = glm::mat4(1.0f);
+	view = Engine::camera->GetViewMatrix();
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(Engine::camera->Zoom, (GLfloat)1024 / (GLfloat)1024, 0.1f, 1000.0f);
 
-	glGenBuffers(1, &EBO);
+	shader->use();
 
-	glBufferData(GL_ARRAY_BUFFER, countV * sizeof(float), v, GL_STATIC_DRAW);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, 0));
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::scale(trans, glm::vec3(20, 20, 20));
+	shader->setUniform("model", model);
+	shader->setUniform("transform", trans);
+
+	// отправка в uniform матриц проекции и обзора
+	shader->setUniform("view", view);
+	shader->setUniform("projection", projection);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF / 2 * sizeof(float), fv, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
+	glDrawElements(GL_TRIANGLES, countV, GL_UNSIGNED_INT, 0);
+
 	glBindVertexArray(0);
 }
 

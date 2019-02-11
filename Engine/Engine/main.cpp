@@ -9,12 +9,11 @@
 #include "WinApi.h"
 #include "Shader.h"
 #include "GameObject.h"
+#include "Importer.h"
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
-	GameObject model;
-
-	
+	Engine::isLoaded = false;
 
 	{
 		// Нахождение пути данных программы
@@ -88,7 +87,17 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 		return 1;
 	}
 
-	WinApi::Loop();
+	Engine::isLoaded = true;
+
+	GameObject models[1];
+	Importer::ImportObj("iron.obj", models[0]);
+
+	for (uint16_t i = 0; i < 1; ++i)
+	{
+		models[i].Start();
+	}
+
+	WinApi::Loop(models, 1);
 
 	//while (!glfwWindowShouldClose(window))
 	//{
@@ -108,6 +117,8 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//glfwTerminate();
 
 	Graphics::DisableOpenGL();
+	
+	delete Engine::camera;
 
 	Engine::SaveConfigSettingsInterface();
 

@@ -7,7 +7,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "GameObject.h"
+
 namespace Importer
 {
-
+	uint32_t ImportObj(const char *fileName, GameObject &go);
 };

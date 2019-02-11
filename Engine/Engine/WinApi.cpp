@@ -3,8 +3,6 @@
 #include <CommCtrl.h>
 #include <algorithm>
 
-#include "GLM/glm.hpp"
-
 namespace WinApi
 {
 	int32_t				windowPositionX,				// Позиция окна по X
@@ -65,8 +63,6 @@ namespace WinApi
 						hPopMenuFile,
 						hPopMenuProject,
 						hPopMenuProjectImport;
-
-	bool isEnabled;
 
 	// Регистрация класса окна
 	ATOM RegisterWindowEngine()
@@ -206,6 +202,8 @@ namespace WinApi
 			return 1;
 		}
 
+		Engine::camera = new Camera(glm::vec3(0, 4, 100));
+
 		return 0;
 	}
 	uint16_t CreateWindowLocation()
@@ -287,7 +285,7 @@ namespace WinApi
 		}
 
 		LVCOLUMN lvc;
-		int iCol;
+		int iCol(0);
 
 		lvc.iSubItem = iCol;
 		lvc.pszText = (LPSTR)"dfsdf";
@@ -433,7 +431,7 @@ namespace WinApi
 	{
 		if (WinApi::isFullscreen)
 		{
-			if (ShowWindow(hWndEngine, nCmdShow | SW_MAXIMIZE)) return 1;
+			if (ShowWindow(hWndEngine, SW_MAXIMIZE)) return 1;
 		}
 		else
 		{
@@ -467,6 +465,11 @@ namespace WinApi
 	// Оконные процедуры
 	LRESULT WndEngineProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWndEngine, message, wParam, lParam);
+		}
+
 		switch (message)
 		{
 		case WM_COMMAND:
@@ -495,21 +498,19 @@ namespace WinApi
 
 			if (lParam == (LPARAM)hBtn_Shader)
 			{
-				// Инициализация шейдера
+				
 			}
 			else if (lParam == (LPARAM)hBtn_OpenModel)
 			{
-				// Обработка нажатия кнопки
+				
 			}
 			else if (lParam == (LPARAM)hBtn_ShowModel)
 			{
-				isEnabled = true;
+				
 			}
 			else if (lParam == (LPARAM)hBtn_CloseModel)
 			{
-				glDeleteBuffers(1, &vbo);
-				
-				isEnabled = false;
+
 			}
 
 			break;
@@ -549,6 +550,11 @@ namespace WinApi
 	}
 	LRESULT WndRenderProc(HWND hWndRender, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWndEngine, message, wParam, lParam);
+		}
+
 		switch (message)
 		{
 		case WM_SIZE:
@@ -572,6 +578,11 @@ namespace WinApi
 	}
 	LRESULT WndLocationProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWndEngine, message, wParam, lParam);
+		}
+
 		switch (message)
 		{
 		case WM_COMMAND:
@@ -606,6 +617,11 @@ namespace WinApi
 	}
 	LRESULT WndProjectProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWndEngine, message, wParam, lParam);
+		}
+
 		switch (message)
 		{
 		case WM_COMMAND:
@@ -640,7 +656,7 @@ namespace WinApi
 	}
 
 	// Метод с циклом программы
-	void Loop()
+	void Loop(GameObject *models, const uint16_t countModels)
 	{
 		MSG message{ 0 }; 	// Структура сообщения к окну
 		int8_t iResult;		// Код состояния
@@ -662,33 +678,11 @@ namespace WinApi
 			glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glBindVertexArray(vao);
-
-			glm::mat4 view = glm::mat4(1.0f);
-			view = camera->GetViewMatrix();
-			glm::mat4 projection = glm::mat4(1.0f);
-			projection = glm::perspective(camera->Zoom, (GLfloat)1024 / (GLfloat)1024, 0.1f, 1000.0f);
-
-			shader->use();
-
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(0, 0, 0));
-			glm::mat4 trans = glm::mat4(1.0f);
-			trans = glm::scale(trans, glm::vec3(20, 20, 20));
-			shader->setUniform("model", model);
-			shader->setUniform("transform", trans);
-
-			// отправка в uniform матриц проекции и обзора
-			shader->setUniform("view", view);
-			shader->setUniform("projection", projection);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-			glDrawElements(GL_TRIANGLES, countV, GL_UNSIGNED_INT, 0);
-
-			glBindVertexArray(0);
-
-			SwapBuffers(hDC);
+			for (uint16_t i = 0; i < countModels; ++i)
+			{
+				models[i].Update();
+				models[i].Render();
+			}
 
 			// Смена буфера
 			SwapBuffers(hDC);

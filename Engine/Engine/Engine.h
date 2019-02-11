@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "Camera.h"
+
 // Настройки движка, winapi и прочее такое
 namespace Engine
 {
@@ -13,7 +15,9 @@ namespace Engine
 
 	extern std::string dirAppData;		// Дирректория данных приложения
 
-	extern Camera camera;
+	extern Camera *camera;
+
+	extern bool isLoaded;
 
 	// Загрузка конфига
 	void LoadConfigSettingsInterface();

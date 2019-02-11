@@ -56,7 +56,7 @@ void Camera::ProcessMouseScroll(GLfloat yoffset)
 {
 	//Зум который на самом деле угол обзора
 	if (this->Zoom >= 44.0f && this->Zoom <= 47.0f)
-		this->Zoom -= yoffset / 50.0;
+		this->Zoom -= yoffset / 50.0f;
 	if (this->Zoom <= 44.0f)
 		this->Zoom = 44.0f;
 	if (this->Zoom >= 47.0f)

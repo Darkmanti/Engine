@@ -1,15 +1,13 @@
 #include "Importer.h"
 
-#include "GameObject.h"
-
 namespace Importer
 {
-	uint32_t ImportObj(GameObject &go)
+	uint32_t ImportObj(const char *fileName, GameObject &go)
 	{
 		//Вертексы
 		std::ifstream file;
 
-		file.open("iron.obj");
+		file.open(fileName);
 
 		if (!file.is_open())
 		{
@@ -17,6 +15,10 @@ namespace Importer
 		}
 
 		std::string str;
+
+		int32_t &countV(go.GetCountV());
+		int32_t &countVT(go.GetCountVT());
+		int32_t &countF(go.GetCountF());
 
 		while (!file.eof())
 		{
@@ -26,9 +28,9 @@ namespace Importer
 			{
 				if (str[0] == 'v')
 				{
-					++go.GetCountV();
-					++go.GetCountV();
-					++go.GetCountV();
+					++countV;
+					++countV;
+					++countV;
 				}
 				else if (str[0] == 'f')
 				{
@@ -39,7 +41,7 @@ namespace Importer
 						std::replace(str.begin(), str.end(), '/', ' ');
 
 						// Есть вариант оптимизации
-						int index(0);
+						size_t index(0);
 						while (true)
 						{
 							index = str.find("  ", index);
@@ -64,7 +66,7 @@ namespace Importer
 						}
 					}
 
-					go.GetCountF() += countSpace;
+					countF += countSpace;
 
 					continue;
 				}
@@ -73,8 +75,8 @@ namespace Importer
 			{
 				if (str.substr(0, 2) == "vt")
 				{
-					++go.GetCountVT();
-					++go.GetCountVT();
+					++countVT;
+					++countVT;
 				}
 			}
 
@@ -83,21 +85,31 @@ namespace Importer
 
 		file.close();
 
-		file.open("iron.obj");
+		file.open(fileName);
 
 		if (!file.is_open())
 		{
 			return 1;
 		}
 
-		*go.GetV() = new float[go.GetCountV()];
-		*vt = new float[go.GetCountVT()];
-		*fv = new int[go.GetCountF() / 2];
-		*ft = new int[go.GetCountF() / 2];
+		float *V = go.GetV();
+		float *VT = go.GetVT();
+		int32_t *F = go.GetF();
+		int32_t *FT = go.GetFT();
+
+		if (!V) delete[] V;
+		if (!VT) delete[] VT;
+		if (!F) delete[] F;
+		if (!FT) delete[] FT;
+
+		V = new float[countV];
+		VT = new float[countVT];
+		F = new int[countF / 2];
+		FT = new int[countF / 2];
 
 		uint64_t iV(0);								// Итератор количества вертексов
 		uint64_t iVT(0);							// Итератор количества вертексов текстурных
-		uint64_t iFV(0);							// Итератор количества полигонов
+		uint64_t iF(0);								// Итератор количества полигонов
 		uint64_t iFT(0);							// Итератор количества полигонов текстурных
 
 		if (!file.is_open())
@@ -113,7 +125,7 @@ namespace Importer
 			{
 				if (str[0] == 'v')
 				{
-					double x, y, z;
+					float x, y, z;
 
 					file >> str;
 					x = std::stof(str);
@@ -124,9 +136,9 @@ namespace Importer
 					file >> str;
 					z = std::stof(str);
 
-					v[iV] = x; ++iV;
-					v[iV] = y; ++iV;
-					v[iV] = z; ++iV;
+					V[iV] = x; ++iV;
+					V[iV] = y; ++iV;
+					V[iV] = z; ++iV;
 				}
 				else if (str[0] == 'f')
 				{
@@ -139,7 +151,7 @@ namespace Importer
 						std::replace(str.begin(), str.end(), '/', ' ');
 
 						// Есть вариант оптимизации
-						int index(0);
+						size_t index(0);
 						while (true)
 						{
 							index = str.find("  ", index);
@@ -172,8 +184,8 @@ namespace Importer
 							tmp >> f1;
 							tmp >> f2;
 
-							fv[iFV] = f1; ++iFV;
-							ft[iFT] = f2; ++iFT;
+							F[iF] = f1; ++iF;
+							FT[iFT] = f2; ++iFT;
 						}
 					}
 					else
@@ -195,7 +207,7 @@ namespace Importer
 
 							tmp >> f1;
 
-							fv[iFV] = f1; ++iFV;
+							F[iF] = f1; ++iF;
 						}
 					}
 
@@ -214,14 +226,38 @@ namespace Importer
 					file >> str;
 					v = std::stof(str);
 
-					vt[iVT] = u; ++iVT;
-					vt[iVT] = v; ++iVT;
+					VT[iVT] = u; ++iVT;
+					VT[iVT] = v; ++iVT;
 				}
 			}
 
 			getline(file, str);
 		}
 
+		go.SetV(V);
+		go.SetVT(VT);
+		go.SetF(F);
+		go.SetFT(FT);
+
 		file.close();
+
+		glGenVertexArrays(1, &go.GetVAO());
+		glBindVertexArray(go.GetVAO());
+
+		glGenBuffers(1, &go.GetVBO());
+		glBindBuffer(GL_ARRAY_BUFFER, go.GetVBO());
+
+		glGenBuffers(1, &go.GetEBO());
+
+		glBufferData(GL_ARRAY_BUFFER, countV * sizeof(float), V, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, go.GetEBO());
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF / 2 * sizeof(float), F, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+
+		return 0;
 	}
 };

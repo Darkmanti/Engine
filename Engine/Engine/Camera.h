@@ -1,12 +1,10 @@
 #pragma once
-#ifndef CAMERA_H
-#define CAMERA_H
 
 #include <vector>
-#include <GLEW/glew.h>
-#include <GLM/glm.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
 
+#include "GLEW/glew.h"
+#include "GLM/glm.hpp"
+#include "GLM/gtc/matrix_transform.hpp"
 
 // Определяет несколько возможных вариантов движения камеры. Используется как абстракция.
 enum Camera_Movement {
@@ -60,4 +58,3 @@ private:
 	// Вычисляет front вектор для обновления углов Эйлера у камеры
 	void updateCameraVectors();
 };
-#endif CAMERA_H

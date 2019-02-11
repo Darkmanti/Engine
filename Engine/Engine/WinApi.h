@@ -9,6 +9,7 @@
 #include "Engine.h"
 #include "Graphics.h"
 #include "Camera.h"
+#include "GameObject.h"
 
 // #define MENU_FILE				1000
 #define MENU_FILE_NEWLOCATION		1001
@@ -86,12 +87,6 @@ namespace WinApi
 						hPopMenuProject,
 						hPopMenuProjectImport;
 
-	extern Shader *shader;
-
-	extern Camera *camera;
-
-	extern bool isEnabled;
-
 	// Регистрация окна
 	ATOM RegisterWindowEngine();
 	ATOM RegisterWindowRender();
@@ -119,5 +114,5 @@ namespace WinApi
 	LRESULT WndProjectProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam);
 
 	// Метод с циклом программы
-	void Loop();
+	void Loop(GameObject *models, const uint16_t countModels);
 };
