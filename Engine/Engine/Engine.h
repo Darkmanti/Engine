@@ -13,6 +13,8 @@ namespace Engine
 
 	extern std::string dirAppData;		// Дирректория данных приложения
 
+	extern Camera camera;
+
 	// Загрузка конфига
 	void LoadConfigSettingsInterface();
 

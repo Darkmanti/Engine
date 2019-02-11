@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Engine.h"
 #include "Graphics.h"
+#include "Camera.h"
 
 // #define MENU_FILE				1000
 #define MENU_FILE_NEWLOCATION		1001
@@ -86,6 +87,8 @@ namespace WinApi
 						hPopMenuProjectImport;
 
 	extern Shader *shader;
+
+	extern Camera *camera;
 
 	extern bool isEnabled;
 

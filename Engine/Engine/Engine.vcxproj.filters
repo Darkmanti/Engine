@@ -33,6 +33,15 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Файлы исходников</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
+    <ClCompile Include="Importer.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Файлы исходников</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -51,6 +60,15 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Importer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

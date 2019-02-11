@@ -2,35 +2,81 @@
 
 GameObject::GameObject()
 {
+	enabled = true;
+	shader = new Shader("Shader/shader.vs", "Shader/shader.fs");
 
+	countV = 0;
+	countVT = 0;
+	countF = 0;
 }
 
 GameObject::~GameObject()
 {
+	delete shader;
+	delete texture;
+}
+
+int32_t &GameObject::GetCountV()
+{
+	return countV;
+}
+
+int32_t &GameObject::GetCountVT()
+{
+	return countVT;
+}
+
+int32_t &GameObject::GetCountF()
+{
+	return countF;
+}
+
+float *GetV()
+{
 
 }
 
-void GameObject::func(GLfloat vertices[])
+float *GetVT()
+{
+
+}
+
+int32_t *GetF()
+{
+
+}
+
+int32_t *GetFT()
+{
+
+}
+
+void GameObject::Render()
 {
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
 	glBindVertexArray(VAO);
 
+	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	glGenBuffers(1, &EBO);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glBufferData(GL_ARRAY_BUFFER, countV * sizeof(float), v, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF / 2 * sizeof(float), fv, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
 	glEnableVertexAttribArray(0);
-
 	glBindVertexArray(0);
 }
 
-void GameObject::func2()
+void GameObject::Enable()
 {
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	enabled = true;
+}
+
+void GameObject::Disable()
+{
+	enabled = false;
 }

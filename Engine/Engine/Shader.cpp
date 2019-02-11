@@ -1,6 +1,5 @@
 #include "Shader.h";
 
-
 unsigned int ID;
 
 // constructor generates the shader on the fly

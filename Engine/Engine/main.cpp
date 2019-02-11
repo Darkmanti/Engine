@@ -8,9 +8,14 @@
 #include "Engine.h"
 #include "WinApi.h"
 #include "Shader.h"
+#include "GameObject.h"
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
+	GameObject model;
+
+	
+
 	{
 		// Нахождение пути данных программы
 		char file[255];

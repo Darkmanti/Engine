@@ -1,6 +1,9 @@
 #include "WinApi.h"
 
 #include <CommCtrl.h>
+#include <algorithm>
+
+#include "GLM/glm.hpp"
 
 namespace WinApi
 {
@@ -34,8 +37,7 @@ namespace WinApi
 						pWndProjectClassEx;				// Структура класса location
 
 
-	GLuint				vArrayObject,					// VAO
-						vBufferObject;					// VBO
+	GLuint				vbo, vao, ebo;
 
 
 	// Различные дескрипторы
@@ -63,8 +65,6 @@ namespace WinApi
 						hPopMenuFile,
 						hPopMenuProject,
 						hPopMenuProjectImport;
-
-	Shader *shader;
 
 	bool isEnabled;
 
@@ -286,6 +286,22 @@ namespace WinApi
 			return 1;
 		}
 
+		LVCOLUMN lvc;
+		int iCol;
+
+		lvc.iSubItem = iCol;
+		lvc.pszText = (LPSTR)"dfsdf";
+		lvc.cx = 100;               // Width of column in pixels.
+
+		if (iCol < 2)
+			lvc.fmt = LVCFMT_LEFT;  // Left-aligned column.
+		else
+			lvc.fmt = LVCFMT_RIGHT; // Right-aligned column.
+
+		// Insert the columns into the list view.
+		if (ListView_InsertColumn(hWndListViewProject, iCol, &lvc) == -1)
+			return FALSE;
+
 		return 0;
 	}
 	uint16_t CreateMainMenu()
@@ -480,91 +496,10 @@ namespace WinApi
 			if (lParam == (LPARAM)hBtn_Shader)
 			{
 				// Инициализация шейдера
-				shader = new Shader("shader.vs", "shader.fs");	// Шейдер
 			}
 			else if (lParam == (LPARAM)hBtn_OpenModel)
 			{
 				// Обработка нажатия кнопки
-				//GLdouble *vertices;
-
-				//std::ifstream file;
-
-				//file.open(Engine::dirAppData + std::string("\\models\\cube.obj"));
-
-				//if (!file.is_open())
-				//{
-				//	break;
-				//}
-
-				//std::string str;
-
-				//std::string::size_type size;
-
-				//file >> str;
-
-				//uint64_t countVertices(0); //Количество вертексов для 
-				//countVertices = std::stoul(str, &size) * 3;
-
-				//vertices = new double[countVertices];
-
-				//uint64_t	countVertex(0);		// Итератор количества вертексов
-				//uint8_t		countEmptyLines(0); // Количество пропущенных строк
-
-				//while (!file.eof())
-				//{
-				//	file >> str;
-
-				//	if (str[0] == '#')
-				//	{
-				//		getline(file, str);
-				//		countEmptyLines = 0;
-				//		continue;
-				//	}
-
-				//	if (str[0] == 'v' && str[1] != 'n')
-				//	{
-				//		double x, y, z;
-
-				//		file >> str;
-				//		x = std::stod(str, &size);
-
-				//		file >> str;
-				//		y = std::stod(str, &size);
-
-				//		file >> str;
-				//		z = std::stod(str, &size);
-
-				//		vertices[countVertex] = x; ++countVertex;
-				//		vertices[countVertex] = y; ++countVertex;
-				//		vertices[countVertex] = z; ++countVertex;
-
-				//		countEmptyLines = 0;
-				//		continue;
-				//	}
-
-				//	if (countEmptyLines >= 8)
-				//	{
-				//		break;
-				//	}
-
-				//	getline(file, str);
-
-				//	++countEmptyLines;
-				//}
-
-				//file.close();
-
-
-				//Вертексы
-				GLfloat *vertices = new GLfloat[9]{
-					-1.f, -1.f, 0.f,
-					1.f, -1.f, 0.f,
-					0.f,  1.f, 0.f
-				};
-
-				Graphics::CreateObject(vertices, vArrayObject, vBufferObject);
-
-				delete[]vertices;
 			}
 			else if (lParam == (LPARAM)hBtn_ShowModel)
 			{
@@ -572,7 +507,8 @@ namespace WinApi
 			}
 			else if (lParam == (LPARAM)hBtn_CloseModel)
 			{
-				glDeleteBuffers(1, &vBufferObject);
+				glDeleteBuffers(1, &vbo);
+				
 				isEnabled = false;
 			}
 
@@ -726,14 +662,33 @@ namespace WinApi
 			glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			if (isEnabled)
-			{
-				// Использование шейдера
-				shader->use();
+			glBindVertexArray(vao);
 
-				// Вывод графики
-				Graphics::DrawObject(vArrayObject);
-			}
+			glm::mat4 view = glm::mat4(1.0f);
+			view = camera->GetViewMatrix();
+			glm::mat4 projection = glm::mat4(1.0f);
+			projection = glm::perspective(camera->Zoom, (GLfloat)1024 / (GLfloat)1024, 0.1f, 1000.0f);
+
+			shader->use();
+
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(0, 0, 0));
+			glm::mat4 trans = glm::mat4(1.0f);
+			trans = glm::scale(trans, glm::vec3(20, 20, 20));
+			shader->setUniform("model", model);
+			shader->setUniform("transform", trans);
+
+			// отправка в uniform матриц проекции и обзора
+			shader->setUniform("view", view);
+			shader->setUniform("projection", projection);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+			glDrawElements(GL_TRIANGLES, countV, GL_UNSIGNED_INT, 0);
+
+			glBindVertexArray(0);
+
+			SwapBuffers(hDC);
 
 			// Смена буфера
 			SwapBuffers(hDC);

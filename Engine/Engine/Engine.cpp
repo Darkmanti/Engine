@@ -63,6 +63,8 @@ namespace Engine
 
 	std::string dirAppData;		// Дирректория данных приложения
 
+	Camera camera(glm::vec3(0, 4, 100));
+
 	// Загрузка конфига
 	void LoadConfigSettingsInterface()
 	{
