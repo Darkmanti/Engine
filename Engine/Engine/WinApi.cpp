@@ -162,8 +162,8 @@ namespace WinApi
 		// Дескриптор окна
 		hWndEngine = CreateWindowEx(WS_EX_ACCEPTFILES | WS_EX_WINDOWEDGE,				// Extended style
 			pWndEngineClassEx.lpszClassName,											// Название класса
-			"Engine",																	// Название окна
-			WS_SYSMENU | WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,		// Стиль окна
+			"Движок",																	// Название окна
+			WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,		// Стиль окна
 			windowPositionX, windowPositionY,											// Позиция
 			windowWidth, windowHeight,													// Размер
 			0,																			// Родительское окно
@@ -463,11 +463,11 @@ namespace WinApi
 	}
 
 	// Оконные процедуры
-	LRESULT WndEngineProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		if (!Engine::isLoaded)
 		{
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
 		switch (message)
@@ -543,20 +543,16 @@ namespace WinApi
 			break;
 
 		default: // Все необработанные сообщения обработает сама Windows
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
 		return 0;
 	}
-	LRESULT WndRenderProc(HWND hWndRender, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		if (!Engine::isLoaded)
-		{
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
-		}
-
 		switch (message)
 		{
+
 		case WM_SIZE:
 
 			windowRenderWidth = LOWORD(lParam);
@@ -571,18 +567,13 @@ namespace WinApi
 			break;
 
 		default: // Все необработанные сообщения обработает сама Windows
-			return DefWindowProc(hWndRender, message, wParam, lParam);
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
 		return 0;
 	}
-	LRESULT WndLocationProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT WndLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		if (!Engine::isLoaded)
-		{
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
-		}
-
 		switch (message)
 		{
 		case WM_COMMAND:
@@ -595,14 +586,17 @@ namespace WinApi
 			windowLocationWidth = LOWORD(lParam);
 			windowLocationHeight = HIWORD(lParam);
 
-			MoveWindow(hWndListViewLocation, 0, 0, windowLocationWidth, windowLocationHeight, true);
+			SetWindowPos(hWndListViewLocation, HWND_TOPMOST, 0, 0, windowLocationWidth, windowLocationHeight, true);
 			break;
 
 		case WM_MOVE:
 			windowLocationPositionX = LOWORD(lParam);
 			windowLocationPositionY = HIWORD(lParam);
 
-			MoveWindow(hWndListViewLocation, 0, 0, windowLocationWidth, windowLocationHeight, true);
+			SetWindowPos(hWndListViewLocation, HWND_TOPMOST, 0, 0, windowLocationWidth, windowLocationHeight, true);
+			break;
+
+		case WM_ACTIVATE:
 			break;
 
 		case WM_DESTROY:
@@ -610,18 +604,13 @@ namespace WinApi
 			break;
 
 		default: // Все необработанные сообщения обработает сама Windows
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
 		return 0;
 	}
-	LRESULT WndProjectProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT WndProjectProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		if (!Engine::isLoaded)
-		{
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
-		}
-
 		switch (message)
 		{
 		case WM_COMMAND:
@@ -634,14 +623,17 @@ namespace WinApi
 			windowProjectWidth = LOWORD(lParam);
 			windowProjectHeight = HIWORD(lParam);
 
-			MoveWindow(hWndListViewProject, 0, 0, windowProjectWidth, windowProjectHeight, true);
+			SetWindowPos(hWndListViewProject, HWND_TOPMOST, 0, 0, windowProjectWidth, windowProjectHeight, true);
 			break;
 
 		case WM_MOVE:
 			windowProjectPositionX = LOWORD(lParam);
 			windowProjectPositionY = HIWORD(lParam);
 
-			MoveWindow(hWndListViewProject, 0, 0, windowProjectWidth, windowProjectHeight, true);
+			SetWindowPos(hWndListViewProject, HWND_TOPMOST, 0, 0, windowProjectWidth, windowProjectHeight, true);
+			break;
+
+		case WM_ACTIVATE:
 			break;
 
 		case WM_DESTROY:
@@ -649,7 +641,7 @@ namespace WinApi
 			break;
 
 		default: // Все необработанные сообщения обработает сама Windows
-			return DefWindowProc(hWndEngine, message, wParam, lParam);
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
 		return 0;
@@ -681,7 +673,7 @@ namespace WinApi
 			for (uint16_t i = 0; i < countModels; ++i)
 			{
 				models[i].Update();
-				models[i].Render();
+				models[i].Render(windowRenderWidth, windowRenderHeight);
 			}
 
 			// Смена буфера

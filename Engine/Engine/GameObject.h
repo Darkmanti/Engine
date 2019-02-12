@@ -19,8 +19,8 @@ private:
 
 	float *V;
 	float *VT;
-	int32_t *F;
-	int32_t *FT;
+	GLuint *F;
+	GLuint *FT;
 
 	Shader *shader;
 	Texture *texture;
@@ -31,25 +31,25 @@ public:
 	void Start();
 	void Update();
 
-	GLuint &GetVAO();
-	GLuint &GetVBO();
-	GLuint &GetEBO();
+	GLuint *GetVAO();
+	GLuint *GetVBO();
+	GLuint *GetEBO();
 
-	int32_t &GetCountV();
-	int32_t &GetCountVT();
-	int32_t &GetCountF();
+	int32_t *GetCountV();
+	int32_t *GetCountVT();
+	int32_t *GetCountF();
 
 	float *GetV();
 	float *GetVT();
-	int32_t *GetF();
-	int32_t *GetFT();
+	GLuint *GetF();
+	GLuint *GetFT();
 
 	void SetV(float *v);
 	void SetVT(float *vt);
-	void SetF(int32_t *f);
-	void SetFT(int32_t *ft);
+	void SetF(GLuint *f);
+	void SetFT(GLuint *ft);
 
-	void Render();
+	void Render(GLuint width, GLuint height);
 	void Enable();
 	void Disable();
 };

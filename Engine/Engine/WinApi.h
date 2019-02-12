@@ -110,8 +110,8 @@ namespace WinApi
 	// Функция обработчика сообщений (Процедура окна)
 	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT WndLocationProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT WndProjectProc(HWND hWndEngine, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT WndLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProjectProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	// Метод с циклом программы
 	void Loop(GameObject *models, const uint16_t countModels);

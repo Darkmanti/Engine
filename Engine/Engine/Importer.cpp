@@ -7,7 +7,7 @@ namespace Importer
 		//Вертексы
 		std::ifstream file;
 
-		file.open(fileName);
+		file.open(Engine::dirAppData + "\\" + fileName);
 
 		if (!file.is_open())
 		{
@@ -16,9 +16,9 @@ namespace Importer
 
 		std::string str;
 
-		int32_t &countV(go.GetCountV());
-		int32_t &countVT(go.GetCountVT());
-		int32_t &countF(go.GetCountF());
+		int32_t &countV(*go.GetCountV());
+		int32_t &countVT(*go.GetCountVT());
+		int32_t &countF(*go.GetCountF());
 
 		while (!file.eof())
 		{
@@ -36,37 +36,7 @@ namespace Importer
 				{
 					getline(file, str);
 
-					if (str.find('/') != std::string::npos)
-					{
-						std::replace(str.begin(), str.end(), '/', ' ');
-
-						// Есть вариант оптимизации
-						size_t index(0);
-						while (true)
-						{
-							index = str.find("  ", index);
-
-							if (index == std::string::npos)
-							{
-								break;
-							}
-
-							str.replace(index, 2, " ");
-
-							index += 1;
-						}
-					}
-
-					int countSpace(0);
-					for (int i = 0; i < str.length(); ++i)
-					{
-						if (str[i] == ' ')
-						{
-							++countSpace;
-						}
-					}
-
-					countF += countSpace;
+					++countF;
 
 					continue;
 				}
@@ -83,39 +53,26 @@ namespace Importer
 			getline(file, str);
 		}
 
+		countF *= 3;
+
 		file.close();
 
-		file.open(fileName);
+		file.open(Engine::dirAppData + "\\" + fileName);
 
 		if (!file.is_open())
 		{
 			return 1;
 		}
 
-		float *V = go.GetV();
-		float *VT = go.GetVT();
-		int32_t *F = go.GetF();
-		int32_t *FT = go.GetFT();
-
-		if (!V) delete[] V;
-		if (!VT) delete[] VT;
-		if (!F) delete[] F;
-		if (!FT) delete[] FT;
-
-		V = new float[countV];
-		VT = new float[countVT];
-		F = new int[countF / 2];
-		FT = new int[countF / 2];
+		float *V = new float[countV];
+		float *VT = new float[countVT];
+		GLuint *F = new GLuint[countF];
+		GLuint *FT = new GLuint[countF];
 
 		uint64_t iV(0);								// Итератор количества вертексов
 		uint64_t iVT(0);							// Итератор количества вертексов текстурных
 		uint64_t iF(0);								// Итератор количества полигонов
 		uint64_t iFT(0);							// Итератор количества полигонов текстурных
-
-		if (!file.is_open())
-		{
-			return 1;
-		}
 
 		while (!file.eof())
 		{
@@ -123,7 +80,11 @@ namespace Importer
 
 			if (str.length() == 1)
 			{
-				if (str[0] == 'v')
+				if (str[0] == '#')
+				{
+					
+				}
+				else if (str[0] == 'v')
 				{
 					float x, y, z;
 
@@ -150,64 +111,30 @@ namespace Importer
 					{
 						std::replace(str.begin(), str.end(), '/', ' ');
 
-						// Есть вариант оптимизации
-						size_t index(0);
-						while (true)
-						{
-							index = str.find("  ", index);
-
-							if (index == std::string::npos)
-							{
-								break;
-							}
-
-							str.replace(index, 2, " ");
-
-							index += 1;
-						}
-
-						int countSpace(0);
-						for (int i = 0; i < str.length(); ++i)
-						{
-							if (str[i] == ' ')
-							{
-								++countSpace;
-							}
-						}
-
 						std::stringstream tmp(str);
 
-						for (int i = 0; i < countSpace / 2; ++i)
+						for (int i = 0; i < 3; ++i)
 						{
-							int32_t f1, f2;
+							uint32_t f1, f2;
 
 							tmp >> f1;
 							tmp >> f2;
 
-							F[iF] = f1; ++iF;
-							FT[iFT] = f2; ++iFT;
+							F[iF] = --f1; ++iF;
+							FT[iFT] = --f2; ++iFT;
 						}
 					}
 					else
 					{
-						int countSpace(0);
-						for (int i = 0; i < str.length(); ++i)
-						{
-							if (str[i] == ' ')
-							{
-								++countSpace;
-							}
-						}
-
 						std::stringstream tmp(str);
 
-						for (int i = 0; i < countSpace / 2; ++i)
+						for (int i = 0; i < 3; ++i)
 						{
 							int32_t f1;
 
 							tmp >> f1;
 
-							F[iF] = f1; ++iF;
+							F[iF] = --f1; ++iF;
 						}
 					}
 
@@ -241,22 +168,25 @@ namespace Importer
 
 		file.close();
 
-		glGenVertexArrays(1, &go.GetVAO());
-		glBindVertexArray(go.GetVAO());
+		// Генерация буфферов. Последовательность не важна
+		glGenBuffers(1, go.GetVBO()); 
+		glGenVertexArrays(1, go.GetVAO());
+		glGenBuffers(1, go.GetEBO());
+		
+		glBindVertexArray(*go.GetVAO()); // Open VAO
+		
 
-		glGenBuffers(1, &go.GetVBO());
-		glBindBuffer(GL_ARRAY_BUFFER, go.GetVBO());
-
-		glGenBuffers(1, &go.GetEBO());
-
+		glBindBuffer(GL_ARRAY_BUFFER, *go.GetVBO());
 		glBufferData(GL_ARRAY_BUFFER, countV * sizeof(float), V, GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, go.GetEBO());
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF / 2 * sizeof(float), F, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *go.GetEBO());
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF * sizeof(float), F, GL_STATIC_DRAW);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
 		glEnableVertexAttribArray(0);
-		glBindVertexArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
+		
+
+		glBindVertexArray(0); // Close VAO (default)
 
 		return 0;
 	}
