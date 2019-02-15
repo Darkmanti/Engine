@@ -13,6 +13,12 @@
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
+	if (hPrevInstance)
+	{
+		MessageBox(NULL, "Можно запускать только одну копию приложения", "Ошибка", MB_OK | MB_ICONSTOP);
+		return 1;
+	}
+
 	Engine::isLoaded = false;
 
 	{
@@ -118,9 +124,9 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 
 	Graphics::DisableOpenGL();
 	
-	delete Engine::camera;
-
 	Engine::SaveConfigSettingsInterface();
+
+	delete Engine::camera;
 
 	return 0;
 }

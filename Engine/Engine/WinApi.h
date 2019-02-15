@@ -13,10 +13,11 @@
 
 // #define MENU_FILE				1000
 #define MENU_FILE_NEWLOCATION		1001
-#define MENU_FILE_SAVELOCATION		1002
-#define MENU_FILE_SAVEASLOCATION	1003
-// #define MENU_FILE_SEPARATOR		1004
-#define MENU_FILE_QUIT				1005
+#define MENU_FILE_OPENLOCATION		1002
+#define MENU_FILE_SAVELOCATION		1003
+#define MENU_FILE_SAVEASLOCATION	1004
+// #define MENU_FILE_SEPARATOR		1005
+#define MENU_FILE_QUIT				1006
 
 // #define MENU_PROJECT				2000
 #define MENU_PROJECT_IMPORT			20010
@@ -87,11 +88,22 @@ namespace WinApi
 						hPopMenuProject,
 						hPopMenuProjectImport;
 
+	extern OPENFILENAME	ofn;
+
+	extern uint8_t		setValue,
+						*keys;
+
+	extern char			szDirect[MAX_PATH],
+						szFileName[MAX_PATH];
+
+
 	// Регистрация окна
 	ATOM RegisterWindowEngine();
 	ATOM RegisterWindowRender();
 	ATOM RegisterWindowLocation();
 	ATOM RegisterWindowProject();
+
+	uint8_t getMask(WPARAM wParam);
 
 	// Создание окна
 	uint16_t CreateWindowEngine();
@@ -103,6 +115,8 @@ namespace WinApi
 	uint16_t CreateButtons();
 	uint16_t CreateMainMenu();
 
+	uint16_t AddListViewLocation(const char* pCol1);
+
 	// Инициализация интерфейса
 	uint16_t InitInterface();
 	uint16_t ShowInterface(const int16_t nCmdShow);
@@ -113,6 +127,9 @@ namespace WinApi
 	LRESULT WndLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProjectProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+	bool LocationAddItem(char* pCol1);
+
 	// Метод с циклом программы
 	void Loop(GameObject *models, const uint16_t countModels);
+	void BindKey(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

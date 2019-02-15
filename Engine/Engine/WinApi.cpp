@@ -64,6 +64,98 @@ namespace WinApi
 						hPopMenuProject,
 						hPopMenuProjectImport;
 
+	OPENFILENAME		ofn{ 0 };
+
+	uint8_t				setValue,
+						*keys = new uint8_t[32];
+
+	char				szDirect[MAX_PATH],
+						szFileName[MAX_PATH];
+
+	constexpr uint8_t option1 = 0x01;
+	constexpr uint8_t option2 = 0x02;
+	constexpr uint8_t option3 = 0x04;
+	constexpr uint8_t option4 = 0x08;
+	constexpr uint8_t option5 = 0x10;
+	constexpr uint8_t option6 = 0x20;
+	constexpr uint8_t option7 = 0x40;
+	constexpr uint8_t option8 = 0x80;
+	
+	uint8_t getMask(WPARAM wParam)
+	{
+		switch ((uint32_t)wParam % 8 + 1)
+		{
+		case option1:
+			return option1;
+		case option2:
+			return option2;
+		case option3:
+			return option3;
+		case option4:
+			return option4;
+		case option5:
+			return option5;
+		case option6:
+			return option6;
+		case option7:
+			return option7;
+		case option8:
+			return option8;
+		}
+	}
+
+	bool LocationAddItem(const char* elementName)
+	{
+		LVITEM lvi;
+		lvi.mask = LVIF_TEXT;
+		lvi.iSubItem = 0;
+		lvi.iItem = 0x7FFFFFFF;
+		lvi.pszText = (LPSTR)elementName;
+		
+		// Добавить элемент
+		if (ListView_InsertItem(hWndListViewLocation, &lvi) < 0)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	// Регистрация класса окна
+	void BindKey(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		switch (message)
+		{
+		case WM_KEYDOWN:
+			setValue = getMask(wParam);
+			keys[(uint32_t)wParam / 8] |= setValue;
+
+			switch (wParam)
+			{
+			case VK_F1:
+				LocationAddItem("F1");
+
+				return;
+			default:
+				return;
+			}
+
+		case WM_KEYUP:
+			setValue = getMask(wParam);
+			keys[(uint32_t)wParam / 8] &= ~setValue;
+
+			switch (wParam)
+			{
+			case VK_F1:
+				LocationAddItem("F1");
+
+				return;
+			default:
+				return;
+			}
+		}
+	}
+
 	// Регистрация класса окна
 	ATOM RegisterWindowEngine()
 	{
@@ -92,7 +184,7 @@ namespace WinApi
 	ATOM RegisterWindowRender()
 	{
 		pWndRenderClassEx.cbSize = sizeof(WNDCLASSEX);						// Размер в байтах структуры класса
-		pWndRenderClassEx.style = CS_VREDRAW | CS_HREDRAW;					// Стиль окна
+		pWndRenderClassEx.style = CS_VREDRAW | CS_HREDRAW | CS_BYTEALIGNCLIENT;					// Стиль окна
 		pWndRenderClassEx.lpfnWndProc = WndRenderProc;						// Указатель на оконную процедуру
 		pWndRenderClassEx.hInstance = Engine::hInstance;					// Дескриптор приложения
 		pWndRenderClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);			// Подгружам курсор
@@ -160,10 +252,10 @@ namespace WinApi
 	uint16_t CreateWindowEngine()
 	{
 		// Дескриптор окна
-		hWndEngine = CreateWindowEx(WS_EX_ACCEPTFILES | WS_EX_WINDOWEDGE,				// Extended style
+		hWndEngine = CreateWindowEx(WS_EX_ACCEPTFILES,									// Extended style
 			pWndEngineClassEx.lpszClassName,											// Название класса
 			"Движок",																	// Название окна
-			WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,		// Стиль окна
+			WS_OVERLAPPEDWINDOW,														// Стиль окна
 			windowPositionX, windowPositionY,											// Позиция
 			windowWidth, windowHeight,													// Размер
 			0,																			// Родительское окно
@@ -183,10 +275,10 @@ namespace WinApi
 	}
 	uint16_t CreateWindowRender()
 	{
-		hWndRender = CreateWindowEx(NULL,					// Extended style
+		hWndRender = CreateWindowEx(WS_EX_ACCEPTFILES,					// Extended style
 			pWndRenderClassEx.lpszClassName,				// Название класса
 			"Рендер",										// Название окна
-			WS_SIZEBOX | WS_CHILD,							// Стиль окна
+			WS_THICKFRAME | WS_CHILD,						// Стиль окна
 			windowRenderPositionX, windowRenderPositionY,	// Позиция
 			windowRenderWidth, windowRenderHeight,			// Размер
 			hWndEngine,										// Родительское окно
@@ -211,7 +303,7 @@ namespace WinApi
 		hWndLocation = CreateWindowEx(NULL,
 			pWndLocationClassEx.lpszClassName,
 			"Локация",
-			WS_CHILD | WS_SIZEBOX | WS_CAPTION | WS_ACTIVECAPTION,
+			WS_THICKFRAME | WS_CAPTION,
 			windowLocationPositionX, windowLocationPositionY,
 			windowLocationWidth, windowLocationHeight,
 			hWndEngine,
@@ -231,7 +323,7 @@ namespace WinApi
 		hWndProject = CreateWindowEx(NULL,
 			pWndProjectClassEx.lpszClassName,
 			"Проект",
-			WS_CHILD | WS_SIZEBOX | WS_CAPTION | WS_ACTIVECAPTION,
+			WS_THICKFRAME | WS_CAPTION,
 			windowProjectPositionX, windowProjectPositionY,
 			windowProjectWidth, windowProjectHeight,
 			hWndEngine,
@@ -248,10 +340,10 @@ namespace WinApi
 	}
 	uint16_t CreateListViewLocation()
 	{
-		hWndListViewLocation = CreateWindowEx(NULL,
+		hWndListViewLocation = CreateWindowEx(WS_EX_ACCEPTFILES,
 			WC_LISTVIEW,
 			"",
-			WS_VISIBLE | WS_CHILD | LVS_EDITLABELS,
+			WS_VISIBLE | WS_CHILD | LVS_SINGLESEL | LVS_REPORT,
 			0, 0,
 			windowLocationWidth, windowLocationHeight,
 			hWndLocation,
@@ -264,14 +356,29 @@ namespace WinApi
 			return 1;
 		}
 
+		// Дополнительные свойства
+		ListView_SetExtendedListViewStyleEx(hWndListViewLocation, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
+
+		// Добавить столбцы
+		LVCOLUMN lvc;
+		lvc.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		lvc.iSubItem = 0;
+		lvc.pszText = (LPSTR)"Имя";
+		lvc.cx = 100;
+
+		if (ListView_InsertColumn(hWndListViewLocation, 0, &lvc) == -1)
+		{
+			return 1;
+		}
+
 		return 0;
 	}
 	uint16_t CreateListViewProject()
 	{
-		hWndListViewProject = CreateWindowEx(NULL,
+		hWndListViewProject = CreateWindowEx(WS_EX_ACCEPTFILES,
 			WC_LISTVIEW,
 			"",
-			WS_VISIBLE | WS_CHILD | LVS_EDITLABELS,
+			WS_VISIBLE | WS_CHILD,
 			0, 0,
 			windowProjectWidth, windowProjectHeight,
 			hWndProject,
@@ -316,10 +423,11 @@ namespace WinApi
 
 		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuFile, "&Файл");
 		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_NEWLOCATION, "Новая локация\tCtrl+N");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_OPENLOCATION, "Открыть локацию\tCtrl+O");
 		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVELOCATION, "Сохранить\tCtrl+S");
 		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVEASLOCATION, "Сохранить как\tCtrl+Shift+S");
 		AppendMenu(hPopMenuFile, MF_SEPARATOR, MENU_FILE_SAVEASLOCATION + 1, "");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVEASLOCATION, "Выход\tAlt+F4");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_QUIT, "Выход\tAlt+F4");
 
 		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProject, "&Проект");
 		AppendMenu(hPopMenuProject, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProjectImport, "&Импорт");
@@ -401,6 +509,25 @@ namespace WinApi
 		return 0;
 	}
 
+	uint16_t AddListViewLocation(const char* pCol1)
+	{
+		LVITEM lvi;
+		lvi.mask = LVIF_TEXT;
+		lvi.iSubItem = 0;
+		lvi.iItem = 0x7FFFFFFF;
+		lvi.pszText = (LPSTR)pCol1;
+
+		// Добавить элемент
+		int index = ListView_InsertItem(hWndListViewLocation, &lvi);
+
+		if (index < 0)
+		{
+			return 1;
+		}
+
+		return 0;
+	}
+
 	// Инициализация интерфейса
 	uint16_t InitInterface()
 	{
@@ -449,10 +576,6 @@ namespace WinApi
 		if (ShowWindow(hWndProject, SW_SHOWNORMAL)) return 8;
 		if (!UpdateWindow(hWndProject)) return 9;
 
-
-		if (!ShowWindow(hWndListViewLocation, SW_SHOWNORMAL)) return 10;
-		if (!ShowWindow(hWndListViewProject, SW_SHOWNORMAL)) return 11;
-
 		// Показываем кнопки
 		if (!ShowWindow(hBtn_OpenModel, SW_SHOWNORMAL)) return 12;
 		if (!ShowWindow(hBtn_ShowModel, SW_SHOWNORMAL)) return 13;
@@ -462,6 +585,17 @@ namespace WinApi
 		return 0;
 	}
 
+	//constexpr uint8_t option1 = 0x01;
+	//constexpr uint8_t option2 = 0x02;
+	//constexpr uint8_t option3 = 0x04;
+	//constexpr uint8_t option4 = 0x08;
+	//constexpr uint8_t option5 = 0x10;
+	//constexpr uint8_t option6 = 0x20;
+	//constexpr uint8_t option7 = 0x40;
+	//constexpr uint8_t option8 = 0x80;
+
+	//uint8_t *keys = new uint8_t[32];
+
 	// Оконные процедуры
 	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
@@ -469,6 +603,8 @@ namespace WinApi
 		{
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
+
+		BindKey(hWnd, message, wParam, lParam);
 
 		switch (message)
 		{
@@ -478,14 +614,47 @@ namespace WinApi
 			case MENU_FILE_NEWLOCATION:
 				//
 				break;
+			case MENU_FILE_OPENLOCATION:
+				// Открытие диалога сохранения файла локации
+
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = NULL;
+				ofn.lpstrFile = szDirect;
+				*(ofn.lpstrFile) = 0;
+				ofn.nMaxFile = sizeof(szDirect);
+				ofn.lpstrFilter = NULL;
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = szFileName;
+				*(ofn.lpstrFileTitle) = 0;
+				ofn.nMaxFileTitle = sizeof(szFileName);
+				ofn.lpstrInitialDir = NULL;
+				ofn.Flags = OFN_EXPLORER;
+				GetOpenFileName(&ofn);
+				break;
 			case MENU_FILE_SAVELOCATION:
 				//
+
 				break;
 			case MENU_FILE_SAVEASLOCATION:
-				//
+				// Диалог сохранения
+
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = NULL;
+				ofn.lpstrFile = szDirect;
+				*(ofn.lpstrFile) = 0;
+				ofn.nMaxFile = sizeof(szDirect);
+				ofn.lpstrFilter = NULL;
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = szFileName;
+				*(ofn.lpstrFileTitle) = 0;
+				ofn.nMaxFileTitle = sizeof(szFileName);
+				ofn.lpstrInitialDir = NULL;
+				ofn.Flags = OFN_EXPLORER;
+				GetSaveFileName(&ofn);
 				break;
 			case MENU_FILE_QUIT:
-				//
+				// Выход
+				PostQuitMessage(0);
 				break;
 
 			case MENU_PROJECT_IMPORT_MODEL:
@@ -515,9 +684,6 @@ namespace WinApi
 
 			break;
 
-		case WM_LBUTTONUP:
-			break;
-
 		case WM_SIZE:
 			if (wParam == SIZE_MAXIMIZED)
 			{
@@ -541,18 +707,22 @@ namespace WinApi
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
+		}
 
-		default: // Все необработанные сообщения обработает сама Windows
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		if (!Engine::isLoaded)
+		{
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		return 0;
-	}
-	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-	{
+		BindKey(hWnd, message, wParam, lParam);
+
 		switch (message)
 		{
-
 		case WM_SIZE:
 
 			windowRenderWidth = LOWORD(lParam);
@@ -565,38 +735,33 @@ namespace WinApi
 			windowRenderPositionX = LOWORD(lParam);
 			windowRenderPositionY = HIWORD(lParam);
 			break;
-
-		default: // Все необработанные сообщения обработает сама Windows
-			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		return 0;
+		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	LRESULT WndLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+
+		BindKey(hWnd, message, wParam, lParam);
+
 		switch (message)
 		{
-		case WM_COMMAND:
-			break;
-
-		case WM_LBUTTONUP:
-			break;
-
 		case WM_SIZE:
 			windowLocationWidth = LOWORD(lParam);
 			windowLocationHeight = HIWORD(lParam);
 
-			SetWindowPos(hWndListViewLocation, HWND_TOPMOST, 0, 0, windowLocationWidth, windowLocationHeight, true);
+			MoveWindow(hWndListViewLocation, 0, 0, windowLocationWidth, windowLocationHeight, true);
 			break;
 
 		case WM_MOVE:
 			windowLocationPositionX = LOWORD(lParam);
 			windowLocationPositionY = HIWORD(lParam);
 
-			SetWindowPos(hWndListViewLocation, HWND_TOPMOST, 0, 0, windowLocationWidth, windowLocationHeight, true);
-			break;
-
-		case WM_ACTIVATE:
+			MoveWindow(hWndListViewLocation, 0, 0, windowLocationWidth, windowLocationHeight, true);
 			break;
 
 		case WM_DESTROY:
@@ -611,29 +776,32 @@ namespace WinApi
 	}
 	LRESULT WndProjectProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (!Engine::isLoaded)
+		{
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+
+		BindKey(hWnd, message, wParam, lParam);
+
 		switch (message)
 		{
-		case WM_COMMAND:
-			break;
-
-		case WM_LBUTTONUP:
-			break;
-
 		case WM_SIZE:
 			windowProjectWidth = LOWORD(lParam);
 			windowProjectHeight = HIWORD(lParam);
 
-			SetWindowPos(hWndListViewProject, HWND_TOPMOST, 0, 0, windowProjectWidth, windowProjectHeight, true);
+			if (windowLocationHeight < 128)
+			{
+				windowLocationHeight = 128;
+			}
+
+			MoveWindow(hWndListViewProject, 0, 0, windowProjectWidth, windowProjectHeight, true);
 			break;
 
 		case WM_MOVE:
 			windowProjectPositionX = LOWORD(lParam);
 			windowProjectPositionY = HIWORD(lParam);
 
-			SetWindowPos(hWndListViewProject, HWND_TOPMOST, 0, 0, windowProjectWidth, windowProjectHeight, true);
-			break;
-
-		case WM_ACTIVATE:
+			MoveWindow(hWndListViewProject, 0, 0, windowProjectWidth, windowProjectHeight, true);
 			break;
 
 		case WM_DESTROY:
