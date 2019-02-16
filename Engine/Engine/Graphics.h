@@ -7,8 +7,5 @@
 namespace Graphics
 {
 	void EnableOpenGL();
-
-	void CreateObject(GLfloat vertices[], GLuint VAO, GLuint VBO);
-	void DrawObject(GLuint VAO);
 	void DisableOpenGL();
 }

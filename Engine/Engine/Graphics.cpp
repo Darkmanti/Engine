@@ -26,31 +26,6 @@ namespace Graphics
 		wglMakeCurrent(WinApi::hDC, WinApi::hRC);
 	}
 
-	void CreateObject(GLfloat vertices[], GLuint VAO, GLuint VBO)
-	{
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-		glEnableVertexAttribArray(2);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-		glEnableVertexAttribArray(0);
-
-		glBindVertexArray(0);
-	}
-
-	void DrawObject(GLuint VAO)
-	{
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-
 	void DisableOpenGL()
 	{
 		wglMakeCurrent(NULL, NULL);

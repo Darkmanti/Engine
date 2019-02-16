@@ -1,4 +1,4 @@
-#define GLEW_STATIC
+п»ї#define GLEW_STATIC
 
 #include "GLEW/glew.h"
 
@@ -8,11 +8,21 @@
 #include "Engine.h"
 #include "WinApi.h"
 #include "Shader.h"
+#include "GameObject.h"
+#include "Importer.h"
 
 int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
+	if (hPrevInstance)
 	{
-		// Нахождение пути данных программы
+		MessageBox(NULL, "РњРѕР¶РЅРѕ Р·Р°РїСѓСЃРєР°С‚СЊ С‚РѕР»СЊРєРѕ РѕРґРЅСѓ РєРѕРїРёСЋ РїСЂРёР»РѕР¶РµРЅРёСЏ", "РћС€РёР±РєР°", MB_OK | MB_ICONSTOP);
+		return 1;
+	}
+
+	Engine::isLoaded = false;
+
+	{
+		// РќР°С…РѕР¶РґРµРЅРёРµ РїСѓС‚Рё РґР°РЅРЅС‹С… РїСЂРѕРіСЂР°РјРјС‹
 		char file[255];
 
 		GetModuleFileName(NULL, file, 255);
@@ -22,37 +32,37 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 		Engine::dirAppData = Engine::dirAppData;
 	}
 
-	// загрузка программы
+	// Р·Р°РіСЂСѓР·РєР° РїСЂРѕРіСЂР°РјРјС‹
 	Engine::LoadConfigSettingsInterface();
 
-	// Отправляем дескриптор в файл wndInit
+	// РћС‚РїСЂР°РІР»СЏРµРј РґРµСЃРєСЂРёРїС‚РѕСЂ РІ С„Р°Р№Р» wndInit
 	Engine::hInstance = hInst;
 
-	// Создаем интерфейс (кнопки, хуепки, inputText и пр.)
-	if (int16_t iError = WinApi::InitInterface()) // Проверка на создание интерфейса
+	// РЎРѕР·РґР°РµРј РёРЅС‚РµСЂС„РµР№СЃ (РєРЅРѕРїРєРё, С…СѓРµРїРєРё, inputText Рё РїСЂ.)
+	if (int16_t iError = WinApi::InitInterface()) // РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 	{
-		std::string out("Ошибка ");
+		std::string out("РћС€РёР±РєР° ");
 
 		out += std::to_string(iError);
 		
-		MessageBox(WinApi::hWndRender, "Интерфейс не создан", out.c_str(), MB_OK);
+		MessageBox(WinApi::hWndRender, "РРЅС‚РµСЂС„РµР№СЃ РЅРµ СЃРѕР·РґР°РЅ", out.c_str(), MB_OK);
 
 		return 0;
 	}
 
-	// Показываем интерфейс
+	// РџРѕРєР°Р·С‹РІР°РµРј РёРЅС‚РµСЂС„РµР№СЃ
 	if (int16_t iError = WinApi::ShowInterface(nCmdShow))
 	{
-		std::string out("Ошибка ");
+		std::string out("РћС€РёР±РєР° ");
 
 		out += std::to_string(iError);
 
-		MessageBox(WinApi::hWndRender, "Интерфейс не отобразился", out.c_str(), MB_OK);
+		MessageBox(WinApi::hWndRender, "РРЅС‚РµСЂС„РµР№СЃ РЅРµ РѕС‚РѕР±СЂР°Р·РёР»СЃСЏ", out.c_str(), MB_OK);
 
 		return 0;
 	}
 
-	// Инициализация OpenGL
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ OpenGL
 	Graphics::EnableOpenGL();
 
 	//glfwInit();
@@ -64,7 +74,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//GLFWwindow* window(glfwCreateWindow(800, 600, "Engine", nullptr, nullptr));
 	//if (!window)
 	//{
-	//	MessageBox(NULL, "Окно не создано", "Ошибка", MB_ICONERROR | MB_OK);
+	//	MessageBox(NULL, "РћРєРЅРѕ РЅРµ СЃРѕР·РґР°РЅРѕ", "РћС€РёР±РєР°", MB_ICONERROR | MB_OK);
 	//	glfwTerminate();
 	//	return 1;
 	//}
@@ -76,14 +86,24 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	{
 		char out[64];
 
-		//sprintf(out, "Ошибка %d", iError);
+		//sprintf(out, "РћС€РёР±РєР° %d", iError);
 
-		MessageBox(NULL, "Glew не инициализироан", out, MB_ICONERROR | MB_OK);
+		MessageBox(NULL, "Glew РЅРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕР°РЅ", out, MB_ICONERROR | MB_OK);
 		//glfwTerminate();
 		return 1;
 	}
 
-	WinApi::Loop();
+	Engine::isLoaded = true;
+
+	GameObject models[1];
+	Importer::ImportObj("Models/sphere.obj", models[0]);
+
+	for (uint16_t i = 0; i < 1; ++i)
+	{
+		models[i].Start();
+	}
+
+	WinApi::Loop(models, 1);
 
 	//while (!glfwWindowShouldClose(window))
 	//{
@@ -103,8 +123,10 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	//glfwTerminate();
 
 	Graphics::DisableOpenGL();
-
+	
 	Engine::SaveConfigSettingsInterface();
+
+	delete Engine::camera;
 
 	return 0;
 }

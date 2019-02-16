@@ -2,35 +2,152 @@
 
 GameObject::GameObject()
 {
+	enabled = true;
+	shader = new Shader((Engine::dirAppData + "\\" + "Shaders/shader.vs").c_str(), (Engine::dirAppData + "\\" + "Shaders/shader.fs").c_str());
 
+	countV = 0;
+	countVT = 0;
+	countF = 0;
 }
 
 GameObject::~GameObject()
 {
+	if (!V) delete[] V;
+	if (!VT) delete[] VT;
+	if (!F) delete[] F;
+	if (!FT) delete[] FT;
 
+	if (!shader) delete shader;
+	if (!texture) delete texture;
 }
 
-void GameObject::func(GLfloat vertices[])
+GLuint *GameObject::GetVAO()
 {
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
+	return &VAO;
+}
+GLuint *GameObject::GetVBO()
+{
+	return &VBO;
+}
+
+GLuint *GameObject::GetEBO()
+{
+	return &EBO;
+}
+
+int32_t *GameObject::GetCountV()
+{
+	return &countV;
+}
+
+int32_t *GameObject::GetCountVT()
+{
+	return &countVT;
+}
+
+int32_t *GameObject::GetCountF()
+{
+	return &countF;
+}
+
+float *GameObject::GetV()
+{
+	return V;
+}
+
+float *GameObject::GetVT()
+{
+	return VT;
+}
+
+GLuint *GameObject::GetF()
+{
+	return F;
+}
+
+GLuint *GameObject::GetFT()
+{
+	return FT;
+}
+
+void GameObject::SetV(float *v)
+{
+	if (!V) delete[] V;
+	V = v;
+}
+
+void GameObject::SetVT(float *vt)
+{
+	if (!VT) delete[] VT;
+	VT = vt;
+}
+
+void GameObject::SetF(GLuint *f)
+{
+	if (!F) delete[] F;
+	F = f;
+}
+
+void GameObject::SetFT(GLuint *ft)
+{
+	if (!FT) delete[] FT;
+	FT = ft;
+}
+
+void GameObject::Start()
+{
+	if (!enabled)
+	{
+		return;
+	}
+}
+
+void GameObject::Update()
+{
+	if (!enabled)
+	{
+		return;
+	}
+}
+
+void GameObject::Render(GLuint width, GLuint height)
+{
+	if (!enabled)
+	{
+		return;
+	}
 
 	glBindVertexArray(VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glm::mat4 view = glm::mat4(1.0f);
+	view = Engine::camera->GetViewMatrix();
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(Engine::camera->Zoom, (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
+	shader->use();
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, 0));
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::scale(trans, glm::vec3(2, 2, 2));
+	shader->setUniform("model", model);
+	shader->setUniform("transform", trans);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+	// отправка в uniform матриц проекции и обзора
+	shader->setUniform("view", view);
+	shader->setUniform("projection", projection);
+
+	glDrawElements(GL_TRIANGLES, countF, GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
 }
 
-void GameObject::func2()
+void GameObject::Enable()
 {
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	enabled = true;
+}
+
+void GameObject::Disable()
+{
+	enabled = false;
 }

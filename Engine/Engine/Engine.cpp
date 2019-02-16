@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <map>
 
 #include "WinApi.h"
 
@@ -62,6 +61,10 @@ namespace Engine
 	HINSTANCE hInstance;		// Дескриптор приложения
 
 	std::string dirAppData;		// Дирректория данных приложения
+
+	Camera *camera;
+
+	bool isLoaded;
 
 	// Загрузка конфига
 	void LoadConfigSettingsInterface()
@@ -144,27 +147,6 @@ namespace Engine
 		{
 			return;
 		}
-
-		// Компенсируем размер меню выравниванием значений
-		WinApi::windowPositionX -= 8;
-		WinApi::windowPositionY -= 31;
-		WinApi::windowWidth += 16;
-		WinApi::windowHeight += 39;
-
-		WinApi::windowRenderPositionX -= 7;
-		WinApi::windowRenderPositionY -= 7;
-		WinApi::windowRenderWidth += 14;
-		WinApi::windowRenderHeight += 39;
-
-		WinApi::windowLocationPositionX -= 8;
-		WinApi::windowLocationPositionY -= 31;
-		WinApi::windowLocationWidth -= 116;
-		WinApi::windowLocationHeight -= 19;
-
-		WinApi::windowProjectPositionX -= 8;
-		WinApi::windowProjectPositionY -= 31;
-		WinApi::windowProjectWidth -= 116;
-		WinApi::windowProjectHeight -= 19;
 
 		file << "// File config" << '\n';
 
