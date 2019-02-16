@@ -15,6 +15,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "Model.h"
 
 // функции описание которых будет в конце этого документа
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -51,6 +52,7 @@ struct cube_object
 };
 
 void chek_colision(bullet_object& bullet, cube_object& cube);
+void loadImage(GLuint& texture, const char* fileName);
 
 int main()
 {
@@ -89,6 +91,9 @@ int main()
 	Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 	Shader lightShader("Shader//LampShader.vs", "Shader//LampShader.fs");
 	Shader lightObjectShader("Shader//lightShader.vs", "Shader//lightShader.fs");
+	Shader modelShader("Shader//ModelShader.vs", "Shader//ModelShader.fs");
+
+	Model ourModel("D:/Engine/OpenGL_Testx64/MantiEngine/Resource/nanosuit/nanosuit.obj");
 
 	// функция чтобы объекты который перекрывает другой объект, не прорисовывался
 	glEnable(GL_DEPTH_TEST);
@@ -177,116 +182,15 @@ int main()
 
 	glBindVertexArray(0);
 
-	// ПЕРВАЯ ТЕКСТУРА
+	// Загрузка текстур
 	GLuint texture1, texture2, texture3, texture4, texture5, texture6, texture7;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* image = stbi_load("Resource/container.jpg", &w, &h, &comp, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// ВТОРАЯ ТЕКСТУРА
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	image = stbi_load("Resource/228.jpg", &w, &h, &comp, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// ТРЕТЬЯ ТЕКСТУРА
-	glGenTextures(1, &texture3);
-	glBindTexture(GL_TEXTURE_2D, texture3);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	image = stbi_load("Resource/grass.jpg", &w, &h, &comp, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// ЧЕТВЁРТАЯ ТЕКСТУРА
-	glGenTextures(1, &texture4);
-	glBindTexture(GL_TEXTURE_2D, texture4);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	image = stbi_load("Resource/bullet.jpg", &w, &h, &comp, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// ПЯТАЯ ТЕКСТУРА
-	glGenTextures(1, &texture5);
-	glBindTexture(GL_TEXTURE_2D, texture5);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	image = stbi_load("Resource/fire.jpg", &w, &h, &comp, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// ШЕСТАЯ ТЕКСТУРА
-	glGenTextures(1, &texture6);
-	glBindTexture(GL_TEXTURE_2D, texture6);
-
-	image = stbi_load("Resource/container2.png", &w, &h, &comp, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// СЕДЬМАЯ ТЕКСТУРА |||||||ПОРА ПИСАТЬ ФУНКЦИЮ ЗАГРУЗКИ А ТО ЭТОТ КОД УЖЕ НЕЧИТАЕМЫЙ!!!!ЭЭ!ЭЭ||||||
-	glGenTextures(1, &texture7);
-	glBindTexture(GL_TEXTURE_2D, texture7);
-
-	image = stbi_load("Resource/container2_specular.png", &w, &h, &comp, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	loadImage(texture1, "Resource/container.jpg");
+	loadImage(texture2, "Resource/228.jpg");
+	loadImage(texture3, "Resource/grass.jpg");
+	loadImage(texture4, "Resource/bullet.jpg");
+	loadImage(texture5, "Resource/fire.jpg");
+	loadImage(texture6, "Resource/container2.png");
+	loadImage(texture7, "Resource/container2_specular.png");
 
 	glm::mat4 trans = glm::mat4(1.0f);
 	trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
@@ -320,16 +224,59 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ourShader.use();
-		ourShader.setUniform("ourTexture1", 0);
-
-		glActiveTexture(GL_TEXTURE0);
-
 		// обновление матриц проекции и вида
 		glm::mat4 view = glm::mat4(1.0f);
 		view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(camera.Zoom, (GLfloat)width / (GLfloat)height, 0.1f, 1000.0f);
+
+		// Модель
+		modelShader.use();
+
+		// Направленный свет (типо Солнце)
+		modelShader.setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		modelShader.setUniform("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+		modelShader.setUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		modelShader.setUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+		// Источник света №1
+		modelShader.setUniform("pointLights[0].position", sourceLightPos);
+		modelShader.setUniform("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+		modelShader.setUniform("pointLights[0].diffuse", 1.0f, 1.0f, 1.0f);
+		modelShader.setUniform("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+		modelShader.setUniform("pointLights[0].constant", 1.0f);
+		modelShader.setUniform("pointLights[0].linear", 0.0014f);
+		modelShader.setUniform("pointLights[0].quadratic", 0.0007f);
+
+		// Фонарик
+		modelShader.setUniform("spotLight.position", camera.Position);
+		modelShader.setUniform("spotLight.direction", camera.Front);
+		modelShader.setUniform("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+		modelShader.setUniform("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+		modelShader.setUniform("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		modelShader.setUniform("spotLight.constant", 1.0f);
+		modelShader.setUniform("spotLight.linear", 0.009f);
+		modelShader.setUniform("spotLight.quadratic", 0.012f);
+		modelShader.setUniform("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		modelShader.setUniform("spotLight.outerCutOff", glm::cos(glm::radians(18.0f)));
+
+		// Местоположение камеры и блеск
+		modelShader.setUniform("viewPos", camera.Position);
+		modelShader.setUniform("material.shininess", 8.0f);
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+		model = glm::rotate(model, 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		modelShader.setUniform("view", view);
+		modelShader.setUniform("projection", projection);
+		modelShader.setUniform("model", model);
+		ourModel.Draw(ourShader);
+
+		ourShader.use();
+		ourShader.setUniform("ourTexture1", 0);
+
+		glActiveTexture(GL_TEXTURE0);
 
 		// отправка в uniform матриц проекции и обзора
 		ourShader.setUniform("view", view);
@@ -338,10 +285,7 @@ int main()
 		// отправка в uniform матрицы прозрачности текстуры
 		ourShader.setUniform("opacity", opacity);
 
-		// указание места текстуры
-
 		trans = glm::mat4(1.0f);
-
 		glBindVertexArray(VAO);
 
 		// поприсовка основных 12 кубов
@@ -597,4 +541,25 @@ void chek_colision(bullet_object& bullet, cube_object& cube)
 	{
 		cube.destroyed = true;
 	}
+}
+
+void loadImage(GLuint &texture, char const* fileName)
+{
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	stbi_set_flip_vertically_on_load(true);
+	GLint w, h, comp;
+	unsigned char* image = stbi_load(fileName, &w, &h, &comp, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	stbi_image_free(image);
 }
