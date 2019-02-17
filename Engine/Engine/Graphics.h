@@ -6,6 +6,9 @@
 
 namespace Graphics
 {
+	extern GLfloat	lastFrame,
+					deltaTime;
+
 	void EnableOpenGL();
 	void DisableOpenGL();
 }

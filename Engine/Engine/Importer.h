@@ -11,5 +11,7 @@
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GameObject &go);
+	uint32_t Obj(const char *fileName, GameObject &go);
+	uint32_t Bmp(const char *fileName, GameObject &go);
+	uint32_t Png(const char *fileName, GameObject &go);
 };

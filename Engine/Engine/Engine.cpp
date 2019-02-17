@@ -5,29 +5,6 @@
 
 #include "WinApi.h"
 
-#define DEFAULT_WINDOW_POSITION_X				0
-#define DEFAULT_WINDOW_POSITION_Y				0
-#define DEFAULT_WINDOW_WIDTH					800
-#define DEFAULT_WINDOW_HEIGHT					600
-
-#define DEFAULT_WINDOW_RENDER_POSITION_X		128
-#define DEFAULT_WINDOW_RENDER_POSITION_Y		16
-#define DEFAULT_WINDOW_RENDER_WIDTH				672
-#define DEFAULT_WINDOW_RENDER_HEIGHT			584
-
-#define DEFUALT_WINDOW_LOCATION_POSITION_X		0
-#define DEFUALT_WINDOW_LOCATION_POSITION_Y		24
-#define DEFUALT_WINDOW_LOCATION_WIDTH			64
-#define DEFUALT_WINDOW_LOCATION_HEIGHT			288
-
-#define DEFUALT_WINDOW_PROJECT_POSITION_X		0
-#define DEFUALT_WINDOW_PROJECT_POSITION_Y		312
-#define DEFUALT_WINDOW_PROJECT_WIDTH			64
-#define DEFUALT_WINDOW_PROJECT_HEIGHT			288
-
-#define DEFAULT_IS_FULLSCREEN					0
-#define DEFAULT_BUTTON_SIZE						24
-
 static int LoadDefaultSettings()
 {
 	WinApi::windowPositionX				= DEFAULT_WINDOW_POSITION_X;
@@ -58,13 +35,64 @@ static int LoadDefaultSettings()
 
 namespace Engine
 {
-	HINSTANCE hInstance;		// Дескриптор приложения
+	HINSTANCE		hInstance;		// Дескриптор приложения
 
-	std::string dirAppData;		// Дирректория данных приложения
+	std::string		dirAppData;		// Дирректория данных приложения
 
-	Camera *camera;
+	Camera			*camera;
 
-	bool isLoaded;
+	bool			isLoaded;
+
+	char			szDirect[MAX_PATH],
+					szFileName[MAX_PATH];
+
+	void NewLocation()
+	{
+
+	}
+
+	void OpenLocation()
+	{
+		OPENFILENAME &ofn(WinApi::OFN);
+
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = szDirect;
+		*(ofn.lpstrFile) = 0;
+		ofn.nMaxFile = sizeof(szDirect);
+		ofn.lpstrFilter = NULL;
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = szFileName;
+		*(ofn.lpstrFileTitle) = 0;
+		ofn.nMaxFileTitle = sizeof(szFileName);
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_EXPLORER;
+		GetOpenFileName(&ofn);
+	}
+
+	void SaveLocation()
+	{
+
+	}
+
+	void SaveAsLocation()
+	{
+		OPENFILENAME &ofn(WinApi::OFN);
+
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = szDirect;
+		*(ofn.lpstrFile) = 0;
+		ofn.nMaxFile = sizeof(szDirect);
+		ofn.lpstrFilter = NULL;
+		ofn.nFilterIndex = 1;
+		ofn.lpstrFileTitle = szFileName;
+		*(ofn.lpstrFileTitle) = 0;
+		ofn.nMaxFileTitle = sizeof(szFileName);
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags = OFN_EXPLORER;
+		GetSaveFileName(&ofn);
+	}
 
 	// Загрузка конфига
 	void LoadConfigSettingsInterface()

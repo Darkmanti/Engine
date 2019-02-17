@@ -3,11 +3,13 @@
 GameObject::GameObject()
 {
 	enabled = true;
-	shader = new Shader((Engine::dirAppData + "\\" + "Shaders/shader.vs").c_str(), (Engine::dirAppData + "\\" + "Shaders/shader.fs").c_str());
+	shader = new Shader((Engine::dirAppData + "\\" + "Shaders\\shader.vs").c_str(), (Engine::dirAppData + "\\" + "Shaders\\shader.fs").c_str());
 
 	countV = 0;
 	countVT = 0;
 	countF = 0;
+	
+	isMesh = false;
 }
 
 GameObject::~GameObject()
@@ -19,6 +21,11 @@ GameObject::~GameObject()
 
 	if (!shader) delete shader;
 	if (!texture) delete texture;
+}
+
+bool GameObject::IsMesh()
+{
+	return isMesh;
 }
 
 GLuint *GameObject::GetVAO()
@@ -112,7 +119,7 @@ void GameObject::Update()
 
 void GameObject::Render(GLuint width, GLuint height)
 {
-	if (!enabled)
+	if (!enabled && !isMesh)
 	{
 		return;
 	}
@@ -133,13 +140,13 @@ void GameObject::Render(GLuint width, GLuint height)
 	shader->setUniform("model", model);
 	shader->setUniform("transform", trans);
 
-	// отправка в uniform матриц проекции и обзора
+	// Отправка в uniform матриц проекции и обзора
 	shader->setUniform("view", view);
 	shader->setUniform("projection", projection);
 
 	glDrawElements(GL_TRIANGLES, countF, GL_UNSIGNED_INT, 0);
 
-	glBindVertexArray(0);
+	glBindVertexArray(0); // Вроде как можно убрать
 }
 
 void GameObject::Enable()

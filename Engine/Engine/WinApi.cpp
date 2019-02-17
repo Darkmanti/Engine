@@ -2,6 +2,9 @@
 
 #include <CommCtrl.h>
 #include <algorithm>
+#include <thread>
+
+#pragma comment(lib,"ComCtl32.Lib")
 
 namespace WinApi
 {
@@ -49,8 +52,8 @@ namespace WinApi
 
 						hWndListViewLocation,			// ListView локации
 						hWndListViewProject,			// ListView проекта
-
-						hStatusWindow,
+						
+						hWndSb,
 
 						// Кнопки
 						hBtn_Shader,
@@ -64,13 +67,10 @@ namespace WinApi
 						hPopMenuProject,
 						hPopMenuProjectImport;
 
-	OPENFILENAME		ofn{ 0 };
+	OPENFILENAME		OFN{ 0 };
 
 	uint8_t				setValue,
-						*keys = new uint8_t[32];
-
-	char				szDirect[MAX_PATH],
-						szFileName[MAX_PATH];
+						*keys = new uint8_t[21];
 
 	constexpr uint8_t option1 = 0x01;
 	constexpr uint8_t option2 = 0x02;
@@ -81,26 +81,28 @@ namespace WinApi
 	constexpr uint8_t option7 = 0x40;
 	constexpr uint8_t option8 = 0x80;
 	
-	uint8_t getMask(WPARAM wParam)
+	uint8_t GetMask(WPARAM key)
 	{
-		switch ((uint32_t)wParam % 8 + 1)
+		switch ((uint32_t)key % 8 + 1)
 		{
-		case option1:
-			return option1;
-		case option2:
-			return option2;
-		case option3:
-			return option3;
-		case option4:
-			return option4;
-		case option5:
-			return option5;
-		case option6:
-			return option6;
-		case option7:
-			return option7;
-		case option8:
+		case 1:
 			return option8;
+		case 2:
+			return option7;
+		case 3:
+			return option6;
+		case 4:
+			return option5;
+		case 5:
+			return option4;
+		case 6:
+			return option3;
+		case 7:
+			return option2;
+		case 8:
+			return option1;
+		default:
+			return 0;
 		}
 	}
 
@@ -120,40 +122,29 @@ namespace WinApi
 
 		return false;
 	}
-
-	// Регистрация класса окна
-	void BindKey(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	
+	void SetKeys(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch (message)
 		{
 		case WM_KEYDOWN:
-			setValue = getMask(wParam);
+			setValue = GetMask(wParam);
 			keys[(uint32_t)wParam / 8] |= setValue;
 
-			switch (wParam)
-			{
-			case VK_F1:
-				LocationAddItem("F1");
-
-				return;
-			default:
-				return;
-			}
+			break;
 
 		case WM_KEYUP:
-			setValue = getMask(wParam);
+			setValue = GetMask(wParam);
 			keys[(uint32_t)wParam / 8] &= ~setValue;
 
-			switch (wParam)
-			{
-			case VK_F1:
-				LocationAddItem("F1");
-
-				return;
-			default:
-				return;
-			}
+			break;
 		}
+	}
+
+	bool GetKey(int8_t key)
+	{
+		bool i = keys[key / 8] &= GetMask(key);
+		return i;
 	}
 
 	// Регистрация класса окна
@@ -271,11 +262,26 @@ namespace WinApi
 			return 1;
 		}
 
+		int pParts[6];
+
+		hWndSb = CreateWindow(STATUSCLASSNAME, "",
+			WS_CHILD | WS_VISIBLE | WS_BORDER | SBARS_SIZEGRIP | CCS_BOTTOM,
+			0, 0, 0, 0, hWndEngine, hMenu, Engine::hInstance, NULL);
+
+		pParts[0] = 100;
+		pParts[1] = 200;
+		pParts[2] = 300;
+		pParts[3] = 400;
+		pParts[4] = 500;
+		pParts[5] = 600;
+
+		SendMessage(hWndSb, SB_SETPARTS, 6, (LPARAM)pParts);
+
 		return 0;
 	}
 	uint16_t CreateWindowRender()
 	{
-		hWndRender = CreateWindowEx(WS_EX_ACCEPTFILES,					// Extended style
+		hWndRender = CreateWindowEx(WS_EX_ACCEPTFILES,		// Extended style
 			pWndRenderClassEx.lpszClassName,				// Название класса
 			"Рендер",										// Название окна
 			WS_THICKFRAME | WS_CHILD,						// Стиль окна
@@ -294,7 +300,7 @@ namespace WinApi
 			return 1;
 		}
 
-		Engine::camera = new Camera(glm::vec3(0, 4, 100));
+		Engine::camera = new Camera(glm::vec3(0, 5, 200));
 
 		return 0;
 	}
@@ -604,7 +610,7 @@ namespace WinApi
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		BindKey(hWnd, message, wParam, lParam);
+		SetKeys(message, wParam, lParam);
 
 		switch (message)
 		{
@@ -615,42 +621,14 @@ namespace WinApi
 				//
 				break;
 			case MENU_FILE_OPENLOCATION:
-				// Открытие диалога сохранения файла локации
-
-				ofn.lStructSize = sizeof(ofn);
-				ofn.hwndOwner = NULL;
-				ofn.lpstrFile = szDirect;
-				*(ofn.lpstrFile) = 0;
-				ofn.nMaxFile = sizeof(szDirect);
-				ofn.lpstrFilter = NULL;
-				ofn.nFilterIndex = 1;
-				ofn.lpstrFileTitle = szFileName;
-				*(ofn.lpstrFileTitle) = 0;
-				ofn.nMaxFileTitle = sizeof(szFileName);
-				ofn.lpstrInitialDir = NULL;
-				ofn.Flags = OFN_EXPLORER;
-				GetOpenFileName(&ofn);
+				Engine::OpenLocation();
 				break;
 			case MENU_FILE_SAVELOCATION:
-				//
-
+				Engine::SaveLocation();
 				break;
 			case MENU_FILE_SAVEASLOCATION:
 				// Диалог сохранения
-
-				ofn.lStructSize = sizeof(ofn);
-				ofn.hwndOwner = NULL;
-				ofn.lpstrFile = szDirect;
-				*(ofn.lpstrFile) = 0;
-				ofn.nMaxFile = sizeof(szDirect);
-				ofn.lpstrFilter = NULL;
-				ofn.nFilterIndex = 1;
-				ofn.lpstrFileTitle = szFileName;
-				*(ofn.lpstrFileTitle) = 0;
-				ofn.nMaxFileTitle = sizeof(szFileName);
-				ofn.lpstrInitialDir = NULL;
-				ofn.Flags = OFN_EXPLORER;
-				GetSaveFileName(&ofn);
+				Engine::SaveAsLocation();
 				break;
 			case MENU_FILE_QUIT:
 				// Выход
@@ -685,6 +663,8 @@ namespace WinApi
 			break;
 
 		case WM_SIZE:
+			SendMessage(hWndSb, WM_SIZE, 0, 0);
+
 			if (wParam == SIZE_MAXIMIZED)
 			{
 				WinApi::isFullscreen = true;
@@ -719,7 +699,7 @@ namespace WinApi
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		BindKey(hWnd, message, wParam, lParam);
+		SetKeys(message, wParam, lParam);
 
 		switch (message)
 		{
@@ -746,7 +726,7 @@ namespace WinApi
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		BindKey(hWnd, message, wParam, lParam);
+		SetKeys(message, wParam, lParam);
 
 		switch (message)
 		{
@@ -781,7 +761,7 @@ namespace WinApi
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
-		BindKey(hWnd, message, wParam, lParam);
+		SetKeys(message, wParam, lParam);
 
 		switch (message)
 		{
@@ -820,19 +800,91 @@ namespace WinApi
 	{
 		MSG message{ 0 }; 	// Структура сообщения к окну
 		int8_t iResult;		// Код состояния
-		
+		//std::thread thr(UpdateWindows);
+		//thr.join();
+
 		// Пока есть сообщения
+		// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
 		while ((iResult = GetMessage(&message, NULL, 0, 0)))
 		{
-			// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
-			if (iResult < 0)
-			{
-				break;
-			}
+			// Расчёт времени затраченного на кадр
+			GLfloat currentFrame = GetTickCount64() / 1000.0f; // Взять текущее время чере winapi
+			Graphics::deltaTime = currentFrame - Graphics::lastFrame;
+			Graphics::lastFrame = currentFrame;
+
+			std::stringstream strstr;
+			char str[255];
+
+			strstr << Engine::camera->Position.x; strstr >> str;
+			SendMessage(hWndSb, SB_SETTEXT, 0, (LPARAM)str);
+			
+			str[0] = '\0';
+			strstr.clear();
+
+			strstr << Engine::camera->Position.y; strstr >> str;
+			SendMessage(hWndSb, SB_SETTEXT, 1, (LPARAM)str);
+
+			str[0] = '\0';
+			strstr.clear();
+
+			strstr << Engine::camera->Position.z; strstr >> str;
+			SendMessage(hWndSb, SB_SETTEXT, 2, (LPARAM)str);
+
+			str[0] = '\0';
+			strstr.clear();
+
+			strstr << Graphics::deltaTime; strstr >> str;
+			SendMessage(hWndSb, SB_SETTEXT, 3, (LPARAM)str);
+
+			//SendMessage(hWndSb, SB_SETTEXT, 1, (LPARAM)str);
+			//SendMessage(hWndSb, SB_SETTEXT, 2, (LPARAM)str);
+			//SendMessage(hWndSb, SB_SETTEXT, 3, (LPARAM)str);
+			//SendMessage(hWndSb, SB_SETTEXT, 4, (LPARAM)str);
+			//SendMessage(hWndSb, SB_SETTEXT, 5, (LPARAM)str);
 
 			// Обрабатываем сообщения в WndProc
 			TranslateMessage(&message);
 			DispatchMessage(&message);
+
+			if (bool i = GetKey(VK_A))
+			{
+				LocationAddItem("F1");
+			}
+
+			if (bool i = GetKey(VK_B))
+			{
+				LocationAddItem("F1");
+			}
+
+			if (bool i = GetKey(VK_C))
+			{
+				LocationAddItem("F1");
+			}
+
+			if (bool i = GetKey(VK_F))
+			{
+				LocationAddItem("F1");
+			}
+
+			//if (GetKey(VK_W))
+			//{
+			//	Engine::camera->ProcessKeyboard(FORWARD, Graphics::deltaTime);
+			//}
+
+			//if (GetKey(VK_S))
+			//{
+			//	Engine::camera->ProcessKeyboard(BACKWARD, Graphics::deltaTime);
+			//}
+
+			//if (GetKey(VK_A))
+			//{
+			//	Engine::camera->ProcessKeyboard(LEFT, Graphics::deltaTime);
+			//}
+
+			//if (GetKey(VK_D))
+			//{
+			//	Engine::camera->ProcessKeyboard(RIGHT, Graphics::deltaTime);
+			//}
 
 			// Очистка
 			glClearColor(0.6f, 0.6f, 0.6f, 1.0f);

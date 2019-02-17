@@ -2,8 +2,13 @@
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GameObject &go)
+	uint32_t Obj(const char *fileName, GameObject &go)
 	{
+		if (!go.IsMesh())
+		{
+			return 1;
+		}
+
 		//Вертексы
 		std::ifstream file;
 
@@ -188,6 +193,16 @@ namespace Importer
 
 		glBindVertexArray(0); // Close VAO (default)
 
+		return 0;
+	}
+
+	uint32_t Bmp(const char *fileName, GameObject &go)
+	{
+		return 0;
+	}
+
+	uint32_t Png(const char *fileName, GameObject &go)
+	{
 		return 0;
 	}
 };

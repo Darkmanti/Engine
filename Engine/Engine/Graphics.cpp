@@ -2,6 +2,9 @@
 
 namespace Graphics
 {
+	GLfloat lastFrame,
+			deltaTime;
+
 	void EnableOpenGL()
 	{
 		PIXELFORMATDESCRIPTOR pfd;

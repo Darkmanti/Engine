@@ -96,7 +96,7 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t n
 	Engine::isLoaded = true;
 
 	GameObject models[1];
-	Importer::ImportObj("Models/sphere.obj", models[0]);
+	Importer::Obj("Models/sphere.obj", models[0]);
 
 	for (uint16_t i = 0; i < 1; ++i)
 	{
