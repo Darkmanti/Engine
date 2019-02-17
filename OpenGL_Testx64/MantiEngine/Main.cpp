@@ -30,6 +30,8 @@ bool keys[1024];
 GLfloat lastX = 640, lastY = 360;
 bool firstMouse = true;
 
+// Новая ветка тут
+
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
