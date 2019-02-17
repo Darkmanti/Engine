@@ -95,7 +95,7 @@ int main()
 	Shader lightObjectShader("Shader//lightShader.vs", "Shader//lightShader.fs");
 	Shader modelShader("Shader//ModelShader.vs", "Shader//ModelShader.fs");
 
-	Model ourModel("D:/Engine/OpenGL_Testx64/MantiEngine/Resource/nanosuit/nanosuit.obj");
+	Model ourModel("Resource/nanosuit/nanosuit.obj");
 
 	// функция чтобы объекты который перекрывает другой объект, не прорисовывался
 	glEnable(GL_DEPTH_TEST);
