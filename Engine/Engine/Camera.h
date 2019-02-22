@@ -31,9 +31,11 @@ public:
 	glm::vec3 Front;
 	glm::vec3 Up;
 	glm::vec3 Right;
+
 	// ”глы Ёйлера
 	GLfloat Yaw;
 	GLfloat Pitch;
+
 	// ќпции камеры
 	GLfloat MovementSpeed;
 	GLfloat MouseSensitivity;

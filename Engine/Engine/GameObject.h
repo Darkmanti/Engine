@@ -9,20 +9,21 @@
 class GameObject
 {
 private:
-	bool enabled;
+	bool	enabled,
+			isMesh;
 
 	GLuint VAO, VBO, EBO;
 
-	int32_t countV;		//Количество элементов в массиве
-	int32_t countVT;	//Количество элементов текстурных координат
-	int32_t countF;		//Количество элементов в массиве полигонов
+	int32_t countV,		//Количество элементов в массиве
+			countVT,	//Количество элементов текстурных координат
+			countF;		//Количество элементов в массиве полигонов
 
 	float *V;
 	float *VT;
 	GLuint *F;
 	GLuint *FT;
 
-	Shader *shader;
+	Shader	*shader;
 	Texture *texture;
 public:
 	GameObject();
@@ -30,6 +31,8 @@ public:
 	
 	void Start();
 	void Update();
+
+	bool IsMesh();
 
 	GLuint *GetVAO();
 	GLuint *GetVBO();
