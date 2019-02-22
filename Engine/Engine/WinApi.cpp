@@ -44,7 +44,15 @@ namespace WinApi
 	char				szDirect[MAX_PATH],
 						szFileName[MAX_PATH];
 
-	bool				isLoaded;
+	bool				isLoaded,
+						isFirstMouse;
+
+	int16_t				mousePositionX,
+						mousePositionY,
+						xpos,
+						ypos,
+						lastX,
+						lastY;
 
 	HINSTANCE			hInstance;
 
@@ -57,9 +65,6 @@ namespace WinApi
 	void Do_Movement();
 	GLfloat deltaTime = 0.016f;
 	Camera camera(glm::vec3(0.0f, 0.0f, 15.0f));
-	bool firstMouse = true;
-	bool keys[1024];
-	void keyPressed();
 	// Временная функции ====================================================
 
 	bool ListViewAddItem(const char* elementName, HWND hWndListView)
@@ -320,7 +325,7 @@ namespace WinApi
 
 	uint16_t ShowInterface(const int16_t nCmdShow)
 	{
-		if (ShowWindow(hWndEngine, nCmdShow)) return 2;
+		if (ShowWindow(hWndEngine, SW_MAXIMIZE)) return 2;
 		if (!UpdateWindow(hWndEngine)) return 3;
 
 		if (ShowWindow(hWndRender, SW_SHOWNORMAL)) return 4;
@@ -423,6 +428,36 @@ namespace WinApi
 
 		switch (message)
 		{
+		case WM_SIZE:
+			glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
+			break;
+		case WM_MOUSEMOVE:
+			if (wParam == MK_RBUTTON)
+			{
+				mousePositionX = GET_X_LPARAM(wParam);
+				mousePositionY = GET_Y_LPARAM(wParam);
+			}
+			else if (wParam == MK_LBUTTON && GetKeyState(VK_LMENU) < 0)
+			{
+				mousePositionX = GET_X_LPARAM(wParam);
+				mousePositionY = GET_Y_LPARAM(wParam);
+			}
+			break;
+		case WM_RBUTTONDOWN:
+			SetCapture(hWndRender);
+			break;
+		case WM_RBUTTONUP:
+			ReleaseCapture();
+			break;
+		case WM_LBUTTONDOWN:
+			if (GetKeyState(VK_LMENU) < 0)
+			{
+				SetCapture(hWndRender);
+			}
+			break;
+		case WM_LBUTTONUP:
+			ReleaseCapture();
+			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -460,34 +495,10 @@ namespace WinApi
 		return 0;
 	}
 
-	bool isKeyDown(int key)
-	{
-		return (GetAsyncKeyState(key) & (1 << 16));
-	}
-
-	bool isKeyFirstPressed(int key)
-	{
-		bool previousState = previousKeyboardState[key];
-
-		previousKeyboardState[key] = isKeyDown(key);
-
-		return (previousKeyboardState[key] && !previousState);
-	}
-
-	bool isKeyFirstReleased(int key)
-	{
-		bool previousState = previousKeyboardState[key];
-
-		previousKeyboardState[key] = isKeyDown(key);
-
-		return (!previousKeyboardState[key] && previousState);
-	}
-
 	// Метод с циклом программы
 	void Loop()
 	{
 		MSG message{ 0 }; 	// Структура сообщения к окну
-		int8_t iResult;		// Код состояния
 
 		// Временно здесь будет инициализация тестовой сцены ===========================================
 		glewExperimental = GL_TRUE;
@@ -568,14 +579,22 @@ namespace WinApi
 
 		// Пока есть сообщения
 		// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
-		while ((iResult = GetMessage(&message, NULL, 0, 0)))
+		while (true)
 		{
-			// Обрабатываем сообщения в WndProc
-			TranslateMessage(&message);
-			DispatchMessage(&message);
+			if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
+			{
+				if (message.message == WM_QUIT)
+				{
+					break;
+				}
+
+				// Обрабатываем сообщения в WndProc
+				TranslateMessage(&message);
+				DispatchMessage(&message);
+			}
 
 			Do_Movement();
-			keyPressed();
+			mouseMove();
 
 			// Временный прорисовка =================================================================
 			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
@@ -621,6 +640,48 @@ namespace WinApi
 		}
 	}
 
+	bool isKeyDown(int key)
+	{
+		return (GetAsyncKeyState(key) & (1 << 16));
+	}
+
+	bool isKeyFirstPressed(int key)
+	{
+		bool previousState = previousKeyboardState[key];
+
+		previousKeyboardState[key] = isKeyDown(key);
+
+		return (previousKeyboardState[key] && !previousState);
+	}
+
+	bool isKeyFirstReleased(int key)
+	{
+		bool previousState = previousKeyboardState[key];
+
+		previousKeyboardState[key] = isKeyDown(key);
+
+		return (!previousKeyboardState[key] && previousState);
+	}
+
+	void mouseMove()
+	{
+		if (isFirstMouse)
+		{
+			lastX = mousePositionX;
+			lastY = mousePositionY;
+
+			isFirstMouse = false;
+		}
+
+		xpos = mousePositionX - lastX;
+		ypos = lastY - mousePositionY;
+
+		lastX = mousePositionX;
+		lastY = mousePositionY;
+
+		camera.ProcessMouseMovement(xpos, ypos);
+	}
+
 	void loadImage(GLuint &texture, char const* fileName)
 	{
 		glGenTextures(1, &texture);
@@ -641,34 +702,27 @@ namespace WinApi
 		glBindTexture(GL_TEXTURE_2D, 0);
 		stbi_image_free(image);
 	}
-	void keyPressed()
-	{
-		if (isKeyDown(VK_W))
-			keys[VK_W] = true;
-		if (isKeyDown(VK_S))
-			keys[VK_S] = true;
-		if (isKeyDown(VK_A))
-			keys[VK_A] = true;
-		if (isKeyDown(VK_D))
-			keys[VK_D] = true;
-		if (isKeyFirstReleased(VK_W))
-			keys[VK_W] = false;
-		if (isKeyFirstReleased(VK_S))
-			keys[VK_S] = false;
-		if (isKeyFirstReleased(VK_A))
-			keys[VK_A] = false;
-		if (isKeyFirstReleased(VK_D))
-			keys[VK_D] = false;
-	}
+
 	void Do_Movement()
 	{
-		if (keys[VK_W] == true)
+		if (isKeyDown(VK_W))
+		{
 			camera.ProcessKeyboard(FORWARD, deltaTime);
-		if (keys[VK_S] == true)
+		}
+
+		if (isKeyDown(VK_S))
+		{
 			camera.ProcessKeyboard(BACKWARD, deltaTime);
-		if (keys[VK_A] == true)
+		}
+
+		if (isKeyDown(VK_A))
+		{
 			camera.ProcessKeyboard(LEFT, deltaTime);
-		if (keys[VK_D] == true)
+		}
+
+		if (isKeyDown(VK_D))
+		{
 			camera.ProcessKeyboard(RIGHT, deltaTime);
+		}
 	}
 };

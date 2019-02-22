@@ -60,22 +60,15 @@
 #define VK_Y						0x59
 #define VK_Z						0x5A
 
-typedef struct tagAPPLINFO
-{
-	char szAppName[40];
-	char szIconName[20];
-	UINT iCost;
-}APPLINFO;
-
 // Все что связанно с окном и выводом winapi
 namespace WinApi
 {
 	// Различные дескрипторы
 	extern HWND			hWndEngine,								// Главное окно редактора
-		hWndRender,												// Окно рендера внутри редактора
+						hWndRender,												// Окно рендера внутри редактора
 
-		hWndListViewLocation,									// ListView локация
-		hWndListViewProject;									// ListView проект
+						hWndListViewLocation,									// ListView локация
+						hWndListViewProject;									// ListView проект
 
 	// Различные дескрипторы
 	extern HDC					hDC;							// Дескриптор устройства
@@ -85,22 +78,10 @@ namespace WinApi
 
 	extern HINSTANCE	hInstance;
 
-	// Регистрация окна
-	ATOM RegisterWindowEngine();
-	ATOM RegisterWindowRender();
-
-	// Создание окна
-	uint16_t CreateWindowEngine();
-	uint16_t CreateWindowRender();
-	uint16_t CreateListViewLocation();
-	uint16_t CreateListViewProject();
-	uint16_t CreateMainMenu();
-
 	// Инициализация интерфейса
 	uint16_t InitInterface();
 	uint16_t ShowInterface(const int16_t nCmdShow);
 
-	// Функция обработчика сообщений (Процедура окна)
 	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK SubClassLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
@@ -108,11 +89,12 @@ namespace WinApi
 
 	bool ListViewAddItem(const char* elementName, HWND hWndListView);
 
-	// Метод с циклом программы
-	void Loop();
 	void InitInput();
 
+	void Loop();
+
 	bool isKeyDown(int key);
+	void mouseMove();
 	bool isKeyFirstPressed(int key);
 	bool isKeyFirstReleased(int key);
 };
