@@ -476,11 +476,14 @@ namespace WinApi
 			// Обрабатываем сообщения в WndProc
 			TranslateMessage(&message);
 			DispatchMessage(&message);
+
 			if (isKeyDown(VK_A))
 			{
 				ListViewAddItem("dwad", hWndListViewLocation);
 				ListViewAddItem("32323", hWndListViewProject);
 			}
+
+
 		}
 	}
 

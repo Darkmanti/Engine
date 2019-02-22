@@ -1,6 +1,10 @@
 ﻿#include <shlobj.h>
 #include "WinApi.h"
 
+void EnableOpenGL();
+void DisableOpenGL();
+
+
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
 	if (hPrevInstance)
@@ -40,9 +44,45 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 		return 0;
 	}
 
+	EnableOpenGL();
+
 	WinApi::isLoaded = true;
 
 	WinApi::Loop();
 
+	DisableOpenGL();
+
 	return 0;
+}
+
+void EnableOpenGL()
+{
+	PIXELFORMATDESCRIPTOR pfd;
+
+	int iFormat;
+
+	WinApi::hDC = GetDC(WinApi::hWndRender);
+
+	ZeroMemory(&pfd, sizeof(pfd));
+
+	pfd.nSize = sizeof(pfd);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 24;
+	pfd.cDepthBits = 16;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+
+	iFormat = ChoosePixelFormat(WinApi::hDC, &pfd);
+	SetPixelFormat(WinApi::hDC, iFormat, &pfd);
+	WinApi::hRC = wglCreateContext(WinApi::hDC);
+	wglMakeCurrent(WinApi::hDC, WinApi::hRC);
+}
+
+void DisableOpenGL()
+{
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(WinApi::hRC);
+	ReleaseDC(WinApi::hWndRender, WinApi::hDC);
 }

@@ -77,6 +77,10 @@ namespace WinApi
 		hWndListViewLocation,				// ListView локация
 		hWndListViewProject;				// ListView проект
 
+	// Различные дескрипторы
+	extern HDC					hDC;							// Дескриптор устройства
+	extern HGLRC				hRC;							// Дескпритор ...
+
 	extern bool			isLoaded;
 
 	extern HINSTANCE	hInstance;
