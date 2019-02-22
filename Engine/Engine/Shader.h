@@ -1,6 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#define GLEW_STATIC
 #include <GLEW/glew.h>
 #include <GLM/glm.hpp>
 

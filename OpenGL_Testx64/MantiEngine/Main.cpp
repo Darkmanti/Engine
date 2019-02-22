@@ -95,7 +95,7 @@ int main()
 	Shader lightObjectShader("Shader//lightShader.vs", "Shader//lightShader.fs");
 	Shader modelShader("Shader//ModelShader.vs", "Shader//ModelShader.fs");
 
-	Model ourModel("Resource/nanosuit/nanosuit.obj");
+	Model ourModel("Resource//nanosuit//nanosuit.obj");
 
 	// функция чтобы объекты который перекрывает другой объект, не прорисовывался
 	glEnable(GL_DEPTH_TEST);
@@ -210,6 +210,11 @@ int main()
 
 	glm::vec3 sourceLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 sourceLightPos = glm::vec3(-1.0f, 10.0f, -8.0f);
+
+	// Установка стандартного значения для теста глубины (z буффер)
+	// Эта функция всегда работает без объявление по умолчанию
+	// Можно переопределить на другое значение
+	glDepthFunc(GL_LESS);
 
 	while (!glfwWindowShouldClose(window))
 	{
