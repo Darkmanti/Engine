@@ -5,9 +5,7 @@ out vec4 color;
 
 uniform sampler2D ourTexture1;
 
-uniform float opacity;
-
 void main()
 {
-    color = texture(ourTexture1, TexCoord) * opacity;
+    color = texture(ourTexture1, TexCoord) * 1.0;
 }

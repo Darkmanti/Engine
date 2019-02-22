@@ -5,34 +5,44 @@
 #include <thread>
 #include <windowsx.h>
 
+// Временные инклуды ===========================================
+#include "Camera.h"
+#include "Shader.h"
+#include <GLM/glm.hpp>
+#include <GLM/gtc/matrix_transform.hpp>
+#include <GLM/gtc/type_ptr.hpp>
+#define STB_IMAGE_IMPLEMENTATION
+#include <STB/stb_image.h>
+// Временные инклуды ===========================================
+
 #pragma comment(lib,"ComCtl32.Lib")
 
 namespace WinApi
 {
 	WNDCLASSEX			pWndEngineClassEx,				// Структура класса окна
-		pWndRenderClassEx;				// Структура класса рендер окна
+						pWndRenderClassEx;				// Структура класса рендер окна
 
-// Различные дескрипторы
+	// Различные дескрипторы
 	HDC					hDC;							// Дескриптор устройства
 	HGLRC				hRC;							// Дескпритор ...
 
 	HWND				hWndEngine,						// Главное окно редактора
-		hWndRender,						// Окно рендера внутри редактора
+						hWndRender,						// Окно рендера внутри редактора
 
-		hWndListViewLocation,			// ListView локации
-		hWndListViewProject;			// ListView проекта
+						hWndListViewLocation,			// ListView локации
+						hWndListViewProject;			// ListView проекта
 
-		// Меню
+	// Меню
 	HMENU				hMenu,
-		hPopMenuFile,
-		hPopMenuScene,
-		hPopMenuProject,
-		hPopMenuProjectImport;
+						hPopMenuFile,
+						hPopMenuScene,
+						hPopMenuProject,
+						hPopMenuProjectImport;
 
 	OPENFILENAME		OFN{ 0 };
 
 	char				szDirect[MAX_PATH],
-		szFileName[MAX_PATH];
+						szFileName[MAX_PATH];
 
 	bool				isLoaded;
 
@@ -41,6 +51,16 @@ namespace WinApi
 	extern const uint16_t NumberOfKeys = 256;
 
 	bool previousKeyboardState[NumberOfKeys];
+
+	// Временная функции ====================================================
+	void loadImage(GLuint &texture, char const* fileName);
+	void Do_Movement();
+	GLfloat deltaTime = 0.016f;
+	Camera camera(glm::vec3(0.0f, 0.0f, 15.0f));
+	bool firstMouse = true;
+	bool keys[1024];
+	void keyPressed();
+	// Временная функции ====================================================
 
 	bool ListViewAddItem(const char* elementName, HWND hWndListView)
 	{
@@ -76,11 +96,11 @@ namespace WinApi
 		pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Размер в байтах структуры класса
 		pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// Стиль окна
 		pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// Указатель на оконную процедуру
-		pWndEngineClassEx.hInstance = hInstance;							// Дескриптор приложения
+		pWndEngineClassEx.hInstance = hInstance;									// Дескриптор приложения
 		pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// Подгружам курсор
 		pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// Указатель на кисть с цветом фона (Типо кисть - рисование)
 		pWndEngineClassEx.lpszClassName = "WndEngineClass";							// Наименование класса
-		pWndEngineClassEx.hIcon = LoadIcon(hInstance, "IDI_ENGINEICON");	// Иконка
+		pWndEngineClassEx.hIcon = LoadIcon(hInstance, "IDI_ENGINEICON");			// Иконка
 
 		if (int16_t iError = RegisterClassEx(&pWndEngineClassEx))
 		{
@@ -96,13 +116,13 @@ namespace WinApi
 	}
 	ATOM RegisterWindowRender()
 	{
-		pWndRenderClassEx.cbSize = sizeof(WNDCLASSEX);						// Размер в байтах структуры класса
+		pWndRenderClassEx.cbSize = sizeof(WNDCLASSEX);											// Размер в байтах структуры класса
 		pWndRenderClassEx.style = CS_VREDRAW | CS_HREDRAW | CS_BYTEALIGNCLIENT;					// Стиль окна
-		pWndRenderClassEx.lpfnWndProc = WndRenderProc;						// Указатель на оконную процедуру
-		pWndRenderClassEx.hInstance = hInstance;					// Дескриптор приложения
-		pWndRenderClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);			// Подгружам курсор
-		pWndRenderClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);		// Указатель на кисть с цветом фона (Типо кисть - рисование)
-		pWndRenderClassEx.lpszClassName = "WndRenderClass";					// Наименование класса
+		pWndRenderClassEx.lpfnWndProc = WndRenderProc;											// Указатель на оконную процедуру
+		pWndRenderClassEx.hInstance = hInstance;												// Дескриптор приложения
+		pWndRenderClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);								// Подгружам курсор
+		pWndRenderClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);							// Указатель на кисть с цветом фона (Типо кисть - рисование)
+		pWndRenderClassEx.lpszClassName = "WndRenderClass";										// Наименование класса
 
 		if (int16_t iError = RegisterClassEx(&pWndRenderClassEx))
 		{
@@ -125,11 +145,11 @@ namespace WinApi
 			pWndEngineClassEx.lpszClassName,											// Название класса
 			"Движок",																	// Название окна
 			WS_OVERLAPPEDWINDOW,														// Стиль окна
-			0, 0,											// Позиция
-			1366, 768,													// Размер
+			0, 0,																		// Позиция
+			1366, 768,																	// Размер
 			0,																			// Родительское окно
 			0,																			// Меню
-			hInstance,															// Десприптор приложения
+			hInstance,																	// Десприптор приложения
 			0																			// Все это говно доступно на msdn
 		);
 
@@ -148,11 +168,11 @@ namespace WinApi
 			pWndRenderClassEx.lpszClassName,				// Название класса
 			"Рендер",										// Название окна
 			WS_THICKFRAME | WS_CHILD,						// Стиль окна
-			256, 256,	// Позиция
-			800, 600,			// Размер
+			256, 256,										// Позиция
+			800, 600,										// Размер
 			hWndEngine,										// Родительское окно
 			0,												// Меню
-			hInstance,								// Десприптор приложения
+			hInstance,										// Десприптор приложения
 			0												// Все это говно доступно на msdn
 		);
 
@@ -469,6 +489,83 @@ namespace WinApi
 		MSG message{ 0 }; 	// Структура сообщения к окну
 		int8_t iResult;		// Код состояния
 
+		// Временно здесь будет инициализация тестовой сцены ===========================================
+		glewExperimental = GL_TRUE;
+		glewInit();
+
+		glViewport(0, 0, 800, 600);
+		glEnable(GL_DEPTH_TEST);
+
+		GLfloat vertices[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,	 0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 -1.0f,  0.0f,  0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 1.0f,  0.0f,  0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,	 0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,	 0.0f, -1.0f,  0.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f
+		};
+
+		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
+
+		GLuint VBO, VAO;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+
+		glBindVertexArray(0);
+
+		GLuint texture1;
+		loadImage(texture1, "Resource/container.jpg");
+		// Временно здесь будет инициализация тестовой сцены ===========================================
+
 		// Пока есть сообщения
 		// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
 		while ((iResult = GetMessage(&message, NULL, 0, 0)))
@@ -477,12 +574,41 @@ namespace WinApi
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 
-			if (isKeyDown(VK_A))
-			{
-				ListViewAddItem("dwad", hWndListViewLocation);
-				ListViewAddItem("32323", hWndListViewProject);
-			}
+			Do_Movement();
+			keyPressed();
 
+			// Временный прорисовка =================================================================
+			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
+			deltaTime = currentFrame - lastFrame;
+			lastFrame = currentFrame;*/
+
+			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			glm::mat4 view = glm::mat4(1.0f);
+			view = camera.GetViewMatrix();
+			glm::mat4 projection = glm::mat4(1.0f);
+			projection = glm::perspective(camera.Zoom, (GLfloat)800 / (GLfloat)600, 0.1f, 1000.0f);
+
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			glm::mat4 trans = glm::mat4(1.0f);
+			trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f));
+
+			ourShader.use();
+			ourShader.setUniform("projection", projection);
+			ourShader.setUniform("model", model);
+			ourShader.setUniform("transform", trans);
+			ourShader.setUniform("view", view);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture1);
+			ourShader.setUniform("ourTexture1", 0);
+
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glBindVertexArray(0);
+			SwapBuffers(hDC);
+			// Временный прорисовка =================================================================
 
 		}
 	}
@@ -493,5 +619,56 @@ namespace WinApi
 		{
 			previousKeyboardState[keyNum] = isKeyDown(keyNum);
 		}
+	}
+
+	void loadImage(GLuint &texture, char const* fileName)
+	{
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		stbi_set_flip_vertically_on_load(true);
+		GLint w, h, comp;
+		unsigned char* image = stbi_load(fileName, &w, &h, &comp, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(image);
+	}
+	void keyPressed()
+	{
+		if (isKeyDown(VK_W))
+			keys[VK_W] = true;
+		if (isKeyDown(VK_S))
+			keys[VK_S] = true;
+		if (isKeyDown(VK_A))
+			keys[VK_A] = true;
+		if (isKeyDown(VK_D))
+			keys[VK_D] = true;
+		if (isKeyFirstReleased(VK_W))
+			keys[VK_W] = false;
+		if (isKeyFirstReleased(VK_S))
+			keys[VK_S] = false;
+		if (isKeyFirstReleased(VK_A))
+			keys[VK_A] = false;
+		if (isKeyFirstReleased(VK_D))
+			keys[VK_D] = false;
+	}
+	void Do_Movement()
+	{
+		if (keys[VK_W] == true)
+			camera.ProcessKeyboard(FORWARD, deltaTime);
+		if (keys[VK_S] == true)
+			camera.ProcessKeyboard(BACKWARD, deltaTime);
+		if (keys[VK_A] == true)
+			camera.ProcessKeyboard(LEFT, deltaTime);
+		if (keys[VK_D] == true)
+			camera.ProcessKeyboard(RIGHT, deltaTime);
 	}
 };

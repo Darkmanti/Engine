@@ -71,11 +71,11 @@ typedef struct tagAPPLINFO
 namespace WinApi
 {
 	// Различные дескрипторы
-	extern HWND			hWndEngine,							// Главное окно редактора
-		hWndRender,							// Окно рендера внутри редактора
+	extern HWND			hWndEngine,								// Главное окно редактора
+		hWndRender,												// Окно рендера внутри редактора
 
-		hWndListViewLocation,				// ListView локация
-		hWndListViewProject;				// ListView проект
+		hWndListViewLocation,									// ListView локация
+		hWndListViewProject;									// ListView проект
 
 	// Различные дескрипторы
 	extern HDC					hDC;							// Дескриптор устройства
