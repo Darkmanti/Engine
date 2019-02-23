@@ -45,7 +45,7 @@ namespace WinApi
 						szFileName[MAX_PATH];
 
 	bool				isLoaded,
-						isFirstMouse;
+						isFirstMouse(true);
 
 	int16_t				mousePositionX,
 						mousePositionY,
@@ -434,13 +434,13 @@ namespace WinApi
 		case WM_MOUSEMOVE:
 			if (wParam == MK_RBUTTON)
 			{
-				mousePositionX = GET_X_LPARAM(wParam);
-				mousePositionY = GET_Y_LPARAM(wParam);
+				mousePositionX = GET_X_LPARAM(lParam);
+				mousePositionY = GET_Y_LPARAM(lParam);
 			}
 			else if (wParam == MK_LBUTTON && GetKeyState(VK_LMENU) < 0)
 			{
-				mousePositionX = GET_X_LPARAM(wParam);
-				mousePositionY = GET_Y_LPARAM(wParam);
+				mousePositionX = GET_X_LPARAM(lParam);
+				mousePositionY = GET_Y_LPARAM(lParam);
 			}
 			break;
 		case WM_RBUTTONDOWN:
