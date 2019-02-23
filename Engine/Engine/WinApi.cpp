@@ -46,15 +46,12 @@ namespace WinApi
 	char				szDirect[MAX_PATH],
 						szFileName[MAX_PATH];
 
-	bool				isLoaded,
-						isFirstMouse(true);
+	bool				isLoaded;
 
-	int64_t				mousePositionX,
-						mousePositionY,
-						xpos,
-						ypos,
-						lastX,
-						lastY;
+	int64_t				mouseOffsetX,
+						mouseOffsetY,
+						lastMousePosX,
+						lastMousePosY;
 
 	POINT				mousePos{};
 
@@ -435,33 +432,6 @@ namespace WinApi
 		case WM_SIZE:
 			glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
 			break;
-		//case WM_MOUSEMOVE:
-		//	if (wParam == MK_RBUTTON)
-		//	{
-		//		mousePositionX = GET_X_LPARAM(lParam);
-		//		mousePositionY = GET_Y_LPARAM(lParam);
-		//	}
-		//	else if (wParam == MK_LBUTTON && GetKeyState(VK_LMENU) < 0)
-		//	{
-		//		mousePositionX = GET_X_LPARAM(lParam);
-		//		mousePositionY = GET_Y_LPARAM(lParam);
-		//	}
-		//	break;
-		//case WM_RBUTTONDOWN:
-		//	SetCapture(hWndRender);
-		//	break;
-		//case WM_RBUTTONUP:
-		//	ReleaseCapture();
-		//	break;
-		//case WM_LBUTTONDOWN:
-		//	if (GetKeyState(VK_LMENU) < 0)
-		//	{
-		//		SetCapture(hWndRender);
-		//	}
-		//	break;
-		//case WM_LBUTTONUP:
-		//	ReleaseCapture();
-		//	break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -669,44 +639,39 @@ namespace WinApi
 
 	void mouseMove()
 	{
-		if (isKeyDown(VK_RBUTTON) || isKeyDown(VK_LBUTTON) && isKeyDown(VK_LMENU))
-		{
+		GetCursorPos(&mousePos);
 
+		if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
+		{
+			lastMousePosX = mousePos.x;
+			lastMousePosY = mousePos.y;
 		}
+		else if (isKeyDown(VK_RBUTTON) || isKeyDown(VK_LBUTTON) && isKeyDown(VK_LMENU))
+		{ }
 		else
 		{
 			return;
 		}
 
-		GetCursorPos(&mousePos);
-
-		if (isFirstMouse)
-		{
-			lastX = mousePos.x;
-			lastY = mousePos.y;
-
-			isFirstMouse = false;
-		}
-
-		xpos = mousePos.x - lastX;
-		ypos = lastY - mousePos.y;
-
-		lastX = mousePos.x;
-		lastY = mousePos.y;
+		mouseOffsetX = mousePos.x - lastMousePosX;
+		mouseOffsetY = lastMousePosY - mousePos.y;
 
 		Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
-		Debug("last.x = "); Debug(std::to_string(lastX).c_str()); Debug("\t");
-		Debug("offset.x = "); Debug(std::to_string(xpos).c_str()); Debug("\t");
+		Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
+		Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
 
 		Debug("\n");
 
 		Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
-		Debug("last.y = "); Debug(std::to_string(lastY).c_str()); Debug("\t");
-		Debug("offset.y = "); Debug(std::to_string(ypos).c_str()); Debug("\t");
+		Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
+		Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
 
 		Debug("\n");
 
-		camera.ProcessMouseMovement(xpos, ypos);
+		lastMousePosX = mousePos.x;
+		lastMousePosY = mousePos.y;
+
+		camera.ProcessMouseMovement(mouseOffsetX, mouseOffsetY);
 	}
 
 	void loadImage(GLuint &texture, char const* fileName)
@@ -732,6 +697,11 @@ namespace WinApi
 
 	void Do_Movement()
 	{
+		if (!isKeyDown(VK_RBUTTON))
+		{
+			return;
+		}
+
 		if (isKeyDown(VK_W))
 		{
 			camera.ProcessKeyboard(FORWARD, deltaTime);
