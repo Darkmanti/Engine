@@ -7,6 +7,9 @@ void DisableOpenGL();
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
+	AllocConsole();
+	WinApi::debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	if (hPrevInstance)
 	{
 		MessageBox(NULL, "Можно запускать только одну копию приложения", "Ошибка", MB_OK | MB_ICONSTOP);

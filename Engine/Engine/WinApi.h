@@ -64,19 +64,21 @@
 namespace WinApi
 {
 	// Различные дескрипторы
-	extern HWND			hWndEngine,								// Главное окно редактора
-						hWndRender,												// Окно рендера внутри редактора
+	extern HWND					hWndEngine,								// Главное окно редактора
+								hWndRender,												// Окно рендера внутри редактора
 
-						hWndListViewLocation,									// ListView локация
-						hWndListViewProject;									// ListView проект
+								hWndListViewLocation,									// ListView локация
+								hWndListViewProject;									// ListView проект
 
 	// Различные дескрипторы
 	extern HDC					hDC;							// Дескриптор устройства
 	extern HGLRC				hRC;							// Дескпритор ...
 
-	extern bool			isLoaded;
+	extern HANDLE				debugConsole;
 
-	extern HINSTANCE	hInstance;
+	extern bool					isLoaded;
+
+	extern HINSTANCE			hInstance;
 
 	// Инициализация интерфейса
 	uint16_t InitInterface();
@@ -97,4 +99,7 @@ namespace WinApi
 	void mouseMove();
 	bool isKeyFirstPressed(int key);
 	bool isKeyFirstReleased(int key);
+
+	void Debug(const char* sms);
+	void Clear();
 };
