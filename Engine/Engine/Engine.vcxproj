@@ -20,12 +20,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="FontObject.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Importer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="WinApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="FontObject.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Importer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="WinApi.h" />
   </ItemGroup>
@@ -108,6 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\admin\source\repos\Engine\Engine\Engine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\admin\source\repos\Engine\Engine\Engine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

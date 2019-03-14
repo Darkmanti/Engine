@@ -11,8 +11,16 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
+
+// Первый define относится к загрузке шрифтов, второй к картинкам
+#define STB_TRUETYPE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
+
+#include "GameObject.h"
+#include "FontObject.h"
+
+#include "Importer.h"
 // Временные инклуды ===========================================
 
 #pragma comment(lib,"ComCtl32.Lib")
@@ -62,10 +70,10 @@ namespace WinApi
 	bool previousKeyboardState[NumberOfKeys];
 
 	// Временная функции ====================================================
-	void loadImage(GLuint &texture, char const* fileName);
 	void Do_Movement();
 	GLfloat deltaTime = 0.016f;
 	Camera camera(glm::vec3(0.0f, 0.0f, 15.0f));
+	void loadImage(GLuint &texture, char const* fileName);
 	// Временная функции ====================================================
 
 	bool ListViewAddItem(const char* elementName, HWND hWndListView)
@@ -481,7 +489,7 @@ namespace WinApi
 		glViewport(0, 0, 800, 600);
 		glEnable(GL_DEPTH_TEST);
 
-		GLfloat vertices[] = {
+		GLfloat* vertices = new GLfloat[288]{ 
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,	 0.0f,  0.0f, -1.0f,
@@ -522,33 +530,30 @@ namespace WinApi
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,	 0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f
-		};
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,	 0.0f,  1.0f,  0.0f };
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
-
-		GLuint VBO, VAO;
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-		glEnableVertexAttribArray(0);
-
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
-		glEnableVertexAttribArray(1);
-
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-		glEnableVertexAttribArray(2);
-
-		glBindVertexArray(0);
-
-		GLuint texture1;
+		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
+		GLuint texture1, texture2;
 		loadImage(texture1, "Resource/container.jpg");
+		loadImage(texture2, "Resource/container2.png");
+
+		// Инициализация текста
+		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
+
+		GameObject object1(vertices, 288, &ourShader, texture1);
+		GameObject object2(vertices, 288, &ourShader, texture2);
+
+		GameObject object3(texture1); // Костыль
+
+		Importer::ImportObj("Resource/Iron/iron.obj", &object3, &ourShader, texture1);
+
+		// Матрицы
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(camera.Zoom, (GLfloat)800 / (GLfloat)600, 0.1f, 1000.0f);
+		glm::mat4 ortho(1.0f);
+		ortho = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, 0.0f, 100.0f);
+
 		// Временно здесь будет инициализация тестовой сцены ===========================================
 
 		// Пока есть сообщения
@@ -570,6 +575,8 @@ namespace WinApi
 			Do_Movement();
 			mouseMove();
 
+			//Print_Text(200, 200, (char*)"FAILURE", font, &fontShader);
+
 			// Временный прорисовка =================================================================
 			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
 			deltaTime = currentFrame - lastFrame;
@@ -580,28 +587,18 @@ namespace WinApi
 
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
-			glm::mat4 projection = glm::mat4(1.0f);
-			projection = glm::perspective(camera.Zoom, (GLfloat)800 / (GLfloat)600, 0.1f, 1000.0f);
+			
+			object1.DrawArray(projection, view);
+			object2.setModel(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object2.DrawArray(projection, view);
 
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-			glm::mat4 trans = glm::mat4(1.0f);
-			trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f));
+			object3.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object3.DrawElement(projection, view);
 
-			ourShader.use();
-			ourShader.setUniform("projection", projection);
-			ourShader.setUniform("model", model);
-			ourShader.setUniform("transform", trans);
-			ourShader.setUniform("view", view);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, texture1);
-			ourShader.setUniform("ourTexture1", 0);
-
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glBindVertexArray(0);
-			SwapBuffers(hDC);
+			font1.Print(100, 500, (char*)"PARAWOZIK", ortho);
 			// Временный прорисовка =================================================================
+
+			SwapBuffers(hDC);
 
 		}
 	}
@@ -641,6 +638,8 @@ namespace WinApi
 	{
 		GetCursorPos(&mousePos);
 
+		
+
 		if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
 		{
 			lastMousePosX = mousePos.x;
@@ -657,14 +656,14 @@ namespace WinApi
 		mouseOffsetY = lastMousePosY - mousePos.y;
 
 		Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
-		Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
-		Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
+		//Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
+		//Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
 
-		Debug("\n");
+		//Debug("\n");
 
 		Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
-		Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
-		Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
+		//Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
+		//Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
 
 		Debug("\n");
 
@@ -672,27 +671,6 @@ namespace WinApi
 		lastMousePosY = mousePos.y;
 
 		camera.ProcessMouseMovement(mouseOffsetX, mouseOffsetY);
-	}
-
-	void loadImage(GLuint &texture, char const* fileName)
-	{
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-
-		stbi_set_flip_vertically_on_load(true);
-		GLint w, h, comp;
-		unsigned char* image = stbi_load(fileName, &w, &h, &comp, 0);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		stbi_image_free(image);
 	}
 
 	void Do_Movement()
@@ -731,5 +709,26 @@ namespace WinApi
 	void Clear()
 	{
 		system("cls");
+	}
+
+	void loadImage(GLuint &texture, char const* fileName)
+	{
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		stbi_set_flip_vertically_on_load(true);
+		GLint w, h, comp;
+		unsigned char* image = stbi_load(fileName, &w, &h, &comp, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(image);
 	}
 };
