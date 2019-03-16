@@ -7,11 +7,16 @@
 #include <iostream>
 #include <sstream>
 
+// есть парочка (а может и больше) лишних инклудов, всё для того чтобы memcpy и memmove работал(чисто проверка)
+#include <stdio.h>
+#include <string.h>
+#include <cstring>
+
 #include "Shader.h"
 #include "GameObject.h"
 #include <GLEW/glew.h>
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GameObject* go, Shader* shader, GLuint texture);
+	uint32_t ImportObj(const char *fileName, GLfloat* &V_, uint64_t& countV, GLuint* &F_, uint64_t& countF);
 };

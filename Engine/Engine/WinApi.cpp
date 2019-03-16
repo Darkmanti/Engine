@@ -19,8 +19,6 @@
 
 #include "GameObject.h"
 #include "FontObject.h"
-
-#include "Importer.h"
 // Временные инклуды ===========================================
 
 #pragma comment(lib,"ComCtl32.Lib")
@@ -534,19 +532,17 @@ namespace WinApi
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
-		GLuint texture1, texture2;
+		GLuint texture1, texture2, texture3;
 		loadImage(texture1, "Resource/container.jpg");
 		loadImage(texture2, "Resource/container2.png");
+		loadImage(texture3, "Resource/Iron/iron.jpg");
 
 		// Инициализация текста
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
-
-		GameObject object3(texture1); // Костыль
-
-		Importer::ImportObj("Resource/Iron/iron.obj", &object3, &ourShader, texture1);
+		GameObject object3(&ourShader, "Resource/Iron/iron.obj", texture3);	// Модель железа без текстуры
 
 		// Матрицы
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -655,17 +651,17 @@ namespace WinApi
 		mouseOffsetX = mousePos.x - lastMousePosX;
 		mouseOffsetY = lastMousePosY - mousePos.y;
 
-		Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
+		//Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
 		//Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
 		//Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
 
 		//Debug("\n");
 
-		Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
+		//Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
 		//Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
 		//Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
 
-		Debug("\n");
+		//Debug("\n");
 
 		lastMousePosX = mousePos.x;
 		lastMousePosY = mousePos.y;

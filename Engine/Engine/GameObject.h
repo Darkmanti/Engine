@@ -5,11 +5,15 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 
+#include "Importer.h"
+
 class GameObject
 {
 public:
 
 	GLfloat*	vertices;
+
+	GLuint*		faces;
 
 	GLuint		VAO, VBO, EBO;
 
@@ -21,11 +25,9 @@ public:
 
 	glm::mat4	model;
 
-	GameObject(GLuint texture);
+	GameObject(Shader* shader_, char const* fileName, GLuint texture_);
 
 	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);
-
-	void Init(GLfloat* vertices_, uint64_t Vcount_, GLfloat* Faces_, uint64_t Fcount_, Shader* shader_, GLuint texture_);
 
 	void setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_);
 

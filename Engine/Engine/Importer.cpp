@@ -2,7 +2,7 @@
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GameObject* go, Shader* shader, GLuint texture)
+	uint32_t ImportObj(const char *fileName, GLfloat* &V, uint64_t& countV, GLuint* &F, uint64_t& countF)
 	{
 		// Вертексы
 		std::ifstream file;
@@ -16,13 +16,7 @@ namespace Importer
 
 		std::string str;
 
-		/*int32_t &countV(*go.GetCountV());
-		int32_t &countVT(*go.GetCountVT());
-		int32_t &countF(*go.GetCountF());*/
-
-		int32_t countV(0);
 		int32_t countVT(0);
-		int32_t countF(0);
 
 		while (!file.eof())
 		{
@@ -69,9 +63,9 @@ namespace Importer
 			return 1;
 		}
 
-		GLfloat *V = new GLfloat[countV];
+		V = new GLfloat[countV];
 		GLfloat *VT = new GLfloat[countVT];
-		GLfloat *F = new GLfloat[countF];
+		F = new GLuint[countF];
 		GLfloat *FT = new GLfloat[countF];
 
 		uint64_t iV(0);								// Итератор количества вертексов
@@ -120,10 +114,11 @@ namespace Importer
 
 						for (int i = 0; i < 3; ++i)
 						{
-							uint32_t f1, f2;
+							uint32_t f1, f2, f3;
 
 							tmp >> f1;
 							tmp >> f2;
+							tmp >> f3;
 
 							F[iF] = --f1; ++iF;
 							FT[iFT] = --f2; ++iFT;
@@ -135,11 +130,14 @@ namespace Importer
 
 						for (int i = 0; i < 3; ++i)
 						{
-							int32_t f1;
+							int32_t f1, f2, f3;
 
 							tmp >> f1;
+							tmp >> f2;
+							tmp >> f3;
 
 							F[iF] = --f1; ++iF;
+							FT[iFT] = --f2; ++iFT;
 						}
 					}
 
@@ -166,33 +164,9 @@ namespace Importer
 			getline(file, str);
 		}
 
-		/*go.SetV(V);
-		go.SetVT(VT);
-		go.SetF(F);
-		go.SetFT(FT);*/
-
 		file.close();
 
-		go->Init(V, countV, F, countF, shader, texture);
-
-		//glGenBuffers(1, go.GetVBO());
-		//glGenVertexArrays(1, go.GetVAO());
-		//glGenBuffers(1, go.GetEBO());
-
-		//glBindVertexArray(*go.GetVAO()); // Open VAO
-
-
-		//glBindBuffer(GL_ARRAY_BUFFER, *go.GetVBO());
-		//glBufferData(GL_ARRAY_BUFFER, countV * sizeof(float), V, GL_STATIC_DRAW);
-
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *go.GetEBO());
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF * sizeof(float), F, GL_STATIC_DRAW);
-
-		//glEnableVertexAttribArray(0);
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (GLvoid *)0);
-
-
-		//glBindVertexArray(0); // Close VAO (default)
+		//memmove(&V[countF], &VT, sizeof(GLfloat)); // я честно хз как она работает, но она работает через раз, и при этом неправильно
 
 		return 0;
 	}
