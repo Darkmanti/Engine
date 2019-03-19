@@ -2,7 +2,7 @@
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GLfloat* &V, uint64_t& countV, GLuint* &F, uint64_t& countF)
+	uint32_t ImportObj(const char *fileName, GLuint& VAO, GLuint& VBO, GLuint& EBO, uint64_t& countV, uint64_t& countF)
 	{
 		// Вертексы
 		std::ifstream file;
@@ -63,9 +63,9 @@ namespace Importer
 			return 1;
 		}
 
-		V = new GLfloat[countV];
+		GLfloat *V = new GLfloat[countV];
 		GLfloat *VT = new GLfloat[countVT];
-		F = new GLuint[countF];
+		GLuint	*F = new GLuint[countF];
 		GLfloat *FT = new GLfloat[countF];
 
 		uint64_t iV(0);								// Итератор количества вертексов
@@ -156,8 +156,8 @@ namespace Importer
 					file >> str;
 					v = std::stof(str);
 
-					VT[iVT] = u; ++iVT;
-					VT[iVT] = v; ++iVT;
+					V[iVT + countV] = u; ++iVT;
+					V[iVT + countV] = v; ++iVT;
 				}
 			}
 
@@ -166,7 +166,28 @@ namespace Importer
 
 		file.close();
 
-		//memmove(&V[countF], &VT, sizeof(GLfloat)); // я честно хз как она работает, но она работает через раз, и при этом неправильно
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &EBO);
+
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, countV * sizeof(V), V, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF * sizeof(float), F, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+		//glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(countV * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+
+		glBindVertexArray(0);
 
 		return 0;
 	}

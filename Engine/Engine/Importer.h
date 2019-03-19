@@ -18,5 +18,5 @@
 
 namespace Importer
 {
-	uint32_t ImportObj(const char *fileName, GLfloat* &V_, uint64_t& countV, GLuint* &F_, uint64_t& countF);
+	uint32_t ImportObj(const char *fileName, GLuint& VAO, GLuint& VBO, GLuint& EBO, uint64_t& countV, uint64_t& countF);
 };

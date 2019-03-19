@@ -11,10 +11,6 @@ class GameObject
 {
 public:
 
-	GLfloat*	vertices;
-
-	GLuint*		faces;
-
 	GLuint		VAO, VBO, EBO;
 
 	uint64_t	Vcount, Fcount;

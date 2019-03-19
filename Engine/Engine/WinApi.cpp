@@ -571,8 +571,6 @@ namespace WinApi
 			Do_Movement();
 			mouseMove();
 
-			//Print_Text(200, 200, (char*)"FAILURE", font, &fontShader);
-
 			// ¬ременный прорисовка =================================================================
 			/*GLfloat currentFrame = GetProcessTimes(); Ќ”∆Ќќ ¬«я“№ ¬–≈ћя –јЅќ“џ!!!
 			deltaTime = currentFrame - lastFrame;
