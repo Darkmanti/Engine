@@ -25,7 +25,7 @@ GameObject::GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GL
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, Vcount * sizeof(vertices_), vertices_, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, (Vcount) * sizeof(GLfloat), vertices_, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
@@ -62,7 +62,23 @@ void GameObject::DrawArray(glm::mat4 projection, glm::mat4 view)
 	shader->setUniform("ourTexture1", 0);
 
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, Vcount / 8);
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view)
+{
+	shader->use();
+	shader->setUniform("projection", projection);
+	shader->setUniform("model", model);
+	shader->setUniform("view", view);
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	shader->setUniform("ourTexture1", 0);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, Fcount);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

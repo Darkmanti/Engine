@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 
-// есть парочка (а может и больше) лишних инклудов, всё для того чтобы memcpy и memmove работал(чисто проверка)
+// есть парочка (а может и больше) лишних инклудов
 #include <stdio.h>
 #include <string.h>
 #include <cstring>

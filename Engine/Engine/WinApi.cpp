@@ -532,17 +532,20 @@ namespace WinApi
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
-		GLuint texture1, texture2, texture3;
+		GLuint texture1, texture2, texture3, texture4;
 		loadImage(texture1, "Resource/container.jpg");
 		loadImage(texture2, "Resource/container2.png");
-		loadImage(texture3, "Resource/Iron/iron.jpg");
+		loadImage(texture3, "Resource/Wood/wood.jpg");
+		loadImage(texture4, "Resource/Iron/iron.jpg");
 
 		// Инициализация текста
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
+		// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
-		GameObject object3(&ourShader, "Resource/Iron/iron.obj", texture3);	// Модель железа без текстуры
+		GameObject object3(&ourShader, "Resource/Wood/wood.obj", texture3);
+		GameObject object4(&ourShader, "Resource/Iron/iron.obj", texture4);
 
 		// Матрицы
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -587,7 +590,10 @@ namespace WinApi
 			object2.DrawArray(projection, view);
 
 			object3.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-			object3.DrawElement(projection, view);
+			object3.DrawArray_temp(projection, view);
+
+			object4.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-50.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object4.DrawArray_temp(projection, view);
 
 			font1.Print(100, 500, (char*)"PARAWOZIK", ortho);
 			// Временный прорисовка =================================================================

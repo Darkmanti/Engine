@@ -29,6 +29,8 @@ public:
 
 	void DrawArray(glm::mat4 projection, glm::mat4 view);
 
+	void DrawArray_temp(glm::mat4 projection, glm::mat4 view);
+
 	void DrawElement(glm::mat4 projection, glm::mat4 view);
 };
 

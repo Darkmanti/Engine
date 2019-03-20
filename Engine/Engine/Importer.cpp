@@ -63,8 +63,9 @@ namespace Importer
 			return 1;
 		}
 
-		GLfloat *V = new GLfloat[countV];
-		GLfloat *VT = new GLfloat[countVT];
+		GLfloat *V = new GLfloat[countF * 2 + countF * 3];
+		GLfloat *V_t = new GLfloat[countF * 3];
+		GLfloat *VT = new GLfloat[countF * 2];
 		GLuint	*F = new GLuint[countF];
 		GLfloat *FT = new GLfloat[countF];
 
@@ -96,9 +97,9 @@ namespace Importer
 					file >> str;
 					z = std::stof(str);
 
-					V[iV] = x; ++iV;
-					V[iV] = y; ++iV;
-					V[iV] = z; ++iV;
+					V_t[iV] = x; ++iV;
+					V_t[iV] = y; ++iV;
+					V_t[iV] = z; ++iV;
 				}
 				else if (str[0] == 'f')
 				{
@@ -156,8 +157,8 @@ namespace Importer
 					file >> str;
 					v = std::stof(str);
 
-					V[iVT + countV] = u; ++iVT;
-					V[iVT + countV] = v; ++iVT;
+					VT[iVT] = u; ++iVT;
+					VT[iVT] = v; ++iVT;
 				}
 			}
 
@@ -166,25 +167,43 @@ namespace Importer
 
 		file.close();
 
+		// Далее идёт переназначение массивов вершин относительно индексов
+
+		uint64_t j(0);
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = F[i] + 1;
+			V[j] = V_t[t * 3 - 3]; j++;
+			V[j] = V_t[t * 3 - 2]; j++;
+			V[j] = V_t[t * 3 - 1]; j++;
+		}
+
+		j = 0;
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = FT[i] + 1;
+			V[(countF * 3) + j] = VT[t * 2 - 2]; j++;
+			V[(countF * 3) + j] = VT[t * 2 - 1]; j++;
+		}
+
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &EBO);
+		//glGenBuffers(1, &EBO);
 
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, countV * sizeof(V), V, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, ((countF * 2) + (countF * 3)) * sizeof(GLfloat), V, GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, countF * sizeof(float), F, GL_STATIC_DRAW);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, (countF) * sizeof(GLuint), F, GL_STATIC_DRAW);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 		glEnableVertexAttribArray(0);
 
-		//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-		//glEnableVertexAttribArray(1);
-
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(countV * sizeof(GLfloat)));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3) * sizeof(GLfloat)));
 		glEnableVertexAttribArray(2);
 
 		glBindVertexArray(0);
