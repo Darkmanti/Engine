@@ -1,44 +1,44 @@
-#include "WinApi.h"
+п»ї#include "WinApi.h"
 
 #include <CommCtrl.h>
 #include <algorithm>
 #include <thread>
 #include <windowsx.h>
 
-// Временные инклуды ===========================================
+// Р’СЂРµРјРµРЅРЅС‹Рµ РёРЅРєР»СѓРґС‹ ===========================================
 #include "Camera.h"
 #include "Shader.h"
 #include <GLM/glm.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 
-// Первый define относится к загрузке шрифтов, второй к картинкам
+// РџРµСЂРІС‹Р№ define РѕС‚РЅРѕСЃРёС‚СЃСЏ Рє Р·Р°РіСЂСѓР·РєРµ С€СЂРёС„С‚РѕРІ, РІС‚РѕСЂРѕР№ Рє РєР°СЂС‚РёРЅРєР°Рј
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 
 #include "GameObject.h"
 #include "FontObject.h"
-// Временные инклуды ===========================================
+// Р’СЂРµРјРµРЅРЅС‹Рµ РёРЅРєР»СѓРґС‹ ===========================================
 
 #pragma comment(lib,"ComCtl32.Lib")
 
 namespace WinApi
 {
-	WNDCLASSEX			pWndEngineClassEx,				// Структура класса окна
-						pWndRenderClassEx;				// Структура класса рендер окна
+	WNDCLASSEX			pWndEngineClassEx,				// РЎС‚СЂСѓРєС‚СѓСЂР° РєР»Р°СЃСЃР° РѕРєРЅР°
+						pWndRenderClassEx;				// РЎС‚СЂСѓРєС‚СѓСЂР° РєР»Р°СЃСЃР° СЂРµРЅРґРµСЂ РѕРєРЅР°
 
-	// Различные дескрипторы
-	HDC					hDC;							// Дескриптор устройства
-	HGLRC				hRC;							// Дескпритор ...
+	// Р Р°Р·Р»РёС‡РЅС‹Рµ РґРµСЃРєСЂРёРїС‚РѕСЂС‹
+	HDC					hDC;							// Р”РµСЃРєСЂРёРїС‚РѕСЂ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+	HGLRC				hRC;							// Р”РµСЃРєРїСЂРёС‚РѕСЂ ...
 
-	HWND				hWndEngine,						// Главное окно редактора
-						hWndRender,						// Окно рендера внутри редактора
+	HWND				hWndEngine,						// Р“Р»Р°РІРЅРѕРµ РѕРєРЅРѕ СЂРµРґР°РєС‚РѕСЂР°
+						hWndRender,						// РћРєРЅРѕ СЂРµРЅРґРµСЂР° РІРЅСѓС‚СЂРё СЂРµРґР°РєС‚РѕСЂР°
 
-						hWndListViewLocation,			// ListView локации
-						hWndListViewProject;			// ListView проекта
+						hWndListViewLocation,			// ListView Р»РѕРєР°С†РёРё
+						hWndListViewProject;			// ListView РїСЂРѕРµРєС‚Р°
 
-	// Меню
+	// РњРµРЅСЋ
 	HMENU				hMenu,
 						hPopMenuFile,
 						hPopMenuScene,
@@ -67,12 +67,12 @@ namespace WinApi
 
 	bool previousKeyboardState[NumberOfKeys];
 
-	// Временная функции ====================================================
+	// Р’СЂРµРјРµРЅРЅР°СЏ С„СѓРЅРєС†РёРё ====================================================
 	void Do_Movement();
 	GLfloat deltaTime = 0.016f;
 	Camera camera(glm::vec3(0.0f, 0.0f, 15.0f));
-	void loadImage(GLuint &texture, char const* fileName);
-	// Временная функции ====================================================
+	void loadImage(GLuint &texture, char const* fileName, int Par);
+	// Р’СЂРµРјРµРЅРЅР°СЏ С„СѓРЅРєС†РёРё ====================================================
 
 	bool ListViewAddItem(const char* elementName, HWND hWndListView)
 	{
@@ -82,7 +82,7 @@ namespace WinApi
 		lvi.iItem = 0x7FFFFFFF;
 		lvi.pszText = (LPSTR)elementName;
 
-		// Добавить элемент
+		// Р”РѕР±Р°РІРёС‚СЊ СЌР»РµРјРµРЅС‚
 		if (ListView_InsertItem(hWndListView, &lvi) < 0)
 		{
 			return true;
@@ -101,18 +101,18 @@ namespace WinApi
 		return false;
 	}
 
-	// Регистрация класса окна
+	// Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»Р°СЃСЃР° РѕРєРЅР°
 	ATOM RegisterWindowEngine()
 	{
-		// Описываем поля структур
-		pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Размер в байтах структуры класса
-		pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// Стиль окна
-		pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// Указатель на оконную процедуру
-		pWndEngineClassEx.hInstance = hInstance;									// Дескриптор приложения
-		pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// Подгружам курсор
-		pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// Указатель на кисть с цветом фона (Типо кисть - рисование)
-		pWndEngineClassEx.lpszClassName = "WndEngineClass";							// Наименование класса
-		pWndEngineClassEx.hIcon = LoadIcon(hInstance, "IDI_ENGINEICON");			// Иконка
+		// РћРїРёСЃС‹РІР°РµРј РїРѕР»СЏ СЃС‚СЂСѓРєС‚СѓСЂ
+		pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Р Р°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С… СЃС‚СЂСѓРєС‚СѓСЂС‹ РєР»Р°СЃСЃР°
+		pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// РЎС‚РёР»СЊ РѕРєРЅР°
+		pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РѕРєРѕРЅРЅСѓСЋ РїСЂРѕС†РµРґСѓСЂСѓ
+		pWndEngineClassEx.hInstance = hInstance;									// Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+		pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// РџРѕРґРіСЂСѓР¶Р°Рј РєСѓСЂСЃРѕСЂ
+		pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєРёСЃС‚СЊ СЃ С†РІРµС‚РѕРј С„РѕРЅР° (РўРёРїРѕ РєРёСЃС‚СЊ - СЂРёСЃРѕРІР°РЅРёРµ)
+		pWndEngineClassEx.lpszClassName = "WndEngineClass";							// РќР°РёРјРµРЅРѕРІР°РЅРёРµ РєР»Р°СЃСЃР°
+		pWndEngineClassEx.hIcon = LoadIcon(hInstance, "IDI_ENGINEICON");			// РРєРѕРЅРєР°
 
 		if (int16_t iError = RegisterClassEx(&pWndEngineClassEx))
 		{
@@ -120,7 +120,7 @@ namespace WinApi
 		}
 		else
 		{
-			MessageBox(NULL, "Класс не зарегистрирован", "RegisterWindowEngine", MB_OK);
+			MessageBox(NULL, "РљР»Р°СЃСЃ РЅРµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ", "RegisterWindowEngine", MB_OK);
 			return iError;
 		}
 
@@ -128,13 +128,13 @@ namespace WinApi
 	}
 	ATOM RegisterWindowRender()
 	{
-		pWndRenderClassEx.cbSize = sizeof(WNDCLASSEX);											// Размер в байтах структуры класса
-		pWndRenderClassEx.style = CS_VREDRAW | CS_HREDRAW | CS_BYTEALIGNCLIENT;					// Стиль окна
-		pWndRenderClassEx.lpfnWndProc = WndRenderProc;											// Указатель на оконную процедуру
-		pWndRenderClassEx.hInstance = hInstance;												// Дескриптор приложения
-		pWndRenderClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);								// Подгружам курсор
-		pWndRenderClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);							// Указатель на кисть с цветом фона (Типо кисть - рисование)
-		pWndRenderClassEx.lpszClassName = "WndRenderClass";										// Наименование класса
+		pWndRenderClassEx.cbSize = sizeof(WNDCLASSEX);											// Р Р°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С… СЃС‚СЂСѓРєС‚СѓСЂС‹ РєР»Р°СЃСЃР°
+		pWndRenderClassEx.style = CS_VREDRAW | CS_HREDRAW | CS_BYTEALIGNCLIENT;					// РЎС‚РёР»СЊ РѕРєРЅР°
+		pWndRenderClassEx.lpfnWndProc = WndRenderProc;											// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РѕРєРѕРЅРЅСѓСЋ РїСЂРѕС†РµРґСѓСЂСѓ
+		pWndRenderClassEx.hInstance = hInstance;												// Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+		pWndRenderClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);								// РџРѕРґРіСЂСѓР¶Р°Рј РєСѓСЂСЃРѕСЂ
+		pWndRenderClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);							// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєРёСЃС‚СЊ СЃ С†РІРµС‚РѕРј С„РѕРЅР° (РўРёРїРѕ РєРёСЃС‚СЊ - СЂРёСЃРѕРІР°РЅРёРµ)
+		pWndRenderClassEx.lpszClassName = "WndRenderClass";										// РќР°РёРјРµРЅРѕРІР°РЅРёРµ РєР»Р°СЃСЃР°
 
 		if (int16_t iError = RegisterClassEx(&pWndRenderClassEx))
 		{
@@ -142,33 +142,33 @@ namespace WinApi
 		}
 		else
 		{
-			MessageBox(NULL, "Класс не зарегистрирован", "RegisterWindowRender", MB_OK);
+			MessageBox(NULL, "РљР»Р°СЃСЃ РЅРµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ", "RegisterWindowRender", MB_OK);
 			return iError;
 		}
 
 		return 0;
 	}
 
-	// Создание окна
+	// РЎРѕР·РґР°РЅРёРµ РѕРєРЅР°
 	uint16_t CreateWindowEngine()
 	{
-		// Дескриптор окна
+		// Р”РµСЃРєСЂРёРїС‚РѕСЂ РѕРєРЅР°
 		hWndEngine = CreateWindowEx(WS_EX_ACCEPTFILES,									// Extended style
-			pWndEngineClassEx.lpszClassName,											// Название класса
-			"Движок",																	// Название окна
-			WS_OVERLAPPEDWINDOW,														// Стиль окна
-			0, 0,																		// Позиция
-			1366, 768,																	// Размер
-			0,																			// Родительское окно
-			0,																			// Меню
-			hInstance,																	// Десприптор приложения
-			0																			// Все это говно доступно на msdn
+			pWndEngineClassEx.lpszClassName,											// РќР°Р·РІР°РЅРёРµ РєР»Р°СЃСЃР°
+			"Р”РІРёР¶РѕРє",																	// РќР°Р·РІР°РЅРёРµ РѕРєРЅР°
+			WS_OVERLAPPEDWINDOW,														// РЎС‚РёР»СЊ РѕРєРЅР°
+			0, 0,																		// РџРѕР·РёС†РёСЏ
+			1366, 768,																	// Р Р°Р·РјРµСЂ
+			0,																			// Р РѕРґРёС‚РµР»СЊСЃРєРѕРµ РѕРєРЅРѕ
+			0,																			// РњРµРЅСЋ
+			hInstance,																	// Р”РµСЃРїСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+			0																			// Р’СЃРµ СЌС‚Рѕ РіРѕРІРЅРѕ РґРѕСЃС‚СѓРїРЅРѕ РЅР° msdn
 		);
 
-		// Проверка на создание окна
+		// РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
 		if (!hWndEngine)
 		{
-			MessageBox(NULL, "Окно не создано", "Ошибка", MB_OK);
+			MessageBox(NULL, "РћРєРЅРѕ РЅРµ СЃРѕР·РґР°РЅРѕ", "РћС€РёР±РєР°", MB_OK);
 			return 1;
 		}
 
@@ -177,21 +177,21 @@ namespace WinApi
 	uint16_t CreateWindowRender()
 	{
 		hWndRender = CreateWindowEx(WS_EX_ACCEPTFILES,		// Extended style
-			pWndRenderClassEx.lpszClassName,				// Название класса
-			"Рендер",										// Название окна
-			WS_THICKFRAME | WS_CHILD,						// Стиль окна
-			256, 256,										// Позиция
-			800, 600,										// Размер
-			hWndEngine,										// Родительское окно
-			0,												// Меню
-			hInstance,										// Десприптор приложения
-			0												// Все это говно доступно на msdn
+			pWndRenderClassEx.lpszClassName,				// РќР°Р·РІР°РЅРёРµ РєР»Р°СЃСЃР°
+			"Р РµРЅРґРµСЂ",										// РќР°Р·РІР°РЅРёРµ РѕРєРЅР°
+			WS_THICKFRAME | WS_CHILD,						// РЎС‚РёР»СЊ РѕРєРЅР°
+			256, 256,										// РџРѕР·РёС†РёСЏ
+			800, 600,										// Р Р°Р·РјРµСЂ
+			hWndEngine,										// Р РѕРґРёС‚РµР»СЊСЃРєРѕРµ РѕРєРЅРѕ
+			0,												// РњРµРЅСЋ
+			hInstance,										// Р”РµСЃРїСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+			0												// Р’СЃРµ СЌС‚Рѕ РіРѕРІРЅРѕ РґРѕСЃС‚СѓРїРЅРѕ РЅР° msdn
 		);
 
-		// Проверка на создание окна
+		// РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
 		if (!hWndRender)
 		{
-			MessageBox(NULL, "Окно не создано", "Ошибка", MB_OK);
+			MessageBox(NULL, "РћРєРЅРѕ РЅРµ СЃРѕР·РґР°РЅРѕ", "РћС€РёР±РєР°", MB_OK);
 			return 1;
 		}
 
@@ -201,7 +201,7 @@ namespace WinApi
 	{
 		hWndListViewLocation = CreateWindowEx(NULL,
 			WC_LISTVIEW,
-			"Сцена",
+			"РЎС†РµРЅР°",
 			WS_VISIBLE | LVS_SINGLESEL | LVS_REPORT | WS_CHILD,
 			0, 0,
 			192, 256,
@@ -215,15 +215,15 @@ namespace WinApi
 			return 1;
 		}
 
-		// Дополнительные свойства
+		// Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 		SetWindowSubclass(hWndListViewLocation, SubClassLocationProc, 1, NULL);
 		ListView_SetExtendedListViewStyle(hWndListViewLocation, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-		// Добавить столбцы
+		// Р”РѕР±Р°РІРёС‚СЊ СЃС‚РѕР»Р±С†С‹
 		LVCOLUMN lvc;
 		lvc.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 		lvc.iSubItem = 0;
-		lvc.pszText = (LPSTR)"Имя";
+		lvc.pszText = (LPSTR)"РРјСЏ";
 		lvc.cx = 100;
 
 		if (ListView_InsertColumn(hWndListViewLocation, 0, &lvc) == -1)
@@ -237,7 +237,7 @@ namespace WinApi
 	{
 		hWndListViewProject = CreateWindowEx(NULL,
 			WC_LISTVIEW,
-			"Проект",
+			"РџСЂРѕРµРєС‚",
 			WS_VISIBLE | LVS_SINGLESEL | LVS_REPORT | WS_CHILD,
 			0, 256,
 			192, 256,
@@ -254,11 +254,11 @@ namespace WinApi
 		SetWindowSubclass(hWndListViewProject, SubClassProjectProc, 2, NULL);
 		ListView_SetExtendedListViewStyle(hWndListViewProject, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-		// Добавить столбцы
+		// Р”РѕР±Р°РІРёС‚СЊ СЃС‚РѕР»Р±С†С‹
 		LVCOLUMN lvc;
 		lvc.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 		lvc.iSubItem = 0;
-		lvc.pszText = (LPSTR)"Имя";
+		lvc.pszText = (LPSTR)"РРјСЏ";
 		lvc.cx = 100;
 
 		if (ListView_InsertColumn(hWndListViewProject, 0, &lvc) == -1)
@@ -266,7 +266,7 @@ namespace WinApi
 			return 1;
 		}
 
-		lvc.pszText = (LPSTR)"Тип";
+		lvc.pszText = (LPSTR)"РўРёРї";
 		lvc.iSubItem = 1;
 		if (ListView_InsertColumn(hWndListViewProject, 0, &lvc) == -1)
 		{
@@ -288,29 +288,29 @@ namespace WinApi
 			return 1;
 		}
 
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuFile, "&Файл");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_NEWLOCATION, "Новая локация\tCtrl+N");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_OPENLOCATION, "Открыть локацию\tCtrl+O");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVELOCATION, "Сохранить\tCtrl+S");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVEASLOCATION, "Сохранить как\tCtrl+Shift+S");
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuFile, "&Р¤Р°Р№Р»");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_NEWLOCATION, "РќРѕРІР°СЏ Р»РѕРєР°С†РёСЏ\tCtrl+N");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_OPENLOCATION, "РћС‚РєСЂС‹С‚СЊ Р»РѕРєР°С†РёСЋ\tCtrl+O");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVELOCATION, "РЎРѕС…СЂР°РЅРёС‚СЊ\tCtrl+S");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVEASLOCATION, "РЎРѕС…СЂР°РЅРёС‚СЊ РєР°Рє\tCtrl+Shift+S");
 		AppendMenu(hPopMenuFile, MF_SEPARATOR, MENU_FILE_SAVEASLOCATION + 1, "");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_QUIT, "Выход\tAlt+F4");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_QUIT, "Р’С‹С…РѕРґ\tAlt+F4");
 
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuScene, "&Сцена");
-		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_CREATE, "Создать");
-		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_DELETE, "Удалить");
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuScene, "&РЎС†РµРЅР°");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_CREATE, "РЎРѕР·РґР°С‚СЊ");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_DELETE, "РЈРґР°Р»РёС‚СЊ");
 
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProject, "&Проект");
-		AppendMenu(hPopMenuProject, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProjectImport, "&Импорт");
-		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_MODEL, "Модель");
-		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "Текстуру");
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProject, "&РџСЂРѕРµРєС‚");
+		AppendMenu(hPopMenuProject, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProjectImport, "&РРјРїРѕСЂС‚");
+		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_MODEL, "РњРѕРґРµР»СЊ");
+		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "РўРµРєСЃС‚СѓСЂСѓ");
 
 		SetMenu(hWndEngine, hMenu);
 
 		return 0;
 	}
 
-	// Инициализация интерфейса
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 	uint16_t InitInterface()
 	{
 		uint16_t iError;
@@ -318,7 +318,7 @@ namespace WinApi
 		if (iError = RegisterWindowEngine()) return iError * 10 + 1;
 		if (iError = RegisterWindowRender()) return iError * 10 + 2;
 
-		// Проверка на создание окна
+		// РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
 		if (iError = CreateWindowEngine()) return iError * 10 + 5;
 		if (iError = CreateWindowRender()) return iError * 10 + 6;
 
@@ -341,7 +341,7 @@ namespace WinApi
 		return 0;
 	}
 
-	// Оконные процедуры
+	// РћРєРѕРЅРЅС‹Рµ РїСЂРѕС†РµРґСѓСЂС‹
 	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		if (!isLoaded)
@@ -378,7 +378,7 @@ namespace WinApi
 				break;
 
 			case MENU_FILE_SAVEASLOCATION:
-				// Диалог сохранения
+				// Р”РёР°Р»РѕРі СЃРѕС…СЂР°РЅРµРЅРёСЏ
 				OFN.lStructSize = sizeof(OFN);
 				OFN.hwndOwner = NULL;
 				OFN.lpstrFile = szDirect;
@@ -395,7 +395,7 @@ namespace WinApi
 				break;
 
 			case MENU_FILE_QUIT:
-				// Выход
+				// Р’С‹С…РѕРґ
 				PostQuitMessage(0);
 				break;
 
@@ -475,12 +475,12 @@ namespace WinApi
 		return 0;
 	}
 
-	// Метод с циклом программы
+	// РњРµС‚РѕРґ СЃ С†РёРєР»РѕРј РїСЂРѕРіСЂР°РјРјС‹
 	void Loop()
 	{
-		MSG message{ 0 }; 	// Структура сообщения к окну
+		MSG message{ 0 }; 	// РЎС‚СЂСѓРєС‚СѓСЂР° СЃРѕРѕР±С‰РµРЅРёСЏ Рє РѕРєРЅСѓ
 
-		// Временно здесь будет инициализация тестовой сцены ===========================================
+		// Р’СЂРµРјРµРЅРЅРѕ Р·РґРµСЃСЊ Р±СѓРґРµС‚ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚РµСЃС‚РѕРІРѕР№ СЃС†РµРЅС‹ ===========================================
 		glewExperimental = GL_TRUE;
 		glewInit();
 
@@ -532,31 +532,34 @@ namespace WinApi
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
-		GLuint texture1, texture2, texture3, texture4;
-		loadImage(texture1, "Resource/container.jpg");
-		loadImage(texture2, "Resource/container2.png");
-		loadImage(texture3, "Resource/Wood/wood.jpg");
-		loadImage(texture4, "Resource/Iron/iron.jpg");
+		Shader BerezaShader("Shader//BerezaShader.vs", "Shader//BerezaShader.fs");
+		GLuint texture1, texture2, texture3, texture4, texture5;
+		loadImage(texture1, "Resource/container.jpg", GL_RGB);
+		loadImage(texture2, "Resource/container2.png", GL_RGB);
+		loadImage(texture3, "Resource/Wood/wood.jpg", GL_RGB);
+		loadImage(texture4, "Resource/Iron/iron.jpg", GL_RGB);
+		loadImage(texture5, "Resource/Bereza/Bereza.png", GL_RGBA);
 
-		// Инициализация текста
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚РµРєСЃС‚Р°
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
-		// Инициализация объектов
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕР±СЉРµРєС‚РѕРІ
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
 		GameObject object3(&ourShader, "Resource/Wood/wood.obj", texture3);
 		GameObject object4(&ourShader, "Resource/Iron/iron.obj", texture4);
+		GameObject object5(&ourShader, "Resource/Bereza/Bereza.obj", texture5);
 
-		// Матрицы
+		// РњР°С‚СЂРёС†С‹
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(camera.Zoom, (GLfloat)800 / (GLfloat)600, 0.1f, 1000.0f);
 		glm::mat4 ortho(1.0f);
 		ortho = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, 0.0f, 100.0f);
 
-		// Временно здесь будет инициализация тестовой сцены ===========================================
+		// Р’СЂРµРјРµРЅРЅРѕ Р·РґРµСЃСЊ Р±СѓРґРµС‚ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚РµСЃС‚РѕРІРѕР№ СЃС†РµРЅС‹ ===========================================
 
-		// Пока есть сообщения
-		// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
+		// РџРѕРєР° РµСЃС‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ
+		// Р•СЃР»Рё СЃРёСЃС‚РµРјР° РІРµСЂРЅСѓР»Р° РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ РєРѕРґ (РѕС€РёР±РєР°), С‚Рѕ РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р° РѕР±СЂР°Р±РѕС‚РєРё
 		while (true)
 		{
 			if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
@@ -566,7 +569,7 @@ namespace WinApi
 					break;
 				}
 
-				// Обрабатываем сообщения в WndProc
+				// РћР±СЂР°Р±Р°С‚С‹РІР°РµРј СЃРѕРѕР±С‰РµРЅРёСЏ РІ WndProc
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}
@@ -574,8 +577,8 @@ namespace WinApi
 			Do_Movement();
 			mouseMove();
 
-			// Временный прорисовка =================================================================
-			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
+			// Р’СЂРµРјРµРЅРЅС‹Р№ РїСЂРѕСЂРёСЃРѕРІРєР° =================================================================
+			/*GLfloat currentFrame = GetProcessTimes(); РќРЈР–РќРћ Р’Р—РЇРўР¬ Р’Р Р•РњРЇ Р РђР‘РћРўР«!!!
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;*/
 
@@ -585,18 +588,21 @@ namespace WinApi
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
 			
-			object1.DrawArray(projection, view);
+			object1.DrawArray(projection, view, camera.Position);
 			object2.setModel(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-			object2.DrawArray(projection, view);
+			object2.DrawArray(projection, view, camera.Position);
 
 			object3.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-			object3.DrawArray_temp(projection, view);
+			object3.DrawArray_temp(projection, view, camera.Position);
 
 			object4.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-50.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-			object4.DrawArray_temp(projection, view);
+			object4.DrawArray_temp(projection, view, camera.Position);
+
+			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object5.DrawArray_temp(projection, view, camera.Position);
 
 			font1.Print(100, 500, (char*)"PARAWOZIK", ortho);
-			// Временный прорисовка =================================================================
+			// Р’СЂРµРјРµРЅРЅС‹Р№ РїСЂРѕСЂРёСЃРѕРІРєР° =================================================================
 
 			SwapBuffers(hDC);
 
@@ -711,7 +717,7 @@ namespace WinApi
 		system("cls");
 	}
 
-	void loadImage(GLuint &texture, char const* fileName)
+	void loadImage(GLuint &texture, char const* fileName, int Par)
 	{
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -726,7 +732,7 @@ namespace WinApi
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		glTexImage2D(GL_TEXTURE_2D, 0, Par, w, h, 0, Par, GL_UNSIGNED_BYTE, image);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		stbi_image_free(image);

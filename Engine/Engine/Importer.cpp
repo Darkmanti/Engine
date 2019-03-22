@@ -17,6 +17,7 @@ namespace Importer
 		std::string str;
 
 		int32_t countVT(0);
+		int32_t countVN(0);
 
 		while (!file.eof())
 		{
@@ -35,23 +36,30 @@ namespace Importer
 					getline(file, str);
 
 					++countF;
+					++countF;
+					++countF;
 
 					continue;
 				}
 			}
-			else
+			else if (str.length() == 2)
 			{
 				if (str.substr(0, 2) == "vt")
 				{
 					++countVT;
 					++countVT;
 				}
+
+				if (str.substr(0, 2) == "vn")
+				{
+					++countVN;
+					++countVN;
+					++countVN;
+				}
 			}
 
 			getline(file, str);
 		}
-
-		countF *= 3;
 
 		file.close();
 
@@ -63,16 +71,20 @@ namespace Importer
 			return 1;
 		}
 
-		GLfloat *V = new GLfloat[countF * 2 + countF * 3];
+		GLfloat *V = new GLfloat[countF * 2 + countF * 3 + countF * 3];
 		GLfloat *V_t = new GLfloat[countF * 3];
 		GLfloat *VT = new GLfloat[countF * 2];
+		GLfloat *VN = new GLfloat[countF * 3];
 		GLuint	*F = new GLuint[countF];
-		GLfloat *FT = new GLfloat[countF];
+		GLuint *FT = new GLuint[countF];
+		GLuint *FN = new GLuint[countF];
 
 		uint64_t iV(0);								// Итератор количества вертексов
 		uint64_t iVT(0);							// Итератор количества вертексов текстурных
 		uint64_t iF(0);								// Итератор количества полигонов
 		uint64_t iFT(0);							// Итератор количества полигонов текстурных
+		uint64_t iVN(0);							// Итератор количества нормалей
+		uint64_t iFN(0);							// Итератор количества полигонов нормалей
 
 		while (!file.eof())
 		{
@@ -123,6 +135,7 @@ namespace Importer
 
 							F[iF] = --f1; ++iF;
 							FT[iFT] = --f2; ++iFT;
+							FN[iFN] = --f3; ++iFN;
 						}
 					}
 					else
@@ -145,7 +158,7 @@ namespace Importer
 					continue;
 				}
 			}
-			else
+			else if (str.length() == 2)
 			{
 				if (str.substr(0, 2) == "vt")
 				{
@@ -159,6 +172,23 @@ namespace Importer
 
 					VT[iVT] = u; ++iVT;
 					VT[iVT] = v; ++iVT;
+				}
+				else if (str.substr(0, 2) == "vn")
+				{
+					float x, y, z;
+
+					file >> str;
+					x = std::stof(str);
+
+					file >> str;
+					y = std::stof(str);
+
+					file >> str;
+					z = std::stof(str);
+
+					VN[iVN] = x; ++iVN;
+					VN[iVN] = y; ++iVN;
+					VN[iVN] = z; ++iVN;
 				}
 			}
 
@@ -188,6 +218,16 @@ namespace Importer
 			V[(countF * 3) + j] = VT[t * 2 - 1]; j++;
 		}
 
+		j = 0;
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = FN[i] + 1;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 2 - 3]; j++;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 2 - 2]; j++;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 2 - 1]; j++;
+		}
+
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
 		//glGenBuffers(1, &EBO);
@@ -195,7 +235,7 @@ namespace Importer
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, ((countF * 2) + (countF * 3)) * sizeof(GLfloat), V, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, ((countF * 2) + (countF * 3) + (countF * 3)) * sizeof(GLfloat), V, GL_STATIC_DRAW);
 
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, (countF) * sizeof(GLuint), F, GL_STATIC_DRAW);
@@ -203,7 +243,10 @@ namespace Importer
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 		glEnableVertexAttribArray(0);
 
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3) * sizeof(GLfloat)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3) * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3 + countF * 2) * sizeof(GLfloat)));
 		glEnableVertexAttribArray(2);
 
 		glBindVertexArray(0);

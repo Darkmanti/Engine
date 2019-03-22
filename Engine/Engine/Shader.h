@@ -10,6 +10,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "WinApi.h"
+
 class Shader
 {
 public:
