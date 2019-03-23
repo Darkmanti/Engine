@@ -21,6 +21,8 @@ public:
 
 	glm::mat4	model;
 
+	//Script*		scripts;
+
 	GameObject(Shader* shader_, char const* fileName, GLuint texture_);
 
 	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);

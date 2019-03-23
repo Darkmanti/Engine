@@ -532,7 +532,6 @@ namespace WinApi
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
-		Shader BerezaShader("Shader//BerezaShader.vs", "Shader//BerezaShader.fs");
 		GLuint texture1, texture2, texture3, texture4, texture5;
 		loadImage(texture1, "Resource/container.jpg", GL_RGB);
 		loadImage(texture2, "Resource/container2.png", GL_RGB);
