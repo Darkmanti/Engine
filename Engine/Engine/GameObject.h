@@ -21,16 +21,18 @@ public:
 
 	glm::mat4	model;
 
+	//Script*		scripts;
+
 	GameObject(Shader* shader_, char const* fileName, GLuint texture_);
 
 	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);
 
 	void setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_);
 
-	void DrawArray(glm::mat4 projection, glm::mat4 view);
+	void DrawArray(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 
-	void DrawArray_temp(glm::mat4 projection, glm::mat4 view);
+	void DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 
-	void DrawElement(glm::mat4 projection, glm::mat4 view);
+	void DrawElement(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 };
 

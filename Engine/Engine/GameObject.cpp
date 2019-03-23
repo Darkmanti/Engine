@@ -30,10 +30,10 @@ GameObject::GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GL
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
@@ -51,7 +51,7 @@ void GameObject::setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, g
 	model = glm::scale(model, trans_);
 }
 
-void GameObject::DrawArray(glm::mat4 projection, glm::mat4 view)
+void GameObject::DrawArray(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 {
 	shader->use();
 	shader->setUniform("projection", projection);
@@ -59,7 +59,14 @@ void GameObject::DrawArray(glm::mat4 projection, glm::mat4 view)
 	shader->setUniform("view", view);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
-	shader->setUniform("ourTexture1", 0);
+	shader->setUniform("material.diffuse", 0);
+
+	shader->setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+	shader->setUniform("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+	shader->setUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+	shader->setUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+	shader->setUniform("viewPos", viewPos);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, Vcount / 8);
@@ -67,7 +74,7 @@ void GameObject::DrawArray(glm::mat4 projection, glm::mat4 view)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view)
+void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 {
 	shader->use();
 	shader->setUniform("projection", projection);
@@ -75,7 +82,14 @@ void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view)
 	shader->setUniform("view", view);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
-	shader->setUniform("ourTexture1", 0);
+	shader->setUniform("material.diffuse", 0);
+
+	shader->setUniform("dirLight.direction", -0.2f, -1.0f, -0.3f);
+	shader->setUniform("dirLight.ambient", 0.1f, 0.1f, 0.1f);
+	shader->setUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+	shader->setUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+	shader->setUniform("viewPos", viewPos);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, Fcount);
@@ -83,7 +97,7 @@ void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void GameObject::DrawElement(glm::mat4 projection, glm::mat4 view)
+void GameObject::DrawElement(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 {
 	shader->use();
 	shader->setUniform("projection", projection);
