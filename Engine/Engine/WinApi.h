@@ -96,7 +96,7 @@ namespace WinApi
 	void Loop();
 
 	bool isKeyDown(int key);
-	void mouseMove();
+	void CameraControllAction();
 	bool isKeyFirstPressed(int key);
 	bool isKeyFirstReleased(int key);
 

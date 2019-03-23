@@ -1,9 +1,6 @@
 #include "WinApi.h"
 
 #include <CommCtrl.h>
-#include <algorithm>
-#include <thread>
-#include <windowsx.h>
 
 // Временные инклуды ===========================================
 #include "Camera.h"
@@ -60,6 +57,11 @@ namespace WinApi
 						lastMousePosY;
 
 	POINT				mousePos{};
+
+	RECT				windowRenderRect{},
+						windowEngineRect{};
+
+	bool				isCameraAction;
 
 	HINSTANCE			hInstance;
 
@@ -416,6 +418,10 @@ namespace WinApi
 			}
 
 			break;
+		case WM_MOVE:
+		case WM_SIZE:
+			GetWindowRect(hWndEngine, &windowEngineRect);
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
@@ -437,6 +443,15 @@ namespace WinApi
 		{
 		case WM_SIZE:
 			glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
+
+			GetWindowRect(hWndRender, &windowRenderRect);
+
+			Debug("x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
+			Debug("y = "); Debug(std::to_string(windowRenderRect.top).c_str()); Debug("\n");
+
+			Debug("width = "); Debug(std::to_string(windowRenderRect.right).c_str()); Debug("\n");
+			Debug("height = "); Debug(std::to_string(windowRenderRect.bottom).c_str()); Debug("\n");
+
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -571,8 +586,7 @@ namespace WinApi
 				DispatchMessage(&message);
 			}
 
-			Do_Movement();
-			mouseMove();
+			CameraControllAction();
 
 			// Временный прорисовка =================================================================
 			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
@@ -634,74 +648,73 @@ namespace WinApi
 		return (!previousKeyboardState[key] && previousState);
 	}
 
-	void mouseMove()
+	void CameraControllAction()
 	{
 		GetCursorPos(&mousePos);
 
-		
-
-		if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
+		if (mousePos.x >= windowRenderRect.left && mousePos.y >= windowRenderRect.top && mousePos.x <= windowRenderRect.right && mousePos.y <= windowRenderRect.bottom)
 		{
+			// Если клавиши управления нажаты впервые
+			if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
+			{
+				isCameraAction = true;
+
+				lastMousePosX = mousePos.x;
+				lastMousePosY = mousePos.y;
+			}
+		}
+
+		// Если клавиши управления нажаты
+		if ((isKeyDown(VK_RBUTTON) || isKeyDown(VK_LBUTTON) && isKeyDown(VK_LMENU)) && isCameraAction)
+		{
+			// Движение камеры
+			if (isKeyDown(VK_W))
+			{
+				camera.ProcessKeyboard(FORWARD, deltaTime);
+			}
+
+			if (isKeyDown(VK_S))
+			{
+				camera.ProcessKeyboard(BACKWARD, deltaTime);
+			}
+
+			if (isKeyDown(VK_A))
+			{
+				camera.ProcessKeyboard(LEFT, deltaTime);
+			}
+
+			if (isKeyDown(VK_D))
+			{
+				camera.ProcessKeyboard(RIGHT, deltaTime);
+			}
+
+			mouseOffsetX = mousePos.x - lastMousePosX;
+			mouseOffsetY = lastMousePosY - mousePos.y;
+
+			//Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
+			//Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
+			//Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
+
+			//Debug("\n");
+
+			//Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
+			//Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
+			//Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
+
+			//Debug("\n");
+
 			lastMousePosX = mousePos.x;
 			lastMousePosY = mousePos.y;
+
+			camera.ProcessMouseMovement(mouseOffsetX, mouseOffsetY);
 		}
-		else if (isKeyDown(VK_RBUTTON) || isKeyDown(VK_LBUTTON) && isKeyDown(VK_LMENU))
-		{ }
 		else
 		{
-			return;
-		}
-
-		mouseOffsetX = mousePos.x - lastMousePosX;
-		mouseOffsetY = lastMousePosY - mousePos.y;
-
-		//Debug("mousepos.x = "); Debug(std::to_string(mousePos.x).c_str()); Debug("\t");
-		//Debug("last.x = "); Debug(std::to_string(lastMousePosX).c_str()); Debug("\t");
-		//Debug("offset.x = "); Debug(std::to_string(mouseOffsetX).c_str()); Debug("\t");
-
-		//Debug("\n");
-
-		//Debug("mousepos.y = "); Debug(std::to_string(mousePos.y).c_str()); Debug("\t");
-		//Debug("last.y = "); Debug(std::to_string(lastMousePosY).c_str()); Debug("\t");
-		//Debug("offset.y = "); Debug(std::to_string(mouseOffsetY).c_str()); Debug("\t");
-
-		//Debug("\n");
-
-		lastMousePosX = mousePos.x;
-		lastMousePosY = mousePos.y;
-
-		camera.ProcessMouseMovement(mouseOffsetX, mouseOffsetY);
-	}
-
-	void Do_Movement()
-	{
-		if (!isKeyDown(VK_RBUTTON))
-		{
-			return;
-		}
-
-		if (isKeyDown(VK_W))
-		{
-			camera.ProcessKeyboard(FORWARD, deltaTime);
-		}
-
-		if (isKeyDown(VK_S))
-		{
-			camera.ProcessKeyboard(BACKWARD, deltaTime);
-		}
-
-		if (isKeyDown(VK_A))
-		{
-			camera.ProcessKeyboard(LEFT, deltaTime);
-		}
-
-		if (isKeyDown(VK_D))
-		{
-			camera.ProcessKeyboard(RIGHT, deltaTime);
+			isCameraAction = false;
 		}
 	}
 
-	void Debug(const char* sms)
+	void Debug(const char *sms)
 	{
 		WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
 	}
