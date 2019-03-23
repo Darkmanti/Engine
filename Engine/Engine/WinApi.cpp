@@ -305,7 +305,8 @@ namespace WinApi
 		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProject, "&Проект");
 		AppendMenu(hPopMenuProject, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProjectImport, "&Импорт");
 		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_MODEL, "Модель");
-		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "Текстуру");
+		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "Текстура");
+		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_BUILD, "Собрать");
 
 		SetMenu(hWndEngine, hMenu);
 
@@ -414,6 +415,12 @@ namespace WinApi
 				break;
 			case MENU_PROJECT_IMPORT_TEXTURE:
 				//
+				break;
+			case MENU_PROJECT_BUILD:
+				// Сборка
+				break;
+			case MENU_PROJECT_CLEAR:
+				// Очистка
 				break;
 			}
 
@@ -613,7 +620,6 @@ namespace WinApi
 			// Временный прорисовка =================================================================
 
 			SwapBuffers(hDC);
-
 		}
 	}
 
