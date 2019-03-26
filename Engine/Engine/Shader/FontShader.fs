@@ -4,12 +4,9 @@ in vec2 TexCoord;
 out vec4 color;
 
 uniform sampler2D ourTexture;
+uniform vec3 fontColor;
 
 void main()
 {
-    if((texture(ourTexture, TexCoord)).r == 0)
-	{
-		discard;
-	}
-	color = vec4((texture(ourTexture, TexCoord)).r);
+	color = vec4(texture(ourTexture, TexCoord).r) * vec4(fontColor, 1.0f);
 }

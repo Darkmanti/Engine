@@ -31,7 +31,7 @@ void main()
 	
 	vec3 result = CalcDirLight(dirLight, norm, viewDir);
 	
-	color = vec4(result, 1.0);
+	color = vec4(result, (texture(material.diffuse, TexCoord)).a);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
