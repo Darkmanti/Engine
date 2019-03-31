@@ -7,7 +7,6 @@
 #include <GLM/gtc/type_ptr.hpp>
 
 // Первый define относится к загрузке шрифтов, второй к картинкам
-#define STB_TRUETYPE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 

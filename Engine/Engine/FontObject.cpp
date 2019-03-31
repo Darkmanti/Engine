@@ -6,7 +6,7 @@ FontObject::FontObject(Shader* shader_, int heightFont, int glyphs_, char const*
 	unsigned char* temp_bitmap = new unsigned char[x_ * y_];
 
 	
-	tt_bakedchar* cdata_ = new stbtt_bakedchar[glyphs_];
+	stbtt_bakedchar* cdata_ = new stbtt_bakedchar[glyphs_];
 	cdata = cdata_;
 
 	fread(ttf_buffer, 1, 1 << 20, fopen(filename, "rb"));
