@@ -4,24 +4,29 @@
 #include <stdint.h>
 #include <string>
 
-// #define MENU_FILE				1000
-#define MENU_FILE_NEWLOCATION		1001
-#define MENU_FILE_OPENLOCATION		1002
-#define MENU_FILE_SAVELOCATION		1003
-#define MENU_FILE_SAVEASLOCATION	1004
-// #define MENU_FILE_SEPARATOR		1005
-#define MENU_FILE_QUIT				1006
+#include "Project.h"
+#include "Location.h"
 
-// #define MENU_SCENE				2000
-#define MENU_SCENE_CREATE			2001
-#define MENU_SCENE_DELETE			2002
+// #define MENU_SERVICE				1000
+// #define MENU_SERVICE_SEPARATOR	1001
+#define MENU_SERVICE_QUIT			1002
+
+// #define MENU_LOCATION			2000
+#define MENU_LOCATION_NEW			2001
+#define MENU_LOCATION_OPEN			2002
+#define MENU_LOCATION_SAVE			2003
+#define MENU_LOCATION_ADDOBJECT		2004
+#define MENU_LOCATION_DELETEOBJECT	2005
 
 // #define MENU_PROJECT				3000
-#define MENU_PROJECT_IMPORT			30010
-#define MENU_PROJECT_IMPORT_MODEL	30011
-#define MENU_PROJECT_IMPORT_TEXTURE 30012
-#define MENU_PROJECT_BUILD			3002
-#define MENU_PROJECT_CLEAR			3003
+#define MENU_PROJECT_NEW			3001
+#define MENU_PROJECT_OPEN			3002
+#define MENU_PROJECT_SAVE			3003
+#define MENU_PROJECT_IMPORT			30040
+#define MENU_PROJECT_IMPORT_MODEL	30041
+#define MENU_PROJECT_IMPORT_TEXTURE 30042
+#define MENU_PROJECT_BUILD			3005
+#define MENU_PROJECT_CLEAR			3006
 
 #define VK_0						0x30
 #define VK_1						0x31
@@ -80,6 +85,10 @@ namespace WinApi
 	extern bool					isLoaded;
 
 	extern HINSTANCE			hInstance;
+
+	extern std::string	lastProjectFileName,
+						lastLocationFileName,
+						projectPath;
 
 	// Инициализация интерфейса
 	uint16_t InitInterface();

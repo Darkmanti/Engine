@@ -24,10 +24,12 @@
     <ClCompile Include="FontObject.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Importer.cpp" />
+    <ClCompile Include="Location.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Scripts.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="WinApi.cpp" />
+    <ClCompile Include="Project.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -35,6 +37,8 @@
     <ClInclude Include="FontObject.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Importer.h" />
+    <ClInclude Include="Location.h" />
+    <ClInclude Include="Project.h" />
     <ClInclude Include="Scripts.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="WinApi.h" />

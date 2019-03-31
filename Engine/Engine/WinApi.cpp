@@ -1,10 +1,7 @@
 ﻿#include "WinApi.h"
 
-#include <CommCtrl.h>
-
 // Временные инклуды ===========================================
 #include "Camera.h"
-#include "Shader.h"
 #include <GLM/glm.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
@@ -17,6 +14,8 @@
 #include "GameObject.h"
 #include "FontObject.h"
 // Временные инклуды ===========================================
+
+#include <CommCtrl.h>
 
 #pragma comment(lib,"ComCtl32.Lib")
 
@@ -45,6 +44,7 @@ namespace WinApi
 	HANDLE				debugConsole;
 
 	OPENFILENAME		OFN{ 0 };
+	LPSTR				filePath;
 
 	char				szDirect[MAX_PATH],
 						szFileName[MAX_PATH];
@@ -69,8 +69,11 @@ namespace WinApi
 
 	bool previousKeyboardState[NumberOfKeys];
 
+	std::string				lastProjectFileName = "MyProject",
+							lastLocationFileName = "MyLocation",
+							projectPath;
+
 	// Временная функции ====================================================
-	void Do_Movement();
 	GLfloat deltaTime = 0.016f;
 	Camera camera(glm::vec3(0.0f, 0.0f, 15.0f));
 	void loadImage(GLuint &texture, char const* fileName, int Par);
@@ -290,23 +293,26 @@ namespace WinApi
 			return 1;
 		}
 
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuFile, "&Файл");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_NEWLOCATION, "Новая локация\tCtrl+N");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_OPENLOCATION, "Открыть локацию\tCtrl+O");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVELOCATION, "Сохранить\tCtrl+S");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_SAVEASLOCATION, "Сохранить как\tCtrl+Shift+S");
-		AppendMenu(hPopMenuFile, MF_SEPARATOR, MENU_FILE_SAVEASLOCATION + 1, "");
-		AppendMenu(hPopMenuFile, MF_STRING, MENU_FILE_QUIT, "Выход\tAlt+F4");
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuFile, "&Сервис");
+		AppendMenu(hPopMenuFile, MF_SEPARATOR, MENU_SERVICE_QUIT + 1, "");
+		AppendMenu(hPopMenuFile, MF_STRING, MENU_SERVICE_QUIT, "Выход\tAlt+F4");
 
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuScene, "&Сцена");
-		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_CREATE, "Создать");
-		AppendMenu(hPopMenuScene, MF_STRING, MENU_SCENE_DELETE, "Удалить");
+		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuScene, "&Локация");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_LOCATION_NEW, "Создать");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_LOCATION_OPEN, "Открыть");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_LOCATION_SAVE, "Сохранить");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_LOCATION_SAVE, "Добавть объект");
+		AppendMenu(hPopMenuScene, MF_STRING, MENU_LOCATION_SAVE, "Удалить объект");
 
 		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProject, "&Проект");
+		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_NEW, "Создать");
+		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_OPEN, "Открыть");
+		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_SAVE, "Сохранить");
 		AppendMenu(hPopMenuProject, MF_STRING | MF_POPUP, (UINT_PTR)hPopMenuProjectImport, "&Импорт");
 		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_MODEL, "Модель");
-		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "Текстура");
+		AppendMenu(hPopMenuProjectImport, MF_STRING, MENU_PROJECT_IMPORT_TEXTURE, "Текстуру");
 		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_BUILD, "Собрать");
+		AppendMenu(hPopMenuProject, MF_STRING, MENU_PROJECT_CLEAR, "Очистить");
 
 		SetMenu(hWndEngine, hMenu);
 
@@ -357,70 +363,26 @@ namespace WinApi
 		case WM_COMMAND:
 			switch (LOWORD(wParam))
 			{
-			case MENU_FILE_NEWLOCATION:
-				//
-				break;
-
-			case MENU_FILE_OPENLOCATION:
-				OFN.lStructSize = sizeof(OFN);
-				OFN.hwndOwner = NULL;
-				OFN.lpstrFile = szDirect;
-				*(OFN.lpstrFile) = 0;
-				OFN.nMaxFile = sizeof(szDirect);
-				OFN.lpstrFilter = NULL;
-				OFN.nFilterIndex = 1;
-				OFN.lpstrFileTitle = szFileName;
-				*(OFN.lpstrFileTitle) = 0;
-				OFN.nMaxFileTitle = sizeof(szFileName);
-				OFN.lpstrInitialDir = NULL;
-				OFN.Flags = OFN_EXPLORER;
-				GetOpenFileName(&OFN);
-				break;
-
-			case MENU_FILE_SAVELOCATION:
-				break;
-
-			case MENU_FILE_SAVEASLOCATION:
-				// Диалог сохранения
-				OFN.lStructSize = sizeof(OFN);
-				OFN.hwndOwner = NULL;
-				OFN.lpstrFile = szDirect;
-				*(OFN.lpstrFile) = 0;
-				OFN.nMaxFile = sizeof(szDirect);
-				OFN.lpstrFilter = NULL;
-				OFN.nFilterIndex = 1;
-				OFN.lpstrFileTitle = szFileName;
-				*(OFN.lpstrFileTitle) = 0;
-				OFN.nMaxFileTitle = sizeof(szFileName);
-				OFN.lpstrInitialDir = NULL;
-				OFN.Flags = OFN_EXPLORER;
-				GetSaveFileName(&OFN);
-				break;
-
-			case MENU_FILE_QUIT:
-				// Выход
+			case MENU_SERVICE_QUIT:
 				PostQuitMessage(0);
 				break;
-
-			case MENU_SCENE_CREATE:
-				ListViewAddItem("GameObject", hWndListViewLocation);
+			case MENU_PROJECT_NEW:
+				Project::New(OFN);
 				break;
-
-			case MENU_SCENE_DELETE:
-				ListViewRemoveItem(hWndListViewLocation, 0);
+			case MENU_PROJECT_SAVE:
+				Project::Save(OFN);
 				break;
-
-			case MENU_PROJECT_IMPORT_MODEL:
-				//
+			case MENU_PROJECT_OPEN:
+				Project::Load(OFN);
 				break;
-			case MENU_PROJECT_IMPORT_TEXTURE:
-				//
+			case MENU_LOCATION_NEW:
+				Location::New(OFN);
 				break;
-			case MENU_PROJECT_BUILD:
-				// Сборка
+			case MENU_LOCATION_SAVE:
+				Location::Save(OFN);
 				break;
-			case MENU_PROJECT_CLEAR:
-				// Очистка
+			case MENU_LOCATION_OPEN:
+				Location::Load();
 				break;
 			}
 
@@ -561,10 +523,10 @@ namespace WinApi
 		loadImage(texture4, "Resource/Iron/iron.jpg", GL_RGB);
 		loadImage(texture5, "Resource/Bereza/Bereza.png", GL_RGBA);
 
-		// Инициализация текста
+		 //Инициализация текста
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
-		// Инициализация объектов
+		//// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
 		GameObject object3(&ourShader, "Resource/Wood/wood.obj", texture3);
@@ -665,7 +627,7 @@ namespace WinApi
 
 		if (mousePos.x >= windowRenderRect.left && mousePos.y >= windowRenderRect.top && mousePos.x <= windowRenderRect.right && mousePos.y <= windowRenderRect.bottom)
 		{
-			// Если клавиши управления нажаты впервые
+			// Если нажатие клавиш управления происходит впервые
 			if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
 			{
 				isCameraAction = true;
@@ -675,10 +637,8 @@ namespace WinApi
 			}
 		}
 
-		// Если клавиши управления нажаты
 		if ((isKeyDown(VK_RBUTTON) || isKeyDown(VK_LBUTTON) && isKeyDown(VK_LMENU)) && isCameraAction)
 		{
-			// Движение камеры
 			if (isKeyDown(VK_W))
 			{
 				camera.ProcessKeyboard(FORWARD, deltaTime);

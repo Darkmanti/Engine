@@ -1,11 +1,9 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #define GLEW_STATIC
 #include <GLEW/glew.h>
 #include <GLM/glm.hpp>
 
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -39,5 +37,3 @@ private:
 	// utility function for checking shader compilation/linking errors.
 	void checkCompileErrors(GLuint shader, std::string type);
 };
-
-#endif SHADER_H
