@@ -25,7 +25,7 @@ FontObject::FontObject(Shader* shader_, int heightFont, int glyphs_, char const*
 	width = x_; height = y_;
 }
 
-void FontObject::Print(float x, float y, char* text, glm::mat4 ortho)
+void FontObject::Print(float x, float y, char* text, glm::vec3 color, glm::mat4 ortho)
 {
 	while (*text)
 	{
@@ -63,8 +63,13 @@ void FontObject::Print(float x, float y, char* text, glm::mat4 ortho)
 			shader->setUniform("ourTexture", 0);
 			shader->setUniform("ortho", ortho);
 
+			shader->setUniform("fontColor", color);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glBindVertexArray(0);
+			glDisable (GL_BLEND);
 		}
 		++text;
 	}

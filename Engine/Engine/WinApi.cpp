@@ -468,7 +468,11 @@ namespace WinApi
 		glewInit();
 
 		glViewport(0, 0, 800, 600);
+
+		// Тест трафарета и глубины
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_STENCIL_TEST);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 		GLfloat* vertices = new GLfloat[288]{ 
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,	 0.0f,  0.0f, -1.0f,
@@ -515,6 +519,8 @@ namespace WinApi
 
 		Shader ourShader("Shader//shader.vs", "Shader//shader.fs");
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
+		Shader selectShader("Shader//SelectShader.vs", "Shader//SelectShader.fs");
+
 		GLuint texture1, texture2, texture3, texture4, texture5;
 		loadImage(texture1, "Resource/container.jpg", GL_RGB);
 		loadImage(texture2, "Resource/container2.png", GL_RGB);
@@ -528,9 +534,12 @@ namespace WinApi
 		//// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
-		GameObject object3(&ourShader, "Resource/Wood/wood.obj", texture3);
-		GameObject object4(&ourShader, "Resource/Iron/iron.obj", texture4);
-		GameObject object5(&ourShader, "Resource/Bereza/Bereza.obj", texture5);
+		GameObject object3(&ourShader, &selectShader, "Resource/Wood/wood.obj", texture3);
+		GameObject object4(&ourShader, &selectShader, "Resource/Iron/iron.obj", texture4);
+		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
+
+		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
+		//object3.isSelect = true;
 
 		// Матрицы
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -564,7 +573,7 @@ namespace WinApi
 			lastFrame = currentFrame;*/
 
 			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
@@ -582,7 +591,7 @@ namespace WinApi
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
 
-			font1.Print(100, 500, (char*)"PARAWOZIK", ortho);
+			font1.Print(100, 500, (char*)"PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================
 
 			SwapBuffers(hDC);

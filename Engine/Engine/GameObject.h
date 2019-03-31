@@ -15,15 +15,17 @@ public:
 
 	uint64_t	Vcount, Fcount;
 
-	Shader*		shader;
+	Shader		*shader, *selectShader;
 
 	GLuint		texture;
 
 	glm::mat4	model;
 
+	bool		isSelect;
+
 	//Script*		scripts;
 
-	GameObject(Shader* shader_, char const* fileName, GLuint texture_);
+	GameObject(Shader* shader_, Shader* selectShader_, char const* fileName, GLuint texture_);
 
 	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);
 

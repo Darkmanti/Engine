@@ -32,5 +32,5 @@ public:
 				int				firstChar_, // С какого символа начинать загрузку (32 по умолчанию)
 				int x, int y);				// Размер изображения (bitmap) на которое должен уместиться весь шрифт
 
-	void Print(float x, float y, char* text, glm::mat4 ortho);
+	void Print(float x, float y, char* text, glm::vec3 color, glm::mat4 ortho);
 };
