@@ -1,13 +1,14 @@
 #pragma once
 
-#define STB_TRUETYPE_IMPLEMENTATION
+class Shader;
+
 #include <STB/stb_truetype.h>
 
-#include "Shader.h"
+#include "GLM/glm.hpp"
+#include "GLM/gtc/matrix_transform.hpp"
+#include "GLM/gtc/type_ptr.hpp"
 
-#include <GLM/glm.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-#include <GLM/gtc/type_ptr.hpp>
+#include "Shader.h"
 
 class FontObject
 {

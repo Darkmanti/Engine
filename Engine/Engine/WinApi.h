@@ -3,9 +3,14 @@
 #include <windows.h>
 #include <stdint.h>
 #include <string>
+#include <Commctrl.h>
+#pragma comment(lib,"Comctl32.Lib")
+
+#include "GLEW/glew.h"
 
 #include "Project.h"
 #include "Location.h"
+#include "Shader.h"
 
 // #define MENU_SERVICE				1000
 // #define MENU_SERVICE_SEPARATOR	1001

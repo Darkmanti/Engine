@@ -1,7 +1,8 @@
 ﻿#include <shlobj.h>
+#include <stdint.h>
+#include <string>
 
 #include "WinApi.h"
-#include "Collector.h"
 
 void EnableOpenGL();
 void DisableOpenGL();

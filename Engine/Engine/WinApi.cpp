@@ -1,22 +1,17 @@
 ﻿#include "WinApi.h"
 
-// Временные инклуды ===========================================
-#include "Camera.h"
-#include <GLM/glm.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-#include <GLM/gtc/type_ptr.hpp>
-
 // Первый define относится к загрузке шрифтов, второй к картинкам
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
 #include <STB/stb_image.h>
+
+#include "Camera.h"
+#include "GLM/glm.hpp"
+#include "GLM/gtc/matrix_transform.hpp"
+#include "GLM/gtc/type_ptr.hpp"
 
 #include "GameObject.h"
 #include "FontObject.h"
-// Временные инклуды ===========================================
-
-#include <CommCtrl.h>
-
-#pragma comment(lib,"ComCtl32.Lib")
 
 namespace WinApi
 {

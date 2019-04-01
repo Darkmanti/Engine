@@ -1,5 +1,8 @@
 #include "GameObject.h"
 
+#include "Importer.h"
+#include "Shader.h"
+
 GameObject::GameObject(Shader* shader_, Shader* selectShader_, char const* fileName, GLuint texture_)
 {
 	shader = shader_;

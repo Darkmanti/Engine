@@ -1,10 +1,9 @@
 #pragma once
 
-#include <vector>
-
-#include "GLEW/glew.h"
 #include "GLM/glm.hpp"
 #include "GLM/gtc/matrix_transform.hpp"
+
+#include "GLEW/glew.h"
 
 // Определяет несколько возможных вариантов движения камеры. Используется как абстракция.
 enum Camera_Movement {

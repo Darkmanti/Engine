@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Shader.h"
-#include <GLM/glm.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-#include <GLM/gtc/type_ptr.hpp>
+class Shader;
 
-#include "Importer.h"
+#include "GLM/glm.hpp"
+#include "GLM/gtc/matrix_transform.hpp"
+#include "GLM/gtc/type_ptr.hpp"
+
+#include "GLEW/glew.h"
 
 class GameObject
 {

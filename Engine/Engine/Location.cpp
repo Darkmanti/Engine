@@ -1,5 +1,10 @@
 #include "Location.h"
 
+#include <fstream>
+
+#include "WinApi.h"
+//#include "GameObject.h"
+
 namespace Location
 {
 	void New(OPENFILENAME &ofn)

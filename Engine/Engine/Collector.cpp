@@ -7,7 +7,6 @@ Collector::Collector()
 
 int8_t Collector::Build()
 {
-
 	return 0;
 }
 

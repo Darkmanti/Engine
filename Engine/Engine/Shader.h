@@ -1,12 +1,11 @@
 #pragma once
 
-#define GLEW_STATIC
-#include <GLEW/glew.h>
-#include <GLM/glm.hpp>
-
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+#include "GLEW/glew.h"
+#include "GLM/glm.hpp"
 
 #include "WinApi.h"
 

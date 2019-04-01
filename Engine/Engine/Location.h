@@ -1,10 +1,9 @@
 #pragma once
 
 #include <windows.h>
-#include <fstream>
-
-#include "WinApi.h"
-//#include "GameObject.h"
+#include <Commdlg.h>
+#include <Commctrl.h>
+#pragma comment(lib,"Comctl32.Lib")
 
 namespace Location
 {
