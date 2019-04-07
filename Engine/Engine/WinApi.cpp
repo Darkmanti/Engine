@@ -409,11 +409,11 @@ namespace WinApi
 
 			GetWindowRect(hWndRender, &windowRenderRect);
 
-			Debug("x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
+			/*Debug("x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
 			Debug("y = "); Debug(std::to_string(windowRenderRect.top).c_str()); Debug("\n");
 
 			Debug("width = "); Debug(std::to_string(windowRenderRect.right).c_str()); Debug("\n");
-			Debug("height = "); Debug(std::to_string(windowRenderRect.bottom).c_str()); Debug("\n");
+			Debug("height = "); Debug(std::to_string(windowRenderRect.bottom).c_str()); Debug("\n");*/
 
 			break;
 		default:
@@ -526,12 +526,15 @@ namespace WinApi
 		 //Инициализация текста
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
-		//// Инициализация объектов
+		// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
 		GameObject object3(&ourShader, &selectShader, "Resource/Wood/wood.obj", texture3);
 		GameObject object4(&ourShader, &selectShader, "Resource/Iron/iron.obj", texture4);
 		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
+
+		// Инициализация объектов НОВОГО ОБРАЗЦА!!!!
+		GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/Wood");
 
 		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 		//object3.isSelect = true;
@@ -586,7 +589,7 @@ namespace WinApi
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
 
-			font1.Print(100, 500, (char*)"PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
+			font1.Print(100, 500, "PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================
 
 			SwapBuffers(hDC);

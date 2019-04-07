@@ -1,6 +1,7 @@
 #pragma once
 
 class Shader;
+class Mesh;
 
 #include "GLM/glm.hpp"
 #include "GLM/gtc/matrix_transform.hpp"
@@ -22,13 +23,17 @@ public:
 
 	glm::mat4	model;
 
+	Mesh		*Meshs;
+
 	bool		isSelect;
 
 	//Script*		scripts;
 
-	GameObject(Shader* shader_, Shader* selectShader_, char const* fileName, GLuint texture_);
+	GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_);
 
 	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);
+
+	GameObject(Shader* _shader, const char* dirPath);
 
 	void setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_);
 

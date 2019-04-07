@@ -1,12 +1,14 @@
 #include "Importer.h"
 
+#include "Mesh.h"
+
+#include <fstream>
+
 namespace Importer
 {
 	uint32_t ImportObj(const char *fileName, GLuint& VAO, GLuint& VBO, GLuint& EBO, uint64_t& countV, uint64_t& countF)
 	{
-		// Вертексы
 		std::ifstream file;
-		// Engine::dirAppData + "\\" + 
 		file.open(fileName);
 
 		if (!file.is_open())
@@ -62,8 +64,6 @@ namespace Importer
 		}
 
 		file.close();
-
-		// Engine::dirAppData + "\\" + 
 		file.open(fileName);
 
 		if (!file.is_open())
@@ -116,8 +116,6 @@ namespace Importer
 				else if (str[0] == 'f')
 				{
 					getline(file, str);
-
-					//str = str.substr(1, str.length() - 1);
 
 					if (str.find('/') != std::string::npos)
 					{
@@ -230,15 +228,11 @@ namespace Importer
 
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
-		//glGenBuffers(1, &EBO);
 
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, ((countF * 2) + (countF * 3) + (countF * 3)) * sizeof(GLfloat), V, GL_STATIC_DRAW);
-
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, (countF) * sizeof(GLuint), F, GL_STATIC_DRAW);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 		glEnableVertexAttribArray(0);
@@ -252,5 +246,85 @@ namespace Importer
 		glBindVertexArray(0);
 
 		return 0;
+	}
+
+	uint32_t Import(const char* objPath, Mesh* Meshs, int obj_count)
+	{
+		std::ifstream file;
+		file.open(objPath, std::ios_base::in);
+
+		// Строка для временных операций
+		char str[256];
+
+		// Имя файла библиотеки материалов
+		char mtllib[256];
+
+		// Количество полигонов
+		unsigned int faces_count(0);
+
+		// Количество вершин
+		unsigned int vertices_v_count(0);
+		// Количество текстурных вершин
+		unsigned int vertices_vt_count(0);
+		// Количество нормалей вершин
+		unsigned int vertices_vn_count(0);
+
+		// Инициализация названий других файлов и количества вершин
+		while (!file.eof())
+		{
+			file >> str;
+
+			if (strlen(str) == 6)
+			{
+				if (strcmp(str, "mtllib") == 0)
+				{
+					file >> str;
+					strcpy(mtllib, str);
+				}
+			}
+			else if (strlen(str) == 1) 
+			{
+				if (strcmp(str, "f") == 0)
+				{
+					++faces_count;
+				}
+				else if (strcmp(str, "v") == 0)
+				{
+					++vertices_v_count;
+				}
+			}
+			else if (strlen(str) == 2)
+			{
+				if (strcmp(str, "vt") == 0)
+				{
+					++vertices_vt_count;
+				}
+				else if (strcmp(str, "vn") == 0)
+				{
+					++vertices_vn_count;
+				}
+			}
+			file.getline(str, 256);
+		}
+
+		file.close();
+
+		faces_count *= 3;
+
+		vertices_v_count *= 3;
+		vertices_vt_count *= 2;
+		vertices_vn_count *= 3;
+
+		// Итоговый массив вершин
+		float *vertices = new float[faces_count * 2 + faces_count * 3 + faces_count * 3];
+
+		// Временный массив вершин
+		float *vertices_v_temp = new float[vertices_v_count];
+		// Временный массив вершин текстурных
+		float *vertices_vt_temp = new float[vertices_vt_count];
+		// Временный массив вершин нормалей
+		float *vertices_vn_temp = new float[vertices_vn_count];
+
+		return 1;
 	}
 };

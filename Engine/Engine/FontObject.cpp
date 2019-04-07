@@ -25,7 +25,7 @@ FontObject::FontObject(Shader* shader_, int heightFont, int glyphs_, char const*
 	width = x_; height = y_;
 }
 
-void FontObject::Print(float x, float y, char* text, glm::vec3 color, glm::mat4 ortho)
+void FontObject::Print(float x, float y, const char* text, glm::vec3 color, glm::mat4 ortho)
 {
 	while (*text)
 	{
@@ -45,9 +45,8 @@ void FontObject::Print(float x, float y, char* text, glm::vec3 color, glm::mat4 
 
 			GLuint VAO, VBO;
 			glGenVertexArrays(1, &VAO);
-			glGenBuffers(1, &VBO);
-
 			glBindVertexArray(VAO);
+			glGenBuffers(1, &VBO);
 
 			glBindBuffer(GL_ARRAY_BUFFER, VBO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -70,6 +69,9 @@ void FontObject::Print(float x, float y, char* text, glm::vec3 color, glm::mat4 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glBindVertexArray(0);
 			glDisable (GL_BLEND);
+
+			glDeleteVertexArrays(1, &VAO);
+			glDeleteBuffers(1, &VBO);
 		}
 		++text;
 	}

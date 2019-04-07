@@ -3,7 +3,54 @@
 #include "Importer.h"
 #include "Shader.h"
 
-GameObject::GameObject(Shader* shader_, Shader* selectShader_, char const* fileName, GLuint texture_)
+#include "Mesh.h"
+
+#include <cstring>
+#include <fstream>
+
+GameObject::GameObject(Shader* _shader, const char* dirPath)
+{
+	shader = _shader;
+
+	const char* dirName = strrchr(dirPath, 47) + 1;
+	char objPath[256];
+	strcpy(objPath, dirPath);
+	strcat(objPath, "/");
+	strcat(objPath, dirName);
+	strcat(objPath, ".obj");
+
+	int obj_count(0);
+
+	std::ifstream file;
+	file.open(objPath, std::ios_base::in);
+	char str[256];
+	while (!file.eof())
+	{
+		file >> str;
+		if (strlen(str) == 1)
+		{
+			if ( strcmp(str, "o") == 0 )
+			{
+				++obj_count;
+			}
+			else
+			{
+				file.getline(str, 256);
+			}
+		}
+		else
+		{
+			file.getline(str, 256);
+		}
+	}
+	file.close();
+
+	Meshs = new Mesh[obj_count];
+
+	Importer::Import(objPath, Meshs, obj_count);
+}
+
+GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_)
 {
 	shader = shader_;
 	selectShader = selectShader_;
