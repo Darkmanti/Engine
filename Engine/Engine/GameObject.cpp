@@ -13,7 +13,7 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 	shader = _shader;
 
 	const char* dirName = strrchr(dirPath, 47) + 1;
-	char objPath[256];
+	char objPath[512];
 	strcpy(objPath, dirPath);
 	strcat(objPath, "/");
 	strcat(objPath, dirName);
@@ -23,7 +23,7 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 	std::ifstream file;
 	file.open(objPath, std::ios_base::in);
-	char str[256];
+	char str[512];
 	while (!file.eof())
 	{
 		file >> str;
@@ -35,19 +35,19 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 			}
 			else
 			{
-				file.getline(str, 256);
+				file.getline(str, 512);
 			}
 		}
 		else
 		{
-			file.getline(str, 256);
+			file.getline(str, 512);
 		}
 	}
 	file.close();
 
 	Meshs = new Mesh[obj_count];
 
-	Importer::Import(objPath, Meshs, obj_count);
+	Importer::Import(objPath, dirPath, Meshs, obj_count);
 }
 
 GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_)

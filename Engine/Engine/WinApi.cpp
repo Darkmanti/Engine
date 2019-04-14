@@ -529,12 +529,12 @@ namespace WinApi
 		// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
-		GameObject object3(&ourShader, &selectShader, "Resource/Wood/wood.obj", texture3);
+		GameObject object3(&ourShader, &selectShader, "Resource/Wood/Wood.obj", texture3);
 		GameObject object4(&ourShader, &selectShader, "Resource/Iron/iron.obj", texture4);
 		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
 
 		// Инициализация объектов НОВОГО ОБРАЗЦА!!!!
-		GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/Wood");
+		GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
 
 		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 		//object3.isSelect = true;
@@ -693,6 +693,26 @@ namespace WinApi
 
 	void Debug(const char *sms)
 	{
+		WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
+	}
+	void Debug(int str)
+	{
+		char sms[256];
+		_itoa(str, sms, 10);
+		WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
+	}
+	void Debug(unsigned int str)
+	{
+		char sms[256];
+		_itoa(str, sms, 10);
+		WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
+	}
+	void Debug(float str)
+	{
+		char sms[256];
+		std::stringstream iostr;
+		iostr << str;
+		iostr >> sms;
 		WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
 	}
 

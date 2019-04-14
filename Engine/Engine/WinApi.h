@@ -116,5 +116,9 @@ namespace WinApi
 	bool isKeyFirstReleased(int key);
 
 	void Debug(const char* sms);
+	void Debug(int sms);
+	void Debug(unsigned int str);
+	void Debug(float sms);
+
 	void Clear();
 };
