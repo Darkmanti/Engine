@@ -25,6 +25,8 @@ public:
 
 	Mesh		*Meshs;
 
+	int			obj_count;
+
 	bool		isSelect;
 
 	//Script*		scripts;
@@ -41,6 +43,6 @@ public:
 
 	void DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 
-	void DrawElement(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
+	void Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 };
 

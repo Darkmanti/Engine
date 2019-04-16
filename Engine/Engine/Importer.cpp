@@ -251,7 +251,7 @@ namespace Importer
 		return 0;
 	}
 
-	uint32_t Import(const char* objPath, const char* dirPath, Mesh* Meshs, int obj_count)
+	uint32_t Import(const char* objPath, const char* dirPath, Mesh* Meshs)
 	{
 		std::ifstream file_obj;
 		file_obj.open(objPath, std::ios_base::in);
@@ -318,9 +318,6 @@ namespace Importer
 		vertices_vt_count *= 2;
 		vertices_vn_count *= 3;
 
-		// Итоговый массив вершин
-		float *vertices = new float[faces_count * 2 + faces_count * 3 + faces_count * 3];
-
 		// Временный массив вершин
 		float *vertices_v_temp = new float[vertices_v_count];
 		// Временный массив вершин текстурных
@@ -346,7 +343,7 @@ namespace Importer
 		unsigned int iv_vt(0);	// Итератор вершин текстурных
 		unsigned int iv_vn(0);	// Итератор вершин нормалей
 		unsigned int iv_f(0);	// Итератор индексов
-		unsigned int io_o(0);	// Итератор объектов
+		long int io_o(-1);	// Итератор объектов
 
 		while (!file_obj.eof())
 		{
@@ -387,62 +384,6 @@ namespace Importer
 						str_temp = strtok(NULL, "/ ");
 						faces_vn_temp[iv_f] = std::stoi(str_temp) - 1; ++iv_f;
 
-						if (iv_f == faces_count)
-						{
-							// Идёт переназначение массивов вершин относительно индексов
-							unsigned int j(0);
-
-							for (int i = 0; i < faces_count; i++)
-							{
-								uint64_t t = faces_v_temp[i] + 1;
-								vertices[j] = vertices_v_temp[t * 3 - 3]; j++;
-								vertices[j] = vertices_v_temp[t * 3 - 2]; j++;
-								vertices[j] = vertices_v_temp[t * 3 - 1]; j++;
-							}
-
-							j = 0;
-
-							for (int i = 0; i < faces_count; i++)
-							{
-								uint64_t t = faces_vt_temp[i] + 1;
-								vertices[(faces_count * 3) + j] = vertices_vt_temp[t * 2 - 2]; j++;
-								vertices[(faces_count * 3) + j] = vertices_vt_temp[t * 2 - 1]; j++;
-							}
-
-							j = 0;
-
-							for (int i = 0; i < faces_count; i++)
-							{
-								uint64_t t = faces_vn_temp[i] + 1;
-								vertices[(faces_count * 3 + faces_count * 2) + j] = vertices_vn_temp[t * 3 - 3]; j++;
-								vertices[(faces_count * 3 + faces_count * 2) + j] = vertices_vn_temp[t * 3 - 2]; j++;
-								vertices[(faces_count * 3 + faces_count * 2) + j] = vertices_vn_temp[t * 3 - 1]; j++;
-							}
-
-							// Генерация VAO, VBO
-
-							glGenVertexArrays(1, &Meshs[io_o].VAO);
-							glGenBuffers(1, &Meshs[io_o].VBO);
-
-							glBindVertexArray(Meshs[io_o].VAO);
-
-							glBindBuffer(GL_ARRAY_BUFFER, Meshs[io_o].VBO);
-							glBufferData(GL_ARRAY_BUFFER, ((faces_count * 2) + (faces_count * 3) + (faces_count * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-							glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-							glEnableVertexAttribArray(0);
-
-							glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((faces_count * 3) * sizeof(GLfloat)));
-							glEnableVertexAttribArray(1);
-
-							glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((faces_count * 3 + faces_count * 2) * sizeof(GLfloat)));
-							glEnableVertexAttribArray(2);
-
-							glBindVertexArray(0);
-
-							++io_o;
-						}
-
 						continue; // Необходимо для того чтобы не бралась ещё одна строка в конце общего цикла
 					}
 					else
@@ -456,7 +397,72 @@ namespace Importer
 				}
 				else if (strcmp(str, "o") == 0)
 				{
+					if (io_o != -1)
+					{
+						// Идёт переназначение массивов вершин относительно индексов
+						unsigned int j(0);
 
+						// Итоговый массив вершин
+						float *vertices = new float[iv_f * 2 + iv_f * 3 + iv_f * 3];
+
+						for (int i = 0; i < iv_f; i++)
+						{
+							uint64_t t = faces_v_temp[i] + 1;
+							vertices[j] = vertices_v_temp[t * 3 - 3]; j++;
+							vertices[j] = vertices_v_temp[t * 3 - 2]; j++;
+							vertices[j] = vertices_v_temp[t * 3 - 1]; j++;
+						}
+
+						j = 0;
+
+						for (int i = 0; i < iv_f; i++)
+						{
+							uint64_t t = faces_vt_temp[i] + 1;
+							vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 2]; j++;
+							vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 1]; j++;
+						}
+
+						j = 0;
+
+						for (int i = 0; i < iv_f; i++)
+						{
+							uint64_t t = faces_vn_temp[i] + 1;
+							vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 3]; j++;
+							vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 2]; j++;
+							vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 1]; j++;
+						}
+
+						// Генерация VAO, VBO
+
+						glGenVertexArrays(1, &Meshs[io_o].VAO);
+						glGenBuffers(1, &Meshs[io_o].VBO);
+
+						glBindVertexArray(Meshs[io_o].VAO);
+
+						glBindBuffer(GL_ARRAY_BUFFER, Meshs[io_o].VBO);
+						glBufferData(GL_ARRAY_BUFFER, ((iv_f * 2) + (iv_f * 3) + (iv_f * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+						glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+						glEnableVertexAttribArray(0);
+
+						glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3) * sizeof(GLfloat)));
+						glEnableVertexAttribArray(1);
+
+						glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3 + iv_f * 2) * sizeof(GLfloat)));
+						glEnableVertexAttribArray(2);
+
+						glBindVertexArray(0);
+
+						Meshs[io_o].faces_Count = iv_f;
+
+						iv_f = 0;
+
+						++io_o;
+					}
+					else 
+					{
+						io_o = 0;
+					}
 				}
 			}
 			else if (strlen(str) == 2)
@@ -556,16 +562,70 @@ namespace Importer
 				}
 			}
 			file_obj.getline(str, StrLen);
-		}
-		file_obj.close();
+			if (file_obj.eof())
+			{
+				// Идёт переназначение массивов вершин относительно индексов
+				unsigned int j(0);
 
-		for (int i = 0; i < ((faces_count * 2) + (faces_count * 3) + (faces_count * 3)); i++)
-		{
-			WinApi::Debug(vertices[i]); WinApi::Debug(" ");
-			if (i % 3 == 2) {
-				WinApi::Debug("\n");
+				// Итоговый массив вершин
+				float *vertices = new float[iv_f * 2 + iv_f * 3 + iv_f * 3];
+
+				for (int i = 0; i < iv_f; i++)
+				{
+					uint64_t t = faces_v_temp[i] + 1;
+					vertices[j] = vertices_v_temp[t * 3 - 3]; j++;
+					vertices[j] = vertices_v_temp[t * 3 - 2]; j++;
+					vertices[j] = vertices_v_temp[t * 3 - 1]; j++;
+				}
+
+				j = 0;
+
+				for (int i = 0; i < iv_f; i++)
+				{
+					uint64_t t = faces_vt_temp[i] + 1;
+					vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 2]; j++;
+					vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 1]; j++;
+				}
+
+				j = 0;
+
+				for (int i = 0; i < iv_f; i++)
+				{
+					uint64_t t = faces_vn_temp[i] + 1;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 3]; j++;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 2]; j++;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 1]; j++;
+				}
+
+				// Генерация VAO, VBO
+
+				glGenVertexArrays(1, &Meshs[io_o].VAO);
+				glGenBuffers(1, &Meshs[io_o].VBO);
+
+				glBindVertexArray(Meshs[io_o].VAO);
+
+				glBindBuffer(GL_ARRAY_BUFFER, Meshs[io_o].VBO);
+				glBufferData(GL_ARRAY_BUFFER, ((iv_f * 2) + (iv_f * 3) + (iv_f * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+				glEnableVertexAttribArray(0);
+
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3) * sizeof(GLfloat)));
+				glEnableVertexAttribArray(1);
+
+				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3 + iv_f * 2) * sizeof(GLfloat)));
+				glEnableVertexAttribArray(2);
+
+				glBindVertexArray(0);
+
+				Meshs[io_o].faces_Count = iv_f;
+
+				iv_f = 0;
+
+				++io_o;
 			}
 		}
+		file_obj.close();
 
 		return 1;
 	}

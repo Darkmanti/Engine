@@ -589,6 +589,9 @@ namespace WinApi
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
 
+			barrels.setModel(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-20.0f, -20.0f, -20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			barrels.Draw(projection, view, camera.Position);
+
 			font1.Print(100, 500, "PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================
 

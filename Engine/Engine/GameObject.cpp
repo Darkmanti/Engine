@@ -19,7 +19,7 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 	strcat(objPath, dirName);
 	strcat(objPath, ".obj");
 
-	int obj_count(0);
+	obj_count = 0;
 
 	std::ifstream file;
 	file.open(objPath, std::ios_base::in);
@@ -47,7 +47,7 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 	Meshs = new Mesh[obj_count];
 
-	Importer::Import(objPath, dirPath, Meshs, obj_count);
+	Importer::Import(objPath, dirPath, Meshs);
 }
 
 GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_)
@@ -189,18 +189,17 @@ void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 
 	glDisable(GL_BLEND);
 }
 
-void GameObject::DrawElement(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
+void GameObject::Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 {
 	shader->use();
-	shader->setUniform("projection", projection);
+
 	shader->setUniform("model", model);
+	shader->setUniform("projection", projection);
 	shader->setUniform("view", view);
+	shader->setUniform("viewPos", viewPos);
 
-	glBindTexture(GL_TEXTURE_2D, texture);
-	shader->setUniform("ourTexture1", 0);
-
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, Fcount, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	for (int i = 0; i < obj_count; i++)
+	{
+		Meshs[i].DrawMesh();
+	}
 }

@@ -12,7 +12,7 @@ public:
 
 	unsigned int			diffuse_texture, specular_texture, bump_texture;
 
-
-
 	Mesh();
+
+	void DrawMesh();
 };
