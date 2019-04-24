@@ -534,7 +534,7 @@ namespace WinApi
 		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
 
 		// Инициализация объектов НОВОГО ОБРАЗЦА!!!!
-		GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
+		//GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
 
 		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 		//object3.isSelect = true;
@@ -545,7 +545,12 @@ namespace WinApi
 		glm::mat4 ortho(1.0f);
 		ortho = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, 0.0f, 100.0f);
 
+		unsigned int gameobject_count(0);
+		GameObject* object_list = (GameObject*)malloc(0);
+
 		// Временно здесь будет инициализация тестовой сцены ===========================================
+
+		WinApi::Debug("Initialisation succes\n");
 
 		// Пока есть сообщения
 		// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
@@ -565,6 +570,15 @@ namespace WinApi
 
 			CameraControllAction();
 
+			if (isKeyDown(VK_G))
+			{
+				object_list = (GameObject*)realloc(object_list, sizeof(GameObject) * (gameobject_count + 1));
+				GameObject temp(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
+				temp.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+				object_list[gameobject_count] = temp;
+				++gameobject_count;
+			}
+
 			// Временный прорисовка =================================================================
 			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
 			deltaTime = currentFrame - lastFrame;
@@ -575,6 +589,11 @@ namespace WinApi
 
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
+
+			for (int i = 0; i < gameobject_count; i++)
+			{
+				object_list[i].Draw(projection, view, camera.Position);
+			}
 			
 			object1.DrawArray(projection, view, camera.Position);
 			object2.setModel(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -588,9 +607,6 @@ namespace WinApi
 
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
-
-			barrels.setModel(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-20.0f, -20.0f, -20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-			barrels.Draw(projection, view, camera.Position);
 
 			font1.Print(100, 500, "PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================

@@ -23,31 +23,44 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 	std::ifstream file;
 	file.open(objPath, std::ios_base::in);
-	char str[512];
-	while (!file.eof())
+	if (file.is_open())
 	{
-		file >> str;
-		if (strlen(str) == 1)
+		char str[512];
+		while (!file.eof())
 		{
-			if ( strcmp(str, "o") == 0 )
+			file >> str;
+			if (strlen(str) == 1)
 			{
-				++obj_count;
+				if (strcmp(str, "o") == 0)
+				{
+					++obj_count;
+				}
+				else
+				{
+					file.getline(str, 512);
+				}
 			}
 			else
 			{
 				file.getline(str, 512);
 			}
 		}
-		else
-		{
-			file.getline(str, 512);
-		}
+		file.close();
+
+		Meshs = new Mesh[obj_count];
+
+		Importer::Import(objPath, dirPath, Meshs);
+
+		strcpy(name, dirName);
+
+		WinApi::Debug("loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: succes\n");
 	}
-	file.close();
+	else 
+	{
+		WinApi::Debug("ERROR loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: invalid path :: "); WinApi::Debug(dirPath);
+	}
 
-	Meshs = new Mesh[obj_count];
-
-	Importer::Import(objPath, dirPath, Meshs);
+	is_Select = false;
 }
 
 GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_)
@@ -63,7 +76,7 @@ GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileN
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 	
-	isSelect = false;
+	is_Select = false;
 }
 
 GameObject::GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_)
@@ -132,7 +145,7 @@ void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	if (isSelect == true)
+	if (is_Select == true)
 	{
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -160,7 +173,7 @@ void GameObject::DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, Fcount);
 
-	if (isSelect == true)
+	if (is_Select == true)
 	{
 		glDisable(GL_DEPTH_TEST);
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);

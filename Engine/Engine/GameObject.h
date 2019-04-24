@@ -27,7 +27,9 @@ public:
 
 	int			obj_count;
 
-	bool		isSelect;
+	bool		is_Select;
+
+	char		name[256];
 
 	//Script*		scripts;
 
