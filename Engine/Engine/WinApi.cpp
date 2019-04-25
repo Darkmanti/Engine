@@ -5,6 +5,13 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <STB/stb_image.h>
 
+#define IMGUI_IMPL_OPENGL_LOADER_GLEW
+
+#include "imgui.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_opengl3.h"
+#include <stdio.h>
+
 #include "Camera.h"
 #include "GLM/glm.hpp"
 #include "GLM/gtc/matrix_transform.hpp"
@@ -12,6 +19,8 @@
 
 #include "GameObject.h"
 #include "FontObject.h"
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace WinApi
 {
@@ -402,6 +411,9 @@ namespace WinApi
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 
+		if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+			return true;
+
 		switch (message)
 		{
 		case WM_SIZE:
@@ -456,6 +468,21 @@ namespace WinApi
 	// Метод с циклом программы
 	void Loop()
 	{
+		// Инициализация параметров интерфейса =============================================================================
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+		ImGui::StyleColorsDark();
+
+		ImGui_ImplWin32_Init(hWndRender);
+		ImGui_ImplOpenGL3_Init("#version 330");
+
+		bool show_demo_window = true;
+		bool show_another_window = false;
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+		// Инициализация параметров интерфейса =============================================================================
+
 		MSG message{ 0 }; 	// Структура сообщения к окну
 
 		// Временно здесь будет инициализация тестовой сцены ===========================================
@@ -516,12 +543,13 @@ namespace WinApi
 		Shader fontShader("Shader//FontShader.vs", "Shader//FontShader.fs");
 		Shader selectShader("Shader//SelectShader.vs", "Shader//SelectShader.fs");
 
-		GLuint texture1, texture2, texture3, texture4, texture5;
+		GLuint texture1, texture2, texture3, texture4, texture5, denisjpg;
 		loadImage(texture1, "Resource/container.jpg", GL_RGB);
 		loadImage(texture2, "Resource/container2.png", GL_RGB);
 		loadImage(texture3, "Resource/Wood/wood.jpg", GL_RGB);
 		loadImage(texture4, "Resource/Iron/iron.jpg", GL_RGB);
 		loadImage(texture5, "Resource/Bereza/Bereza.png", GL_RGBA);
+		loadImage(denisjpg, "Resource/denis/denis.jpg", GL_RGB);
 
 		 //Инициализация текста
 		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
@@ -532,9 +560,8 @@ namespace WinApi
 		GameObject object3(&ourShader, &selectShader, "Resource/Wood/Wood.obj", texture3);
 		GameObject object4(&ourShader, &selectShader, "Resource/Iron/iron.obj", texture4);
 		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
-
-		// Инициализация объектов НОВОГО ОБРАЗЦА!!!!
-		//GameObject barrels(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
+		GameObject denis(&ourShader, "D:/Engine/Engine/Engine/Resource/denis");
+		denis.setModel(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 		//object3.isSelect = true;
@@ -570,6 +597,9 @@ namespace WinApi
 
 			CameraControllAction();
 
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 			if (isKeyDown(VK_G))
 			{
 				object_list = (GameObject*)realloc(object_list, sizeof(GameObject) * (gameobject_count + 1));
@@ -583,9 +613,6 @@ namespace WinApi
 			/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;*/
-
-			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
@@ -608,8 +635,53 @@ namespace WinApi
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
 
+			glBindTexture(GL_TEXTURE_2D, denisjpg);
+			denis.Draw(projection, view, camera.Position);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
 			font1.Print(100, 500, "PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================
+
+
+			// Интерфейс отрисовка =========================================================================================
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+
+			// 3. Show another simple window.
+			if (show_another_window)
+			{
+				ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+				ImGui::Text("Hello from another window!");
+				if (ImGui::Button("Close Me"))
+					show_another_window = false;
+				ImGui::End();
+			}
+
+			// Вызов рендера интерфейса
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			// Интерфейс отрисовка =========================================================================================
 
 			SwapBuffers(hDC);
 		}
