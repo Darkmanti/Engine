@@ -383,7 +383,7 @@ namespace Importer
 						faces_vt_temp[iv_f] = std::stoi(str_temp) - 1;
 						str_temp = strtok(NULL, "/ ");
 						faces_vn_temp[iv_f] = std::stoi(str_temp) - 1; ++iv_f;
-
+						
 						continue; // Необходимо для того чтобы не бралась ещё одна строка в конце общего цикла
 					}
 					else

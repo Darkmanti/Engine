@@ -66,7 +66,7 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 	}
 	else 
 	{
-		WinApi::Debug("ERROR loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: invalid path :: "); WinApi::Debug(dirPath);
+		WinApi::Debug("ERROR loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: invalid path :: "); WinApi::Debug(dirPath); WinApi::Debug("\n");
 	}
 
 	is_Select = false;
