@@ -1,5 +1,7 @@
 #pragma once
 
+class Script;
+class Vector;
 class Shader;
 class Mesh;
 
@@ -11,8 +13,12 @@ class Mesh;
 
 class GameObject
 {
-public:
+private:
+	Vector *p_location;
+	Vector *p_rotation;
+	Vector *p_scale;
 
+public:
 	GLuint		VAO, VBO, EBO;
 
 	uint64_t	Vcount, Fcount;
@@ -31,7 +37,7 @@ public:
 
 	char		name[256];
 
-	//Script*		scripts;
+	char		**scriptNames;
 
 	GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_);
 
@@ -46,5 +52,18 @@ public:
 	void DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 
 	void Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
-};
 
+	__declspec(property(get = get_location, put = set_location)) Vector location;
+	__declspec(property(get = get_rotation, put = set_rotation)) Vector rotation;
+	__declspec(property(get = get_scale, put = set_scale)) Vector scale;
+
+	Vector &get_location();
+	Vector &get_rotation();
+	Vector &get_scale();
+
+	void set_location();
+	void set_rotation();
+	void set_scale();
+
+	~GameObject();
+};

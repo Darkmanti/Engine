@@ -7,6 +7,12 @@ Mesh::Mesh()
 
 }
 
+Mesh::Mesh()
+{
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+}
+
 void Mesh::DrawMesh()
 {
 	// Текстура

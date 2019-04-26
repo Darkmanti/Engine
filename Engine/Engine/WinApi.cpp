@@ -545,9 +545,6 @@ namespace WinApi
 		glm::mat4 ortho(1.0f);
 		ortho = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, 0.0f, 100.0f);
 
-		unsigned int gameobject_count(0);
-		GameObject* object_list = (GameObject*)malloc(0);
-
 		// Временно здесь будет инициализация тестовой сцены ===========================================
 
 		WinApi::Debug("Initialisation succes\n");
@@ -572,11 +569,7 @@ namespace WinApi
 
 			if (isKeyDown(VK_G))
 			{
-				object_list = (GameObject*)realloc(object_list, sizeof(GameObject) * (gameobject_count + 1));
-				GameObject temp(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
-				temp.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-				object_list[gameobject_count] = temp;
-				++gameobject_count;
+				Location::AddGameObject();
 			}
 
 			// Временный прорисовка =================================================================
@@ -590,7 +583,7 @@ namespace WinApi
 			glm::mat4 view = glm::mat4(1.0f);
 			view = camera.GetViewMatrix();
 
-			for (int i = 0; i < gameobject_count; i++)
+			for (int i = 0; i < Location::gameobject_count; i++)
 			{
 				object_list[i].Draw(projection, view, camera.Position);
 			}

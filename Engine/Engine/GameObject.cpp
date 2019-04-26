@@ -4,12 +4,21 @@
 #include "Shader.h"
 
 #include "Mesh.h"
+#include "Vector.h"
 
 #include <cstring>
 #include <fstream>
 
 GameObject::GameObject(Shader* _shader, const char* dirPath)
 {
+	// Инициализируем массив с названиями скриптов в файле
+	scriptNames = new char*[16];
+
+	for (int i(0); i < 16; ++i)
+	{
+		scriptNames[i] = new char[256];
+	}
+
 	shader = _shader;
 
 	const char* dirName = strrchr(dirPath, 47) + 1;
@@ -65,6 +74,14 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_)
 {
+	// Инициализируем массив с названиями скриптов в файле
+	scriptNames = new char*[16];
+
+	for (int i(0); i < 16; ++i)
+	{
+		scriptNames[i] = new char[256];
+	}
+
 	shader = shader_;
 	selectShader = selectShader_;
 	texture = texture_;
@@ -81,6 +98,14 @@ GameObject::GameObject(Shader* shader_, Shader* selectShader_, const char* fileN
 
 GameObject::GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_)
 {
+	// Инициализируем массив с названиями скриптов в файле
+	scriptNames = new char*[16];
+
+	for (int i(0); i < 16; ++i)
+	{
+		scriptNames[i] = new char[256];
+	}
+
 	shader = shader_;
 	texture = texture_;
 	Vcount = Vcount_;
@@ -107,6 +132,51 @@ GameObject::GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GL
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+}
+
+Vector &GameObject::get_location()
+{
+	return location;
+}
+
+Vector &GameObject::get_rotation()
+{
+	return rotation;
+}
+
+Vector &GameObject::get_scale()
+{
+	return scale;
+}
+
+void GameObject::set_location()
+{
+	p_location->x = location.x;
+	p_location->y = location.y;
+	p_location->z = location.z;
+
+	// Добавить rotation
+	setModel(glm::vec3(scale.x, scale.y, scale.z), glm::vec3(location.x, location.y, location.z), 0.0f, glm::vec3(0, 0, 0));
+}
+
+void GameObject::set_rotation()
+{
+	p_rotation->x = rotation.x;
+	p_rotation->y = rotation.y;
+	p_rotation->z = rotation.z;
+
+	// Добавить rotation
+	setModel(glm::vec3(scale.x, scale.y, scale.z), glm::vec3(location.x, location.y, location.z), 0.0f, glm::vec3(0, 0, 0));
+}
+
+void GameObject::set_scale()
+{
+	p_scale->x = scale.x;
+	p_scale->y = scale.y;
+	p_scale->z = scale.z;
+
+	// Добавить rotation
+	setModel(glm::vec3(scale.x, scale.y, scale.z), glm::vec3(location.x, location.y, location.z), 0.0f, glm::vec3(0, 0, 0));
 }
 
 void GameObject::setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_)
@@ -214,5 +284,23 @@ void GameObject::Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 	for (int i = 0; i < obj_count; i++)
 	{
 		Meshs[i].DrawMesh();
+	}
+}
+
+GameObject::~GameObject()
+{
+	// Инициализируем массив с названиями скриптов в файле
+	scriptNames = new char*[16];
+
+	for (int i(0); i < 16; ++i)
+	{
+		delete[] scriptNames[i];
+	}
+
+	delete[] scriptNames;
+
+	for (int i = 0; i < obj_count; i++)
+	{
+		Meshs[i].~Mesh();
 	}
 }
