@@ -544,24 +544,24 @@ namespace WinApi
 		Shader selectShader("Shader//SelectShader.vs", "Shader//SelectShader.fs");
 
 		GLuint texture1, texture2, texture3, texture4, texture5, denisjpg;
-		loadImage(texture1, "Resource/container.jpg", GL_RGB);
-		loadImage(texture2, "Resource/container2.png", GL_RGB);
-		loadImage(texture3, "Resource/Wood/wood.jpg", GL_RGB);
-		loadImage(texture4, "Resource/Iron/iron.jpg", GL_RGB);
-		loadImage(texture5, "Resource/Bereza/Bereza.png", GL_RGBA);
-		loadImage(denisjpg, "Resource/denis/denis.jpg", GL_RGB);
+		loadImage(texture1, "Resource//container.jpg", GL_RGB);
+		loadImage(texture2, "Resource//container2.png", GL_RGB);
+		loadImage(texture3, "Resource//Wood/wood.jpg", GL_RGB);
+		loadImage(texture4, "Resource//Iron/iron.jpg", GL_RGB);
+		loadImage(texture5, "Resource//Bereza//Bereza.png", GL_RGBA);
+		//loadImage(denisjpg, "Resource//denis//denis.jpg", GL_RGB);
 
 		 //Инициализация текста
-		FontObject font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
+		FontObject font1(&fontShader, 32, 256, "Resource//OpenSans-Regular.ttf", 32, 512, 512);
 
 		// Инициализация объектов
 		GameObject object1(vertices, 288, &ourShader, texture1);
 		GameObject object2(vertices, 288, &ourShader, texture2);
-		GameObject object3(&ourShader, &selectShader, "Resource/Wood/Wood.obj", texture3);
-		GameObject object4(&ourShader, &selectShader, "Resource/Iron/iron.obj", texture4);
-		GameObject object5(&ourShader, &selectShader, "Resource/Bereza/Bereza.obj", texture5);
-		GameObject denis(&ourShader, "D:/Engine/Engine/Engine/Resource/denis");
-		denis.setModel(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		GameObject object3(&ourShader, &selectShader, "Resource//Wood//Wood.obj", texture3);
+		GameObject object4(&ourShader, &selectShader, "Resource//Iron//iron.obj", texture4);
+		GameObject object5(&ourShader, &selectShader, "Resource//Bereza//Bereza.obj", texture5);
+		//GameObject denis(&ourShader, "Resource//denis");
+		//denis.setModel(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 		//object3.isSelect = true;
@@ -635,9 +635,9 @@ namespace WinApi
 			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			object5.DrawArray_temp(projection, view, camera.Position);
 
-			glBindTexture(GL_TEXTURE_2D, denisjpg);
-			denis.Draw(projection, view, camera.Position);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			//glBindTexture(GL_TEXTURE_2D, denisjpg);
+			//denis.Draw(projection, view, camera.Position);
+			//glBindTexture(GL_TEXTURE_2D, 0);
 
 			font1.Print(100, 500, "PARAWOZIK", glm::vec3(0.0f, 1.0f, 0.0f), ortho);
 			// Временный прорисовка =================================================================
