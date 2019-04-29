@@ -35,8 +35,9 @@
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Vector.cpp" />
-    <ClCompile Include="WinApi.cpp" />
+    <ClCompile Include="temp.cpp" />
     <ClCompile Include="Project.cpp" />
+    <ClCompile Include="WinApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -57,6 +58,7 @@
     <ClInclude Include="Script.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Vector.h" />
+    <ClInclude Include="temp.h" />
     <ClInclude Include="WinApi.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

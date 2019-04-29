@@ -11,7 +11,7 @@ void DisableOpenGL();
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
 	AllocConsole();
-	WinApi::debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	if (hPrevInstance)
 	{
@@ -19,42 +19,42 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 		return 1;
 	}
 
-	WinApi::isLoaded = false;
+	isLoaded = false;
 
 	// Отправляем дескриптор в файл wndInit
-	WinApi::hInstance = hInstance;
+	hInstance = hInstance;
 
-	WinApi::InitInput();
+	InitInput();
 
 	// Создаем интерфейс (кнопки, хуепки, inputText и пр.)
-	if (int16_t iError = WinApi::InitInterface()) // Проверка на создание интерфейса
+	if (int8_t iError = InitInterface()) // Проверка на создание интерфейса
 	{
 		std::string out("Ошибка ");
 
 		out += std::to_string(iError);
 
-		MessageBox(WinApi::hWndRender, "Интерфейс не создан", out.c_str(), MB_OK);
+		MessageBox(hWndEngine, "Интерфейс не создан", out.c_str(), MB_OK);
 
 		return 0;
 	}
 
 	// Показываем интерфейс
-	if (int16_t iError = WinApi::ShowInterface(nCmdShow))
+	if (int8_t iError = ShowInterface(nCmdShow))
 	{
 		std::string out("Ошибка ");
 
 		out += std::to_string(iError);
 
-		MessageBox(WinApi::hWndRender, "Интерфейс не отобразился", out.c_str(), MB_OK);
+		MessageBox(hWndEngine, "Интерфейс не отобразился", out.c_str(), MB_OK);
 
 		return 0;
 	}
 
 	EnableOpenGL();
 
-	WinApi::isLoaded = true;
+	isLoaded = true;
 
-	WinApi::Loop();
+	Loop();
 
 	DisableOpenGL();
 
@@ -67,7 +67,7 @@ void EnableOpenGL()
 
 	int iFormat;
 
-	WinApi::hDC = GetDC(WinApi::hWndRender);
+	hDC = GetDC(hWndEngine);
 
 	ZeroMemory(&pfd, sizeof(pfd));
 
@@ -80,15 +80,15 @@ void EnableOpenGL()
 	pfd.cDepthBits = 16;
 	pfd.iLayerType = PFD_MAIN_PLANE;
 
-	iFormat = ChoosePixelFormat(WinApi::hDC, &pfd);
-	SetPixelFormat(WinApi::hDC, iFormat, &pfd);
-	WinApi::hRC = wglCreateContext(WinApi::hDC);
-	wglMakeCurrent(WinApi::hDC, WinApi::hRC);
+	iFormat = ChoosePixelFormat(hDC, &pfd);
+	SetPixelFormat(hDC, iFormat, &pfd);
+	hRC = wglCreateContext(hDC);
+	wglMakeCurrent(hDC, hRC);
 }
 
 void DisableOpenGL()
 {
 	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(WinApi::hRC);
-	ReleaseDC(WinApi::hWndRender, WinApi::hDC);
+	wglDeleteContext(hRC);
+	ReleaseDC(hWndEngine, hDC);
 }

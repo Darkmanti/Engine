@@ -1,38 +1,5 @@
 #pragma once
 
-#include <windows.h>
-#include <stdint.h>
-#include <string>
-#include <Commctrl.h>
-#pragma comment(lib,"Comctl32.Lib")
-
-#include "GLEW/glew.h"
-
-#include "Project.h"
-#include "Location.h"
-#include "Shader.h"
-
-// #define MENU_SERVICE				1000
-// #define MENU_SERVICE_SEPARATOR	1001
-#define MENU_SERVICE_QUIT			1002
-
-// #define MENU_LOCATION			2000
-#define MENU_LOCATION_NEW			2001
-#define MENU_LOCATION_OPEN			2002
-#define MENU_LOCATION_SAVE			2003
-#define MENU_LOCATION_ADDOBJECT		2004
-#define MENU_LOCATION_DELETEOBJECT	2005
-
-// #define MENU_PROJECT				3000
-#define MENU_PROJECT_NEW			3001
-#define MENU_PROJECT_OPEN			3002
-#define MENU_PROJECT_SAVE			3003
-#define MENU_PROJECT_IMPORT			30040
-#define MENU_PROJECT_IMPORT_MODEL	30041
-#define MENU_PROJECT_IMPORT_TEXTURE 30042
-#define MENU_PROJECT_BUILD			3005
-#define MENU_PROJECT_CLEAR			3006
-
 #define VK_0						0x30
 #define VK_1						0x31
 #define VK_2						0x32
@@ -71,54 +38,87 @@
 #define VK_Y						0x59
 #define VK_Z						0x5A
 
-// Все что связанно с окном и выводом winapi
-namespace WinApi
-{
-	// Различные дескрипторы
-	extern HWND					hWndEngine,								// Главное окно редактора
-								hWndRender,												// Окно рендера внутри редактора
+extern WNDCLASSEX			pWndEngineClassEx;				// Структура класса окна
 
-								hWndListViewLocation,									// ListView локация
-								hWndListViewProject;									// ListView проект
+// Различные дескрипторы
+extern HDC					hDC;							// Дескриптор устройства
+extern HGLRC				hRC;							// Дескпритор
 
-	// Различные дескрипторы
-	extern HDC					hDC;							// Дескриптор устройства
-	extern HGLRC				hRC;							// Дескпритор ...
+extern HWND				hWndEngine;						// Главное окно редактора
 
-	extern HANDLE				debugConsole;
+extern HANDLE				debugConsole;
 
-	extern bool					isLoaded;
+extern OPENFILENAME		OFN{ 0 };
+extern LPSTR				filePath;
 
-	extern HINSTANCE			hInstance;
+extern char				szDirect[MAX_PATH],
+extern szFileName[MAX_PATH];
 
-	extern std::string	lastProjectFileName,
-						lastLocationFileName,
+extern bool				isLoaded;
+
+extern int64_t				mouseOffsetX,
+extern mouseOffsetY,
+extern lastMousePosX,
+extern lastMousePosY;
+
+extern POINT				mousePos{};
+
+extern RECT				windowRenderRect{},
+extern windowEngineRect{};
+
+extern bool				isCameraAction;
+
+extern HINSTANCE			hInstance;
+
+extern const uint16_t NumberOfKeys = 256;
+
+extern bool					previousKeyboardState[NumberOfKeys];
+
+extern std::string				lastProjectFileName = "MyProject",
+						lastLocationFileName = "MyLocation",
 						projectPath;
 
-	// Инициализация интерфейса
-	uint16_t InitInterface();
-	uint16_t ShowInterface(const int16_t nCmdShow);
+extern Shader					ourShader("Shader//shader.vs", "Shader//shader.fs"),
+						fontShader("Shader//FontShader.vs", "Shader//FontShader.fs"),
+						selectShader("Shader//SelectShader.vs", "Shader//SelectShader.fs");
 
-	LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT WndRenderProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT CALLBACK SubClassLocationProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-	LRESULT CALLBACK SubClassProjectProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+//Инициализация текста
+extern FontObject				font1(&fontShader, 32, 256, "Resource/OpenSans-Regular.ttf", 32, 512, 512);
 
-	bool ListViewAddItem(const char* elementName, HWND hWndListView);
+extern GLuint					texture1,
+						texture2,
+						texture3,
+						texture4,
+						texture5,
+						denisjpg;
 
-	void InitInput();
+extern GLfloat					deltaTime = 0.016f;
+extern Camera					camera(glm::vec3(0.0f, 0.0f, 15.0f));
 
-	void Loop();
+void loadImage(GLuint &texture, char const* fileName, int Par);
 
-	bool isKeyDown(int key);
-	void CameraControllAction();
-	bool isKeyFirstPressed(int key);
-	bool isKeyFirstReleased(int key);
+LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	void Debug(const char* sms);
-	void Debug(int sms);
-	void Debug(unsigned int str);
-	void Debug(float sms);
+ATOM RegisterWindowEngine();
 
-	void Clear();
-};
+uint8_t ShowInterface(const int16_t nCmdShow);
+uint8_t CreateWindowEngine();
+uint8_t InitInterface();
+uint8_t InitImgui();
+
+void InitInput();
+
+bool isKeyDown(int key);
+bool isKeyFirstPressed(int key);
+bool isKeyFirstReleased(int key);
+
+void CameraControllAction();
+
+void Debug(unsigned int str);
+void Debug(const char *sms);
+void Debug(float str);
+void Debug(int str);
+
+void Clear();
+
+void Loop();

@@ -2,113 +2,110 @@
 
 #include <fstream>
 
-#include "WinApi.h"
 #include "GameObject.h"
+#include "Shader.h"
 
-namespace Location
+int32_t gameobject_count;
+GameObject* object_list = (GameObject*)malloc(0);
+
+void New(OPENFILENAME &ofn)
 {
-	int32_t gameobject_count;
-	GameObject* object_list = (GameObject*)malloc(0);
+	ZeroMemory(&ofn, sizeof(ofn));
 
-	void New(OPENFILENAME &ofn)
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndEngine;
+	ofn.lpstrFilter = "Файл локации DarkMantiEngine (*.dmel)\0*.dmel\0Все файлы (*.*)\0*.*\0\0";
+	ofn.lpstrFile = (LPSTR)lastLocationFileName.c_str();
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_HIDEREADONLY;
+	ofn.lpstrDefExt = (LPCSTR)"dmel";
+	ofn.lpstrTitle = "Создать локацию";
+
+	GetSaveFileName(&ofn);
+	Debug("Создаю локацию "); Debug(ofn.lpstrFile);
+
 	{
-		ZeroMemory(&ofn, sizeof(ofn));
+		char *tmp = ofn.lpstrFile;
 
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = WinApi::hWndEngine;
-		ofn.lpstrFilter = "Файл локации DarkMantiEngine (*.dmel)\0*.dmel\0Все файлы (*.*)\0*.*\0\0";
-		ofn.lpstrFile = (LPSTR)WinApi::lastLocationFileName.c_str();
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt = (LPCSTR)"dmel";
-		ofn.lpstrTitle = "Создать локацию";
-
-		GetSaveFileName(&ofn);
-		WinApi::Debug("Создаю локацию "); WinApi::Debug(ofn.lpstrFile);
-
-		{
-			char *tmp = ofn.lpstrFile;
-
-			WinApi::lastProjectFileName = std::string(tmp);
-		}
-
-		std::ofstream file;
-
-		file.open(ofn.lpstrFile);
-
-		file << "";
-
-		WinApi::Debug("Локация создана");
-		file.close();
+		lastProjectFileName = std::string(tmp);
 	}
 
-	void Save(OPENFILENAME &ofn)
+	std::ofstream file;
+
+	file.open(ofn.lpstrFile);
+
+	file << "";
+
+	Debug("Локация создана");
+	file.close();
+}
+
+void Save(OPENFILENAME &ofn)
+{
+	ZeroMemory(&ofn, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWndEngine;
+	ofn.lpstrFilter = "Файл локации DarkMantiEngine (*.dmel)\0*.dmel\0Все файлы (*.*)\0*.*\0\0";
+	ofn.lpstrFile = (LPSTR)lastLocationFileName.c_str();
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_HIDEREADONLY;
+	ofn.lpstrDefExt = (LPCSTR)"dmel";
+	ofn.lpstrTitle = "Сохранить локацию";
+
+	if (!GetSaveFileName(&ofn))
 	{
-		ZeroMemory(&ofn, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(ofn);
-		ofn.hwndOwner = WinApi::hWndEngine;
-		ofn.lpstrFilter = "Файл локации DarkMantiEngine (*.dmel)\0*.dmel\0Все файлы (*.*)\0*.*\0\0";
-		ofn.lpstrFile = (LPSTR)WinApi::lastLocationFileName.c_str();
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt = (LPCSTR)"dmel";
-		ofn.lpstrTitle = "Сохранить локацию";
-
-		if (!GetSaveFileName(&ofn))
-		{
-			WinApi::Debug("Не удалось создать локацию");
-		}
-
-		WinApi::Debug("Сохраняю локацию "); WinApi::Debug(ofn.lpstrFile);
-
-		{
-			char *tmp = ofn.lpstrFile;
-
-			WinApi::lastProjectFileName = std::string(tmp);
-		}
-
-		std::ofstream file;
-
-		file.open(ofn.lpstrFile);
-
-		for (int i(0); i < gameobject_count; ++i)
-		{
-			file << name << "\n";
-		}
-
-		WinApi::Debug("Локация сохранена");
-		file.close();
+		Debug("Не удалось создать локацию");
 	}
 
-	void Load()
+	Debug("Сохраняю локацию "); Debug(ofn.lpstrFile);
+
 	{
-		// инициализируем объект gameobject
+		char *tmp = ofn.lpstrFile;
+
+		lastProjectFileName = std::string(tmp);
 	}
 
-	int8_t AddGameObject()
-	{
-		object_list = (GameObject*)realloc(object_list, sizeof(GameObject) * (Location::gameobject_count + 1));
-		GameObject temp(&ourShader, "D:/Engine/Engine/Engine/Resource/barrels");
-		temp.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		object_list[Location::gameobject_count] = temp;
-		++Location::gameobject_count;
+	std::ofstream file;
 
-		return 0;
+	file.open(ofn.lpstrFile);
+
+	for (int i(0); i < gameobject_count; ++i)
+	{
+		file << object_list[i].name << "\n";
 	}
 
-	int8_t AddScript()
-	{
-		return 0;
-	}
+	Debug("Локация сохранена");
+	file.close();
+}
 
-	int8_t RemoveGameObject()
-	{
-		return 0;
-	}
+void Load()
+{
+	// инициализируем объект gameobject
+}
 
-	int8_t RemoveScript()
-	{
-		return 0;
-	}
+int8_t AddGameObject()
+{
+	object_list = (GameObject*)realloc(object_list, sizeof(GameObject) * (gameobject_count + 1));
+	GameObject temp(&ourShader, "models/barrels");
+	temp.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	object_list[gameobject_count] = temp;
+	++gameobject_count;
+
+	return 0;
+}
+
+int8_t AddScript()
+{
+	return 0;
+}
+
+int8_t RemoveGameObject()
+{
+	return 0;
+}
+
+int8_t RemoveScript()
+{
+	return 0;
 }

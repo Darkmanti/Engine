@@ -62,11 +62,11 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 		strcpy(name, dirName);
 
-		WinApi::Debug("loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: succes\n");
+		Debug("loading object :: "); Debug(dirName); Debug(" :: succes\n");
 	}
 	else 
 	{
-		WinApi::Debug("ERROR loading object :: "); WinApi::Debug(dirName); WinApi::Debug(" :: invalid path :: "); WinApi::Debug(dirPath); WinApi::Debug("\n");
+		Debug("ERROR loading object :: "); Debug(dirName); Debug(" :: invalid path :: "); Debug(dirPath); Debug("\n");
 	}
 
 	is_Select = false;
