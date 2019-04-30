@@ -4,6 +4,8 @@ class Shader;
 
 #include <STB/stb_truetype.h>
 
+#include "GLEW/glew.h"
+
 #include "GLM/glm.hpp"
 #include "GLM/gtc/matrix_transform.hpp"
 #include "GLM/gtc/type_ptr.hpp"
@@ -26,7 +28,7 @@ public:
 
 	int glyphs;
 
-	FontObject(	Shader*			shader_,	// Ссылка на шейдер 
+	FontObject(	Shader*			shader_,	// Указатель на шейдер 
 				int				height,		// Размер шрифта (высота)
 				int				glyphs,		// Количество загружаемых символов (126 по умолчанию)
 				char const*		filename,	// Путь к файлу шрифта

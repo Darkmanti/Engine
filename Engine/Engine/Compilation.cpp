@@ -1,4 +1,5 @@
-#include "WinApi.h"
+#include "Interface.h"
+#include "Location.h"
 
 int Compilation()
 {
@@ -13,7 +14,7 @@ int Compilation()
 	// Вставить:
 	// GameObject *objects = new GameObject[gameobject_count];
 
-	for (int i = 0; i < Location::gameobject_count; i++)
+	for (int i = 0; i < object_list.size(); i++)
 	{
 		// Вставляем:
 		// "object[" + i + "] = new GameObject(Location::...);\n"
@@ -46,7 +47,7 @@ int Compilation()
 	}
 	*/
 
-	for (int i = 0; i < Location::gameobject_count; i++)
+	for (int i = 0; i < (int)object_list.size(); i++)
 	{
 		// Вставляем:
 		// "delete"

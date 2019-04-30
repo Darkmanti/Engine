@@ -1,7 +1,5 @@
 #include "Shader.h";
 
-unsigned int ID;
-
 // Конструктор генерирует шейдеры и шейдерную программу
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
@@ -187,12 +185,12 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		{
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
 			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+			//Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
-			Debug(s);
-			Debug("\n");
-			Debug(infoLog);
-			Debug("\n -- --------------------------------------------------- -- ");
+			//Debug(s);
+			//Debug("\n");
+			//Debug(infoLog);
+			//Debug("\n -- --------------------------------------------------- -- ");
 		}
 	}
 	else
@@ -202,12 +200,12 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		{
 			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
 			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+			//Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
-			Debug(s);
-			Debug("\n");
-			Debug(infoLog);
-			Debug("\n -- --------------------------------------------------- -- ");
+			//Debug(s);
+			//Debug("\n");
+			//Debug(infoLog);
+			//Debug("\n -- --------------------------------------------------- -- ");
 		}
 	}
 }

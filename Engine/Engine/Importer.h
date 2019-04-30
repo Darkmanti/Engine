@@ -1,12 +1,7 @@
 #pragma once
 
-#include <algorithm>
+#include <stdint.h>
 
-#include "Shader.h"
+class Chader;
 
-class Mesh;
-
-namespace Importer
-{
-	uint8_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs);
-};
+uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs);

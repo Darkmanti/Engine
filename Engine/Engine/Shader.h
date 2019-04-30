@@ -7,7 +7,7 @@
 #include "GLEW/glew.h"
 #include "GLM/glm.hpp"
 
-#include "WinApi.h"
+#include "Interface.h"
 
 class Shader
 {

@@ -2,11 +2,16 @@
 #include <stdint.h>
 #include <string>
 
-#include "WinApi.h"
+#include "Interface.h"
+
+#include "Shader.h";
 
 void EnableOpenGL();
 void DisableOpenGL();
 
+//#define _DEBUG_
+
+#ifndef _DEBUG_
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
@@ -17,17 +22,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 	{
 		MessageBox(NULL, "Можно запускать только одну копию приложения", "Ошибка", MB_OK | MB_ICONSTOP);
 		return 1;
-	}
+	}	
 
-	isLoaded = false;
-
-	// Отправляем дескриптор в файл wndInit
-	hInstance = hInstance;
-
-	InitInput();
-
-	// Создаем интерфейс (кнопки, хуепки, inputText и пр.)
-	if (int8_t iError = InitInterface()) // Проверка на создание интерфейса
+	if (int8_t iError = InitWindow(&hInstance)) // Проверка на создание окна
 	{
 		std::string out("Ошибка ");
 
@@ -38,28 +35,22 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 		return 0;
 	}
 
-	// Показываем интерфейс
-	if (int8_t iError = ShowInterface(nCmdShow))
-	{
-		std::string out("Ошибка ");
-
-		out += std::to_string(iError);
-
-		MessageBox(hWndEngine, "Интерфейс не отобразился", out.c_str(), MB_OK);
-
-		return 0;
-	}
-
 	EnableOpenGL();
+	InitVarInterface();
+
+	InitImgui();
 
 	isLoaded = true;
 
 	Loop();
 
 	DisableOpenGL();
+	UninitVarInterface();
 
 	return 0;
 }
+
+#endif
 
 void EnableOpenGL()
 {
@@ -92,3 +83,17 @@ void DisableOpenGL()
 	wglDeleteContext(hRC);
 	ReleaseDC(hWndEngine, hDC);
 }
+
+#ifdef _DEBUG_
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
+{
+	InitWindow(&hInstance);
+	EnableOpenGL();
+	
+	Loop();
+
+	Shader *ourShader = new Shader("Shader//shader.vs", "Shader//shader.fs");
+}
+
+#endif

@@ -1,19 +1,21 @@
 #pragma once
 
+#include <vector>
 #include <stdint.h>
 #include <windows.h>
-#include <Commdlg.h>
-#include <Commctrl.h>
-#pragma comment(lib,"Comctl32.Lib")
 
-extern int32_t gameobject_count;
-extern GameObject* object_list;
+#include "GameObject.h"
 
-void New(OPENFILENAME &ofn);
-void Save(OPENFILENAME &ofn);
-void Load();
+extern std::vector<GameObject*> object_list;
 
-int8_t AddGameObject();
+void InitVarLoc();
+void UninitVarLoc();
+
+void NewLoc();
+void SaveLoc();
+void OpenLoc();
+
+int8_t AddGameObject(const char *path);
 int8_t RemoveGameObject();
 
 int8_t AddScript();
