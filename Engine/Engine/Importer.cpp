@@ -7,9 +7,254 @@
 
 namespace Importer
 {
+	unsigned char bitextract(const unsigned int byte, const unsigned int mask);
+	unsigned char* bmp_reader(const char* fileName, int &h, int &w);
+
 	constexpr int StrLen = 512;
 
-	uint8_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
+	uint32_t ImportObj(const char *fileName, GLuint& VAO, GLuint& VBO, GLuint& EBO, uint64_t& countV, uint64_t& countF)
+	{
+		std::ifstream file;
+		file.open(fileName);
+
+		if (!file.is_open())
+		{
+			return 1;
+		}
+
+		std::string str;
+
+		int32_t countVT(0);
+		int32_t countVN(0);
+
+		while (!file.eof())
+		{
+			file >> str;
+
+			if (str.length() == 1)
+			{
+				if (str[0] == 'v')
+				{
+					++countV;
+					++countV;
+					++countV;
+				}
+				else if (str[0] == 'f')
+				{
+					getline(file, str);
+
+					++countF;
+					++countF;
+					++countF;
+
+					continue;
+				}
+			}
+			else if (str.length() == 2)
+			{
+				if (str.substr(0, 2) == "vt")
+				{
+					++countVT;
+					++countVT;
+				}
+
+				if (str.substr(0, 2) == "vn")
+				{
+					++countVN;
+					++countVN;
+					++countVN;
+				}
+			}
+
+			getline(file, str);
+		}
+
+		file.close();
+		file.open(fileName);
+
+		if (!file.is_open())
+		{
+			return 1;
+		}
+
+		GLfloat *V = new GLfloat[countF * 2 + countF * 3 + countF * 3];
+		GLfloat *V_t = new GLfloat[countF * 3];
+		GLfloat *VT = new GLfloat[countF * 2];
+		GLfloat *VN = new GLfloat[countF * 3];
+		GLuint	*F = new GLuint[countF];
+		GLuint *FT = new GLuint[countF];
+		GLuint *FN = new GLuint[countF];
+
+		uint64_t iV(0);								// Итератор количества вертексов
+		uint64_t iVT(0);							// Итератор количества вертексов текстурных
+		uint64_t iF(0);								// Итератор количества полигонов
+		uint64_t iFT(0);							// Итератор количества полигонов текстурных
+		uint64_t iVN(0);							// Итератор количества нормалей
+		uint64_t iFN(0);							// Итератор количества полигонов нормалей
+
+		while (!file.eof())
+		{
+			file >> str;
+
+			if (str.length() == 1)
+			{
+				if (str[0] == '#')
+				{
+
+				}
+				else if (str[0] == 'v')
+				{
+					float x, y, z;
+
+					file >> str;
+					x = std::stof(str);
+
+					file >> str;
+					y = std::stof(str);
+
+					file >> str;
+					z = std::stof(str);
+
+					V_t[iV] = x; ++iV;
+					V_t[iV] = y; ++iV;
+					V_t[iV] = z; ++iV;
+				}
+				else if (str[0] == 'f')
+				{
+					getline(file, str);
+
+					if (str.find('/') != std::string::npos)
+					{
+						std::replace(str.begin(), str.end(), '/', ' ');
+
+						std::stringstream tmp(str);
+
+						for (int i = 0; i < 3; ++i)
+						{
+							uint32_t f1, f2, f3;
+
+							tmp >> f1;
+							tmp >> f2;
+							tmp >> f3;
+
+							F[iF] = --f1; ++iF;
+							FT[iFT] = --f2; ++iFT;
+							FN[iFN] = --f3; ++iFN;
+						}
+					}
+					else
+					{
+						std::stringstream tmp(str);
+
+						for (int i = 0; i < 3; ++i)
+						{
+							int32_t f1, f2, f3;
+
+							tmp >> f1;
+							tmp >> f2;
+							tmp >> f3;
+
+							F[iF] = --f1; ++iF;
+							FT[iFT] = --f2; ++iFT;
+						}
+					}
+
+					continue;
+				}
+			}
+			else if (str.length() == 2)
+			{
+				if (str.substr(0, 2) == "vt")
+				{
+					float u, v;
+
+					file >> str;
+					u = std::stof(str);
+
+					file >> str;
+					v = std::stof(str);
+
+					VT[iVT] = u; ++iVT;
+					VT[iVT] = v; ++iVT;
+				}
+				else if (str.substr(0, 2) == "vn")
+				{
+					float x, y, z;
+
+					file >> str;
+					x = std::stof(str);
+
+					file >> str;
+					y = std::stof(str);
+
+					file >> str;
+					z = std::stof(str);
+
+					VN[iVN] = x; ++iVN;
+					VN[iVN] = y; ++iVN;
+					VN[iVN] = z; ++iVN;
+				}
+			}
+
+			getline(file, str);
+		}
+
+		file.close();
+
+		// Далее идёт переназначение массивов вершин относительно индексов
+
+		uint64_t j(0);
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = F[i] + 1;
+			V[j] = V_t[t * 3 - 3]; j++;
+			V[j] = V_t[t * 3 - 2]; j++;
+			V[j] = V_t[t * 3 - 1]; j++;
+		}
+
+		j = 0;
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = FT[i] + 1;
+			V[(countF * 3) + j] = VT[t * 2 - 2]; j++;
+			V[(countF * 3) + j] = VT[t * 2 - 1]; j++;
+		}
+
+		j = 0;
+
+		for (int i = 0; i < countF; i++)
+		{
+			uint64_t t = FN[i] + 1;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 3 - 3]; j++;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 3 - 2]; j++;
+			V[(countF * 3 + countF * 2) + j] = VN[t * 3 - 1]; j++;
+		}
+
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+
+		glBindVertexArray(VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, ((countF * 2) + (countF * 3) + (countF * 3)) * sizeof(GLfloat), V, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3) * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((countF * 3 + countF * 2) * sizeof(GLfloat)));
+		glEnableVertexAttribArray(2);
+
+		glBindVertexArray(0);
+
+		return 0;
+	}
+
+	uint32_t Import(const char* objPath, const char* dirPath, Mesh* Meshs)
 	{
 		std::ifstream file_obj;
 		file_obj.open(objPath, std::ios_base::in);
@@ -303,7 +548,30 @@ namespace Importer
 										{
 											if (strcmp(str, "map_Kd") == 0)
 											{
-												// Текстура диффузная
+												unsigned int texture;
+												int h, w;
+												file_mtl >> str;
+												char texture_Path[StrLen];
+												strcpy(texture_Path, dirPath);
+												strcat(texture_Path, "/");
+												strcat(texture_Path, str);
+												unsigned char* image = bmp_reader(texture_Path, h, w);
+
+												glGenTextures(1, &texture);
+												glBindTexture(GL_TEXTURE_2D, texture);
+
+												glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+												glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+												glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+												glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+												glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+												glGenerateMipmap(GL_TEXTURE_2D);
+												glBindTexture(GL_TEXTURE_2D, 0);
+												free(image);
+
+												Meshs[io_o].diffuse_texture = texture;
 											}
 											else if (strcmp(str, "newmtl") == 0)
 											{
@@ -388,9 +656,76 @@ namespace Importer
 		return 1;
 	}
 
-	unsigned char* main()
+
+
+	// CIEXYZTRIPLE stuff
+	typedef int FXPT2DOT30;
+
+	typedef struct {
+		FXPT2DOT30 ciexyzX;
+		FXPT2DOT30 ciexyzY;
+		FXPT2DOT30 ciexyzZ;
+	} CIEXYZ;
+
+	typedef struct {
+		CIEXYZ  ciexyzRed;
+		CIEXYZ  ciexyzGreen;
+		CIEXYZ  ciexyzBlue;
+	} CIEXYZTRIPLE;
+
+	// bitmap file header
+	typedef struct {
+		unsigned short bfType;
+		unsigned int   bfSize;
+		unsigned short bfReserved1;
+		unsigned short bfReserved2;
+		unsigned int   bfOffBits;
+	} BITMAPFILEHEADER;
+
+	// bitmap info header
+	typedef struct {
+		unsigned int   biSize;
+		unsigned int   biWidth;
+		unsigned int   biHeight;
+		unsigned short biPlanes;
+		unsigned short biBitCount;
+		unsigned int   biCompression;
+		unsigned int   biSizeImage;
+		unsigned int   biXPelsPerMeter;
+		unsigned int   biYPelsPerMeter;
+		unsigned int   biClrUsed;
+		unsigned int   biClrImportant;
+		unsigned int   biRedMask;
+		unsigned int   biGreenMask;
+		unsigned int   biBlueMask;
+		unsigned int   biAlphaMask;
+		unsigned int   biCSType;
+		CIEXYZTRIPLE   biEndpoints;
+		unsigned int   biGammaRed;
+		unsigned int   biGammaGreen;
+		unsigned int   biGammaBlue;
+		unsigned int   biIntent;
+		unsigned int   biProfileData;
+		unsigned int   biProfileSize;
+		unsigned int   biReserved;
+	} BITMAPINFOHEADER;
+
+	// rgb quad
+	typedef struct {
+		unsigned char  rgbBlue;
+		unsigned char  rgbGreen;
+		unsigned char  rgbRed;
+		unsigned char  rgbReserved;
+	} RGBQUAD;
+
+	// read bytes
+	template <typename Type>
+	void read(std::ifstream &fp, Type &result, std::size_t size) {
+		fp.read(reinterpret_cast<char*>(&result), size);
+	}
+
+	unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 	{
-		const char *fileName = "test.bmp";
 
 		// открываем файл
 		std::ifstream fileStream(fileName, std::ifstream::binary);
@@ -528,8 +863,8 @@ namespace Importer
 			fileStream.seekg(linePadding, std::ios_base::cur);
 		}
 
-		const int w(fileInfoHeader.biWidth);
-		const int h(fileInfoHeader.biHeight);
+		w = fileInfoHeader.biWidth;
+		h = fileInfoHeader.biHeight;
 
 
 		unsigned char* out = new unsigned char[w*h * 4];
@@ -539,9 +874,14 @@ namespace Importer
 		for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
 			for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
 				out[n] = rgbInfo[i][j].rgbRed;
-				out[n] = rgbInfo[i][j].rgbGreen;
-				out[n] = rgbInfo[i][j].rgbBlue;
-				out[n] = rgbInfo[i][j].rgbReserved;
+				out[n+1] = rgbInfo[i][j].rgbGreen;
+				out[n+2] = rgbInfo[i][j].rgbBlue;
+				out[n+3] = rgbInfo[i][j].rgbReserved;
+
+				++n;
+				++n;
+				++n;
+				++n;
 
 				/*std::cout << std::hex
 					<< +rgbInfo[i][j].rgbRed << " "
@@ -552,10 +892,26 @@ namespace Importer
 
 
 			}
-			std::cout << std::endl;
+		}
+		return out;
+	}
+
+	unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
+		if (mask == 0) {
+			return 0;
 		}
 
-		system("pause");
-		return out;
+		// определение количества нулевых бит справа от маски
+		int
+			maskBufer = mask,
+			maskPadding = 0;
+
+		while (!(maskBufer & 1)) {
+			maskBufer >>= 1;
+			maskPadding++;
+		}
+
+		// применение маски и смещение
+		return (byte & mask) >> maskPadding;
 	}
 };

@@ -394,6 +394,9 @@ namespace WinApi
 		loadImage(texture5, "Resource/Bereza/Bereza.png", GL_RGBA);
 		loadImage(denisjpg, "Resource/denis/denis.jpg", GL_RGB);
 
+		 //Инициализация текста
+		FontObject font1(&fontShader, 32, 256, "Resource//OpenSans-Regular.ttf", 32, 512, 512);
+
 		// Инициализация объектов
 		GameObject denis(&ourShader, "D:/Engine/Engine/Engine/Resource/denis");
 		denis.setModel(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(-20.0f, -20.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -449,10 +452,23 @@ namespace WinApi
 			{
 				object_list[i].Draw(projection, view, camera.Position);
 			}
+			
+			object1.DrawArray(projection, view, camera.Position);
+			object2.setModel(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object2.DrawArray(projection, view, camera.Position);
 
-			glBindTexture(GL_TEXTURE_2D, denisjpg);
-			denis.Draw(projection, view, camera.Position);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			object3.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(5.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object3.DrawArray_temp(projection, view, camera.Position);
+
+			object4.setModel(glm::vec3(30.0f, 30.0f, 30.0f), glm::vec3(-50.0f, 1.0f, 1.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object4.DrawArray_temp(projection, view, camera.Position);
+
+			object5.setModel(glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(-25.0f, 0.0f, 20.0f), 9.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			object5.DrawArray_temp(projection, view, camera.Position);
+
+			//glBindTexture(GL_TEXTURE_2D, denisjpg);
+			//denis.Draw(projection, view, camera.Position);
+			//glBindTexture(GL_TEXTURE_2D, 0);
 
 			font1.Print(0, 0, "Player", glm::vec3(1.0f, 1.0f, 1.0f), ortho);
 			font1.Print(0, 200, "Health: 100", glm::vec3(1.0f, 0.0f, 0.0f), ortho);
