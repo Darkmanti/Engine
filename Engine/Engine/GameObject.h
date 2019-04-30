@@ -39,17 +39,9 @@ public:
 
 	char		**scriptNames;
 
-	GameObject(Shader* shader_, Shader* selectShader_, const char* fileName, GLuint texture_);
-
-	GameObject(GLfloat* vertices_, uint64_t Vcount_, Shader* shader_, GLuint texture_);
-
 	GameObject(Shader* _shader, const char* dirPath);
 
 	void setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_);
-
-	void DrawArray(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
-
-	void DrawArray_temp(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 
 	void Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 

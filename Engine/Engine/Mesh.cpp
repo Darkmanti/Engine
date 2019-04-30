@@ -15,8 +15,8 @@ Mesh::~Mesh()
 
 void Mesh::DrawMesh()
 {
-	// Текстура
-	// Материалы и тд и тп
+	// РўРµРєСЃС‚СѓСЂР°
+	// РњР°С‚РµСЂРёР°Р»С‹ Рё С‚Рґ Рё С‚Рї
 
 	glBindVertexArray(VAO);
 	glBindTexture(GL_TEXTURE_2D, diffuse_texture);

@@ -19,23 +19,23 @@ void UninitVarLoc()
 
 void NewLoc()
 {
-	Debug("Создаю локацию");
+	Debug("РЎРѕР·РґР°СЋ Р»РѕРєР°С†РёСЋ");
 
-	Debug("Создал");
+	Debug("РЎРѕР·РґР°Р»");
 }
 
 void SaveLoc()
 {
-	Debug("Сохраняю локацию");
+	Debug("РЎРѕС…СЂР°РЅСЏСЋ Р»РѕРєР°С†РёСЋ");
 
-	Debug("Сохранил");
+	Debug("РЎРѕС…СЂР°РЅРёР»");
 }
 
 void OpenLoc()
 {
-	Debug("Открываю локацию");
+	Debug("РћС‚РєСЂС‹РІР°СЋ Р»РѕРєР°С†РёСЋ");
 
-	Debug("Открыл");
+	Debug("РћС‚РєСЂС‹Р»");
 }
 
 int8_t AddGameObject(const char *path)

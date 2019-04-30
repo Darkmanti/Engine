@@ -3,24 +3,24 @@
 
 int Compilation()
 {
-	// Создание папки build
+	// РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё build
 
 	// #include GameObject.h
 	// #include Script.h
 	// #include GameObject.cpp
 	// #include Script.cpp
-	// #include все скрипты в out.cpp
+	// #include РІСЃРµ СЃРєСЂРёРїС‚С‹ РІ out.cpp
 
-	// Вставить:
+	// Р’СЃС‚Р°РІРёС‚СЊ:
 	// GameObject *objects = new GameObject[gameobject_count];
 
 	for (int i = 0; i < object_list.size(); i++)
 	{
-		// Вставляем:
+		// Р’СЃС‚Р°РІР»СЏРµРј:
 		// "object[" + i + "] = new GameObject(Location::...);\n"
 	}
 
-	// Вставляем:
+	// Р’СЃС‚Р°РІР»СЏРµРј:
 	/*
 	for i in objects
 	{
@@ -31,7 +31,7 @@ int Compilation()
 	}
 	*/
 
-	// Вставляем:
+	// Р’СЃС‚Р°РІР»СЏРµРј:
 	/*
 	while (1)
 	{
@@ -49,11 +49,11 @@ int Compilation()
 
 	for (int i = 0; i < (int)object_list.size(); i++)
 	{
-		// Вставляем:
+		// Р’СЃС‚Р°РІР»СЏРµРј:
 		// "delete"
 	}
 
-	// Компиляция out.exe
+	// РљРѕРјРїРёР»СЏС†РёСЏ out.exe
 
 	return 0;
 }

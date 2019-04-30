@@ -6,7 +6,7 @@
 
 #include "GLEW/glew.h"
 
-// Первый define относится к загрузке шрифтов, второй к картинкам
+// РџРµСЂРІС‹Р№ define РѕС‚РЅРѕСЃРёС‚СЃСЏ Рє Р·Р°РіСЂСѓР·РєРµ С€СЂРёС„С‚РѕРІ, РІС‚РѕСЂРѕР№ Рє РєР°СЂС‚РёРЅРєР°Рј
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <STB/stb_image.h>
@@ -30,16 +30,16 @@
 
 uint16_t				numberOfKeys;
 
-WNDCLASSEX				pWndEngineClassEx{};				// Структура класса окна
+WNDCLASSEX				pWndEngineClassEx{};				// РЎС‚СЂСѓРєС‚СѓСЂР° РєР»Р°СЃСЃР° РѕРєРЅР°
 
-HDC						hDC;							// Дескриптор устройства
-HGLRC					hRC;							// Дескпритор
+HDC						hDC;							// Р”РµСЃРєСЂРёРїС‚РѕСЂ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+HGLRC					hRC;							// Р”РµСЃРєРїСЂРёС‚РѕСЂ
 
-HWND					hWndEngine;						// Главное окно редактора
+HWND					hWndEngine;						// Р“Р»Р°РІРЅРѕРµ РѕРєРЅРѕ СЂРµРґР°РєС‚РѕСЂР°
 
 HANDLE					debugConsole;
 
-bool					isLoaded;						// Загружен ли интерфейс
+bool					isLoaded;						// Р—Р°РіСЂСѓР¶РµРЅ Р»Рё РёРЅС‚РµСЂС„РµР№СЃ
 
 int64_t					mouseOffsetX,
 						mouseOffsetY,
@@ -56,11 +56,11 @@ HINSTANCE				hInstance;
 
 bool					*previousKeyboardState;
 
-Shader					*ourShader,						// Шейдер
-						*fontShader,					// Шейдер
-						*selectShader;					// Шейдер
+Shader					*ourShader,						// РЁРµР№РґРµСЂ
+						*fontShader,					// РЁРµР№РґРµСЂ
+						*selectShader;					// РЁРµР№РґРµСЂ
 
-FontObject				*font1;							// Шрифт вывода текста на экран
+FontObject				*font1;							// РЁСЂРёС„С‚ РІС‹РІРѕРґР° С‚РµРєСЃС‚Р° РЅР° СЌРєСЂР°РЅ
 
 GLuint					texture1,
 						texture2,
@@ -171,7 +171,7 @@ void UninitVarInterface()
 	delete clear_color;
 }
 
-// Оконные процедуры
+// РћРєРѕРЅРЅС‹Рµ РїСЂРѕС†РµРґСѓСЂС‹
 LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (!isLoaded)
@@ -208,18 +208,18 @@ LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// Инициализация интерфейса
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 uint8_t InitWindow(HINSTANCE *hInstance)
 {
-	// Описываем поля структур
-	pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Размер в байтах структуры класса
-	pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// Стиль окна
-	pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// Указатель на оконную процедуру
-	pWndEngineClassEx.hInstance = *hInstance;									// Дескриптор приложения
-	pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// Подгружам курсор
-	pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// Указатель на кисть с цветом фона (Типо кисть - рисование)
-	pWndEngineClassEx.lpszClassName = "WndEngineClass";							// Наименование класса
-	pWndEngineClassEx.hIcon = LoadIcon(*hInstance, "IDI_ENGINEICON");			// Иконка
+	// РћРїРёСЃС‹РІР°РµРј РїРѕР»СЏ СЃС‚СЂСѓРєС‚СѓСЂ
+	pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Р Р°Р·РјРµСЂ РІ Р±Р°Р№С‚Р°С… СЃС‚СЂСѓРєС‚СѓСЂС‹ РєР»Р°СЃСЃР°
+	pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// РЎС‚РёР»СЊ РѕРєРЅР°
+	pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РѕРєРѕРЅРЅСѓСЋ РїСЂРѕС†РµРґСѓСЂСѓ
+	pWndEngineClassEx.hInstance = *hInstance;									// Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+	pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// РџРѕРґРіСЂСѓР¶Р°Рј РєСѓСЂСЃРѕСЂ
+	pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєРёСЃС‚СЊ СЃ С†РІРµС‚РѕРј С„РѕРЅР° (РўРёРїРѕ РєРёСЃС‚СЊ - СЂРёСЃРѕРІР°РЅРёРµ)
+	pWndEngineClassEx.lpszClassName = "WndEngineClass";							// РќР°РёРјРµРЅРѕРІР°РЅРёРµ РєР»Р°СЃСЃР°
+	pWndEngineClassEx.hIcon = LoadIcon(*hInstance, "IDI_ENGINEICON");			// РРєРѕРЅРєР°
 
 	if (int8_t iError = RegisterClassEx(&pWndEngineClassEx))
 	{
@@ -227,27 +227,27 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 	}
 	else
 	{
-		MessageBox(NULL, "Класс не зарегистрирован", "RegisterWindowEngine", MB_OK);
+		MessageBox(NULL, "РљР»Р°СЃСЃ РЅРµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ", "RegisterWindowEngine", MB_OK);
 		return iError;
 	}
 
-	// Дескриптор окна
+	// Р”РµСЃРєСЂРёРїС‚РѕСЂ РѕРєРЅР°
 	hWndEngine = CreateWindowEx(WS_EX_ACCEPTFILES,											// Extended style
-				pWndEngineClassEx.lpszClassName,											// Название класса
-				"Движок",																	// Название окна
-				WS_OVERLAPPEDWINDOW,														// Стиль окна
-				0, 0,																		// Позиция
-				1366, 768,																	// Размер
-				0,																			// Родительское окно
-				0,																			// Меню
-				*hInstance,																	// Десприптор приложения
-				0																			// Все это говно доступно на msdn
+				pWndEngineClassEx.lpszClassName,											// РќР°Р·РІР°РЅРёРµ РєР»Р°СЃСЃР°
+				"Р”РІРёР¶РѕРє",																	// РќР°Р·РІР°РЅРёРµ РѕРєРЅР°
+				WS_OVERLAPPEDWINDOW,														// РЎС‚РёР»СЊ РѕРєРЅР°
+				0, 0,																		// РџРѕР·РёС†РёСЏ
+				1366, 768,																	// Р Р°Р·РјРµСЂ
+				0,																			// Р РѕРґРёС‚РµР»СЊСЃРєРѕРµ РѕРєРЅРѕ
+				0,																			// РњРµРЅСЋ
+				*hInstance,																	// Р”РµСЃРїСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+				0																			// Р’СЃРµ СЌС‚Рѕ РіРѕРІРЅРѕ РґРѕСЃС‚СѓРїРЅРѕ РЅР° msdn
 	);
 
-	// Проверка на создание окна
+	// РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
 	if (!hWndEngine)
 	{
-		MessageBox(NULL, "Окно не создано", "Ошибка", MB_OK);
+		MessageBox(NULL, "РћРєРЅРѕ РЅРµ СЃРѕР·РґР°РЅРѕ", "РћС€РёР±РєР°", MB_OK);
 		return 1;
 	}
 
@@ -264,7 +264,7 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 	return 0;
 }
 
-// Инициализация параметров интерфейса imgui
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РёРЅС‚РµСЂС„РµР№СЃР° imgui
 void InitImgui()
 {
 	IMGUI_CHECKVERSION();
@@ -306,7 +306,7 @@ void CameraControllAction()
 
 	if (mousePos->x >= windowEngineRect->left && mousePos->y >= windowEngineRect->top && mousePos->x <= windowEngineRect->right && mousePos->y <= windowEngineRect->bottom)
 	{
-		// Если нажатие клавиш управления происходит впервые
+		// Р•СЃР»Рё РЅР°Р¶Р°С‚РёРµ РєР»Р°РІРёС€ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРёСЃС…РѕРґРёС‚ РІРїРµСЂРІС‹Рµ
 		if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
 		{
 			isCameraAction = true;
@@ -397,34 +397,34 @@ void Clear()
 	system("cls");
 }
 
-// Метод с циклом программы
+// РњРµС‚РѕРґ СЃ С†РёРєР»РѕРј РїСЂРѕРіСЂР°РјРјС‹
 void Loop()
 {
 	InitImgui();
 
-	MSG message{ 0 }; 	// Структура сообщения к окну
+	MSG message{ 0 }; 	// РЎС‚СЂСѓРєС‚СѓСЂР° СЃРѕРѕР±С‰РµРЅРёСЏ Рє РѕРєРЅСѓ
 
-	// Тест трафарета и глубины
+	// РўРµСЃС‚ С‚СЂР°С„Р°СЂРµС‚Р° Рё РіР»СѓР±РёРЅС‹
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
+	// РўРёРїРѕ РІС‹Р±СЂР°Р»Рё Р±СЂРµРІРЅРѕ - РїРѕРєР° РЅРµ СЂР°Р±РѕС‚Р°РµС‚ РєР°Рє РЅР°РґРѕ Рё СЌС‚Рѕ РґРѕСЂР°Р±РѕС‚Р°РµС‚СЃСЏ РєРѕРіРґР° Р±СѓРґСѓС‚ РјРµС€Рё
 	//object3.isSelect = true;
 
-	// Матрицы
+	// РњР°С‚СЂРёС†С‹
 	glm::mat4 projection = glm::mat4(1.0f);
 	projection = glm::perspective(camera->Zoom, (GLfloat)1920.f / (GLfloat)1080.f, 0.1f, 5000.0f);
 	glm::mat4 ortho(1.0f);
 	ortho = glm::ortho(0.0f, 1920.f, 1080.f, 0.0f, 0.0f, 100.0f);
 
-	// Цвет фона
+	// Р¦РІРµС‚ С„РѕРЅР°
 	clear_color->x = 0.2f;
 	clear_color->y = 0.3f;
 	clear_color->z = 0.3f;
 
-	// Пока есть сообщения
-	// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
+	// РџРѕРєР° РµСЃС‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ
+	// Р•СЃР»Рё СЃРёСЃС‚РµРјР° РІРµСЂРЅСѓР»Р° РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Р№ РєРѕРґ (РѕС€РёР±РєР°), С‚Рѕ РІС‹С…РѕРґРёРј РёР· С†РёРєР»Р° РѕР±СЂР°Р±РѕС‚РєРё
 	while (true)
 	{
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
@@ -434,7 +434,7 @@ void Loop()
 				break;
 			}
 
-			// Обрабатываем сообщения в WndProc
+			// РћР±СЂР°Р±Р°С‚С‹РІР°РµРј СЃРѕРѕР±С‰РµРЅРёСЏ РІ WndProc
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 		}
@@ -450,7 +450,7 @@ void Loop()
 			AddGameObject("Resource/city");
 		}
 
-		/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
+		/*GLfloat currentFrame = GetProcessTimes(); РќРЈР–РќРћ Р’Р—РЇРўР¬ Р’Р Р•РњРЇ Р РђР‘РћРўР«!!!
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;*/
 
@@ -466,7 +466,7 @@ void Loop()
 		font1->Print(200, 20, "Health: 100", glm::vec3(1.0f, 0.0f, 0.0f), ortho);
 		font1->Print(400, 20, "Armor: 100", glm::vec3(0.0f, 0.0f, 1.0f), ortho);
 
-		// Интерфейс отрисовка
+		// РРЅС‚РµСЂС„РµР№СЃ РѕС‚СЂРёСЃРѕРІРєР°
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
@@ -508,10 +508,10 @@ void Loop()
 			ImGui::End();
 		}
 
-		// Вызов рендера интерфейса
+		// Р’С‹Р·РѕРІ СЂРµРЅРґРµСЂР° РёРЅС‚РµСЂС„РµР№СЃР°
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		// Интерфейс отрисовка
+		// РРЅС‚РµСЂС„РµР№СЃ РѕС‚СЂРёСЃРѕРІРєР°
 
 		SwapBuffers(hDC);
 	}

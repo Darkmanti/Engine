@@ -1,4 +1,4 @@
-﻿//// Загрузка интерфейса
+//// Загрузка интерфейса
 //void LoadConfigInterface()
 //{
 //	GLuint	&windowWidth(Output::windowWidth),

@@ -1,4 +1,4 @@
-﻿#include <shlobj.h>
+#include <shlobj.h>
 #include <stdint.h>
 #include <string>
 

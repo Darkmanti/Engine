@@ -9,16 +9,16 @@ class FontObject;
 
 extern uint16_t					numberOfKeys;
 
-extern WNDCLASSEX				pWndEngineClassEx;				// Структура класса окна
+extern WNDCLASSEX				pWndEngineClassEx;				// РЎС‚СЂСѓРєС‚СѓСЂР° РєР»Р°СЃСЃР° РѕРєРЅР°
 
-extern HDC						hDC;							// Дескриптор устройства
-extern HGLRC					hRC;							// Дескпритор
+extern HDC						hDC;							// Р”РµСЃРєСЂРёРїС‚РѕСЂ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+extern HGLRC					hRC;							// Р”РµСЃРєРїСЂРёС‚РѕСЂ
 
-extern HWND						hWndEngine;						// Главное окно редактора
+extern HWND						hWndEngine;						// Р“Р»Р°РІРЅРѕРµ РѕРєРЅРѕ СЂРµРґР°РєС‚РѕСЂР°
 
 extern HANDLE					debugConsole;
 
-extern bool						isLoaded;						// Загружен ли интерфейс
+extern bool						isLoaded;						// Р—Р°РіСЂСѓР¶РµРЅ Р»Рё РёРЅС‚РµСЂС„РµР№СЃ
 
 extern int64_t					mouseOffsetX,
 								mouseOffsetY,
@@ -35,11 +35,11 @@ extern HINSTANCE				hInstance;
 
 extern bool						*previousKeyboardState;
 
-extern Shader					*ourShader,						// Шейдер
-								*fontShader,					// Шейдер
-								*selectShader;					// Шейдер
+extern Shader					*ourShader,						// РЁРµР№РґРµСЂ
+								*fontShader,					// РЁРµР№РґРµСЂ
+								*selectShader;					// РЁРµР№РґРµСЂ
 
-extern FontObject				*font1;							// Шрифт вывода текста на экран
+extern FontObject				*font1;							// РЁСЂРёС„С‚ РІС‹РІРѕРґР° С‚РµРєСЃС‚Р° РЅР° СЌРєСЂР°РЅ
 
 extern float					deltaTime;
 
