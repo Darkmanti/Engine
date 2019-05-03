@@ -2,9 +2,10 @@
 #include <stdint.h>
 #include <string>
 
+#include "Debug.h"
+#include "Config.h"
 #include "Interface.h"
-
-#include "Shader.h";
+#include "Shader.h"
 
 void EnableOpenGL();
 void DisableOpenGL();
@@ -15,8 +16,26 @@ void DisableOpenGL();
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
 {
-	AllocConsole();
-	debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	debugConsole = nullptr;
+
+	{
+		std::stringstream params(lpCmdLine);
+		std::string cmd;
+
+		do
+		{
+			params >> cmd;
+
+			if (cmd == "console")
+			{
+				AllocConsole();
+				debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+			}
+		}
+		while (!params.eof());
+	}
+
+	LoadConfigInterface();
 
 	if (hPrevInstance)
 	{
@@ -46,6 +65,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 
 	DisableOpenGL();
 	UninitVarInterface();
+	SaveConfigInterface();
 
 	return 0;
 }
@@ -86,14 +106,58 @@ void DisableOpenGL()
 
 #ifdef _DEBUG_
 
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
-{
-	InitWindow(&hInstance);
-	EnableOpenGL();
-	
-	Loop();
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <string>
+#include <iterator>
 
-	Shader *ourShader = new Shader("Shader//shader.vs", "Shader//shader.fs");
+#include <ctime>
+
+//int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
+int main()
+{
+	// денис в памяти занимает 15 мб
+	clock_t t0 = clock(), t1;
+
+	std::cout << "Timer init\n";
+
+	std::fstream file("C:\\Users\\admin\\source\\repos\\Engine\\Engine\\Engine\\Resource\\denis\\denis.obj");
+	std::string str;
+
+	std::cout << "File open\n";
+
+	char buf[8192];
+	file.rdbuf()->pubsetbuf(buf, sizeof(buf));
+
+	// Загружается за 10.296с 11.281 10.418 :::::::::::::::::
+
+	file.rdbuf();
+	// ::::::::::::::::::
+
+	std::cout << "File data is copy in memory\n";
+
+	file.close();
+
+	t1 = clock();
+	std::cout << "\nFile close: " << (double)(t1 - t0) / CLOCKS_PER_SEC << std::endl;
+
+	std::cout << str;
+
+	t1 = clock();
+	std::cout << "\nOut file: " << (double)(t1 - t0) / CLOCKS_PER_SEC << std::endl;
+
+	while (1)
+	{
+
+	}
+
+	//InitWindow(&hInstance);
+	//EnableOpenGL();
+	//
+	//Loop();
+
+	//Shader *ourShader = new Shader("Shader//shader.vs", "Shader//shader.fs");
 }
 
 #endif

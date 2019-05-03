@@ -1,75 +1,92 @@
-//// Загрузка интерфейса
-//void LoadConfigInterface()
-//{
-//	GLuint	&windowWidth(Output::windowWidth),
-//			&windowHeight(Output::windowHeight),
-//
-//			&windowRenderWidth(Output::windowRenderWidth),
-//			&windowRenderHeight(Output::windowRenderHeight);
-//
-//	std::fstream file;
-//
-//	file.open(dirAppData + std::string("\\settings.cfg"), std::ios::in);
-//
-//	if (!file.is_open())
-//	{
-//		file.open(dirAppData + std::string("\\settings.cfg"), std::ios::out);
-//
-//		file << 1366;			file << '\n';
-//		file << 768;			file << '\n';
-//		file << 1366;			file << '\n';
-//		file << 768 - 16;		file << '\n';
-//
-//		file.close();
-//
-//		windowWidth = 1366;
-//		windowHeight = 768;
-//		windowRenderWidth = 1366;
-//		windowRenderHeight = 768 - 16;
-//
-//		return;
-//	}
-//
-//	std::string::size_type size;
-//	std::string str;
-//
-//	file >> str;
-//	windowWidth = std::stoi(str, &size);
-//
-//	file >> str;
-//	windowHeight = std::stoi(str, &size);
-//
-//	file >> str;
-//	windowRenderWidth = std::stoi(str, &size);
-//
-//	file >> str;
-//	windowRenderHeight = std::stoi(str, &size);
-//
-//	file.close();
-//}
-//
-//// Сохранение интерфейса
-//void SaveConfigInterface()
-//{
-//	std::ofstream file;
-//
-//	file.open(dirAppData + std::string("\\settings.cfg"), std::ios::out);
-//
-//	if (!file.is_open())
-//	{
-//		return;
-//	}
-//
-//	GLuint	&windowWidth(Output::windowWidth),
-//		&windowHeight(Output::windowHeight),
-//
-//		&windowRenderWidth(Output::windowRenderWidth),
-//		&windowRenderHeight(Output::windowRenderHeight);
-//
-//	file << windowWidth;			file << '\n';
-//	file << windowHeight;			file << '\n';
-//	file << windowRenderWidth;		file << '\n';
-//	file << windowRenderHeight;		file << '\n';
-//
-//	file.close();
-//}
+#include <stdint.h>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include "Debug.h"
+
+uint16_t	windowX,
+			windowY,
+			windowWidth,
+			windowHeight;
+
+bool		fullscreen;
+
+// Сохранение интерфейса
+void SaveConfigInterface()
+{
+	std::ofstream file("settings.cfg");
+
+	if (!file.is_open())
+	{
+		Debug("Failed to write data to the configuration file\n");
+	}
+	else
+	{
+		file << "windowX ";			file << windowX;		file << '\n';
+		file << "windowY ";			file << windowY;		file << '\n';
+		file << "windowWidth ";		file << windowWidth;	file << '\n';
+		file << "windowHeight ";	file << windowHeight;	file << '\n';
+		file << "fullscreen ";		file << fullscreen;		file << '\n';
+
+		file.close();
+	}
+}
+
+void ResetConfig()
+{
+	windowX = 0;
+	windowY = 0;
+
+	windowWidth = 1366;
+	windowHeight = 768;
+
+	fullscreen = false;
+
+	SaveConfigInterface();
+}
+
+// Загрузка интерфейса
+void LoadConfigInterface()
+{
+	std::ifstream file("settings.cfg");
+
+	if (!file.is_open())
+	{
+		Debug("Could not read data from configuration file\n");
+		ResetConfig();
+		return;
+	}
+
+	char	key[256] = "",
+			value[256] = "";
+
+	while (file)
+	{
+		file >> key;
+		file >> value;
+
+		if (!strcmp(key, "windowX"))
+		{
+			windowX = atof(value);
+		}
+		else if (!strcmp(key, "windowY"))
+		{
+			windowY = atof(value);
+		}
+		else if (!strcmp(key, "windowWidth"))
+		{
+			windowWidth = atof(value);
+		}
+		else if (!strcmp(key, "windowHeight"))
+		{
+			windowHeight = atof(value);
+		}
+		else if (!strcmp(key, "fullscreen"))
+		{
+			fullscreen = atof(value);
+		}
+	}
+
+	file.close();
+}

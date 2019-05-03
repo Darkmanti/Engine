@@ -27,6 +27,7 @@
 #include "GameObject.h"
 #include "FontObject.h"
 #include "Location.h"
+#include "Config.h"
 
 uint16_t				numberOfKeys;
 
@@ -37,8 +38,6 @@ HGLRC					hRC;							// Дескпритор
 
 HWND					hWndEngine;						// Главное окно редактора
 
-HANDLE					debugConsole;
-
 bool					isLoaded;						// Загружен ли интерфейс
 
 int64_t					mouseOffsetX,
@@ -47,8 +46,6 @@ int64_t					mouseOffsetX,
 						lastMousePosY;
 
 POINT					*mousePos;
-
-RECT					*windowEngineRect;
 
 bool					isCameraAction;
 
@@ -72,6 +69,10 @@ GLuint					texture1,
 GLfloat					deltaTime;
 
 Camera					*camera;
+
+// Нет extern'ов
+glm::mat4				projection,
+						ortho;
 
 
 bool					show_demo_window,
@@ -118,6 +119,7 @@ ImVec4					*clear_color;
 #define VK_Z						0x5A
 
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+bool isKeyDown(int key);
 
 void InitVarInterface()
 {
@@ -126,7 +128,7 @@ void InitVarInterface()
 
 	mousePos = new POINT();
 
-	windowEngineRect = new RECT();
+	numberOfKeys = 256;
 
 	previousKeyboardState = new bool[numberOfKeys];
 	for (uint16_t keyNum = 0; keyNum < numberOfKeys; ++keyNum)
@@ -144,19 +146,17 @@ void InitVarInterface()
 
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 15.0f));
 
+	projection = glm::mat4();
+	ortho = glm::mat4();
 
 	show_demo_window = true;
 	show_another_window = false;
 	clear_color = new ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	Debug("Initialisation succes\n");
 }
 
 void UninitVarInterface()
 {
 	delete mousePos;
-
-	delete windowEngineRect;
 
 	delete[] previousKeyboardState;
 
@@ -187,10 +187,31 @@ LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_MOVE:
-	case WM_SIZE:
-		GetWindowRect(hWndEngine, windowEngineRect);
+		windowX = LOWORD(lParam);
+		windowY = HIWORD(lParam);
+		break;
 
-		glViewport(0, 0, LOWORD(lParam), HIWORD(lParam));
+	case WM_SIZE:
+		if (wParam == SIZE_MAXIMIZED)
+		{
+			fullscreen = 1;
+		}
+		else if (wParam == SIZE_RESTORED)
+		{
+			fullscreen = 0;
+		}
+		else if (wParam == SIZE_MINIMIZED)
+		{
+			break;
+		}
+
+		windowWidth = LOWORD(lParam);
+		windowHeight = HIWORD(lParam);
+
+		glViewport(0, 0, windowWidth, windowHeight);
+
+		projection = glm::perspective(camera->Zoom, (GLfloat)windowWidth / windowHeight, 0.1f, 5000.0f);
+		ortho = glm::ortho(0.0f, (GLfloat)windowWidth, (GLfloat)windowHeight, 0.0f, 0.0f, 100.0f);
 
 		/*Debug("x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
 		Debug("y = "); Debug(std::to_string(windowRenderRect.top).c_str()); Debug("\n");
@@ -236,8 +257,8 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 				pWndEngineClassEx.lpszClassName,											// Название класса
 				"Движок",																	// Название окна
 				WS_OVERLAPPEDWINDOW,														// Стиль окна
-				0, 0,																		// Позиция
-				1366, 768,																	// Размер
+				windowX, windowY,															// Позиция
+				windowWidth, windowHeight,													// Размер
 				0,																			// Родительское окно
 				0,																			// Меню
 				*hInstance,																	// Десприптор приложения
@@ -251,10 +272,17 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 		return 1;
 	}
 
-	if (ShowWindow(hWndEngine, SW_MAXIMIZE))
-	{
-		return 2;
-	}
+	if (!fullscreen)
+		if (ShowWindow(hWndEngine, SW_NORMAL))
+		{
+			return 2;
+		}
+		else;
+	else
+		if (ShowWindow(hWndEngine, SW_MAXIMIZE))
+		{
+			return 2;
+		}
 
 	if (!UpdateWindow(hWndEngine))
 	{
@@ -304,7 +332,7 @@ void CameraControllAction()
 {
 	GetCursorPos(mousePos);
 
-	if (mousePos->x >= windowEngineRect->left && mousePos->y >= windowEngineRect->top && mousePos->x <= windowEngineRect->right && mousePos->y <= windowEngineRect->bottom)
+	if (mousePos->x >= windowX && mousePos->y >= windowY && mousePos->x <= windowX + windowWidth && mousePos->y <= windowY + windowHeight)
 	{
 		// Если нажатие клавиш управления происходит впервые
 		if (isKeyFirstPressed(VK_RBUTTON) || isKeyFirstPressed(VK_LBUTTON) && isKeyDown(VK_LMENU))
@@ -364,39 +392,6 @@ void CameraControllAction()
 	}
 }
 
-void Debug(const char *sms)
-{
-	WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
-}
-
-void Debug(int str)
-{
-	char sms[256];
-	_itoa(str, sms, 10);
-	WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
-}
-
-void Debug(unsigned int str)
-{
-	char sms[256];
-	_itoa(str, sms, 10);
-	WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
-}
-
-void Debug(float str)
-{
-	char sms[256];
-	std::stringstream iostr;
-	iostr << str;
-	iostr >> sms;
-	WriteConsole(debugConsole, sms, strlen(sms), nullptr, NULL);
-}
-
-void Clear()
-{
-	system("cls");
-}
-
 // Метод с циклом программы
 void Loop()
 {
@@ -411,12 +406,6 @@ void Loop()
 
 	// Типо выбрали бревно - пока не работает как надо и это доработается когда будут меши
 	//object3.isSelect = true;
-
-	// Матрицы
-	glm::mat4 projection = glm::mat4(1.0f);
-	projection = glm::perspective(camera->Zoom, (GLfloat)1920.f / (GLfloat)1080.f, 0.1f, 5000.0f);
-	glm::mat4 ortho(1.0f);
-	ortho = glm::ortho(0.0f, 1920.f, 1080.f, 0.0f, 0.0f, 100.0f);
 
 	// Цвет фона
 	clear_color->x = 0.2f;
@@ -446,8 +435,9 @@ void Loop()
 
 		if (isKeyFirstReleased(VK_G))
 		{
-			AddGameObject("Resource/denis");
+			//AddGameObject("Resource/denis");
 			AddGameObject("Resource/city");
+			//AddGameObject("Resource/toilet");
 		}
 
 		/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!

@@ -27,8 +27,6 @@ extern int64_t					mouseOffsetX,
 
 extern POINT					*mousePos;
 
-extern RECT						*windowEngineRect;
-
 extern bool						isCameraAction;
 
 extern HINSTANCE				hInstance;

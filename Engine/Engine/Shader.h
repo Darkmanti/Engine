@@ -2,12 +2,10 @@
 
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 #include "GLEW/glew.h"
 #include "GLM/glm.hpp"
-
-#include "Interface.h"
+#include "Debug.h"
 
 class Shader
 {

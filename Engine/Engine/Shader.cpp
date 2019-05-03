@@ -50,7 +50,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "Файл не прочитан" << std::endl;
+		Debug("Exception processed\n");
+		Debug("One of the shader files is unavailable or errors have occurred\n");
 	}
 
 	const char	*vShaderCode = vertexCode.c_str(),
@@ -184,13 +185,12 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		if (!success)
 		{
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-			//Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+
+			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
-			//Debug(s);
-			//Debug("\n");
-			//Debug(infoLog);
-			//Debug("\n -- --------------------------------------------------- -- ");
+			Debug(s);
+			Debug("\n");
+			Debug(infoLog);
 		}
 	}
 	else
@@ -199,13 +199,11 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		if (!success)
 		{
 			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-			//Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
-			//Debug(s);
-			//Debug("\n");
-			//Debug(infoLog);
-			//Debug("\n -- --------------------------------------------------- -- ");
+			Debug(s);
+			Debug("\n");
+			Debug(infoLog);
 		}
 	}
 }

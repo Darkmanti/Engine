@@ -22,6 +22,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Compilation.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="FontObject.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="imgui.cpp" />
@@ -41,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="FontObject.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="imconfig.h" />
