@@ -10,11 +10,7 @@
 void EnableOpenGL();
 void DisableOpenGL();
 
-//#define _DEBUG_
-
-#ifndef _DEBUG_
-
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	debugConsole = nullptr;
 
@@ -70,8 +66,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32
 	return 0;
 }
 
-#endif
-
 void EnableOpenGL()
 {
 	PIXELFORMATDESCRIPTOR pfd;
@@ -103,61 +97,3 @@ void DisableOpenGL()
 	wglDeleteContext(hRC);
 	ReleaseDC(hWndEngine, hDC);
 }
-
-#ifdef _DEBUG_
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <string>
-#include <iterator>
-
-#include <ctime>
-
-//int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int32_t nCmdShow)
-int main()
-{
-	// денис в памяти занимает 15 мб
-	clock_t t0 = clock(), t1;
-
-	std::cout << "Timer init\n";
-
-	std::fstream file("C:\\Users\\admin\\source\\repos\\Engine\\Engine\\Engine\\Resource\\denis\\denis.obj");
-	std::string str;
-
-	std::cout << "File open\n";
-
-	char buf[8192];
-	file.rdbuf()->pubsetbuf(buf, sizeof(buf));
-
-	// Загружается за 10.296с 11.281 10.418 :::::::::::::::::
-
-	file.rdbuf();
-	// ::::::::::::::::::
-
-	std::cout << "File data is copy in memory\n";
-
-	file.close();
-
-	t1 = clock();
-	std::cout << "\nFile close: " << (double)(t1 - t0) / CLOCKS_PER_SEC << std::endl;
-
-	std::cout << str;
-
-	t1 = clock();
-	std::cout << "\nOut file: " << (double)(t1 - t0) / CLOCKS_PER_SEC << std::endl;
-
-	while (1)
-	{
-
-	}
-
-	//InitWindow(&hInstance);
-	//EnableOpenGL();
-	//
-	//Loop();
-
-	//Shader *ourShader = new Shader("Shader//shader.vs", "Shader//shader.fs");
-}
-
-#endif

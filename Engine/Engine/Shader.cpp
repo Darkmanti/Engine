@@ -186,7 +186,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		{
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
 
-			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+			Debug("SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
 			Debug(s);
 			Debug("\n");
@@ -199,7 +199,7 @@ void Shader::checkCompileErrors(GLuint shader, std::string type)
 		if (!success)
 		{
 			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-			Debug("ERROR::SHADER_COMPILATION_ERROR of type: ");
+			Debug("SHADER_COMPILATION_ERROR of type: ");
 			const char* s = type.c_str();
 			Debug(s);
 			Debug("\n");

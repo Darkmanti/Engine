@@ -27,7 +27,9 @@
 #include "GameObject.h"
 #include "FontObject.h"
 #include "Location.h"
+#include "Project.h"
 #include "Config.h"
+#include "Compilation.h"
 
 uint16_t				numberOfKeys;
 
@@ -58,13 +60,6 @@ Shader					*ourShader,						// Шейдер
 						*selectShader;					// Шейдер
 
 FontObject				*font1;							// Шрифт вывода текста на экран
-
-GLuint					texture1,
-						texture2,
-						texture3,
-						texture4,
-						texture5,
-						denisjpg;
 
 GLfloat					deltaTime;
 
@@ -171,20 +166,19 @@ void UninitVarInterface()
 	delete clear_color;
 }
 
-// Оконные процедуры
-LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (!isLoaded)
 	{
-		return DefWindowProc(hWnd, message, wParam, lParam);
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
 	{
 		return true;
 	}
 
-	switch (message)
+	switch (uMsg)
 	{
 	case WM_MOVE:
 		windowX = LOWORD(lParam);
@@ -213,7 +207,8 @@ LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		projection = glm::perspective(camera->Zoom, (GLfloat)windowWidth / windowHeight, 0.1f, 5000.0f);
 		ortho = glm::ortho(0.0f, (GLfloat)windowWidth, (GLfloat)windowHeight, 0.0f, 0.0f, 100.0f);
 
-		/*Debug("x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
+		/*
+		"x = "); Debug(std::to_string(windowRenderRect.left).c_str()); Debug("\n");
 		Debug("y = "); Debug(std::to_string(windowRenderRect.top).c_str()); Debug("\n");
 
 		Debug("width = "); Debug(std::to_string(windowRenderRect.right).c_str()); Debug("\n");
@@ -223,7 +218,7 @@ LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 
 	return 0;
@@ -235,7 +230,7 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 	// Описываем поля структур
 	pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Размер в байтах структуры класса
 	pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// Стиль окна
-	pWndEngineClassEx.lpfnWndProc = WndEngineProc;								// Указатель на оконную процедуру
+	pWndEngineClassEx.lpfnWndProc = WindowProc;								// Указатель на оконную процедуру
 	pWndEngineClassEx.hInstance = *hInstance;									// Дескриптор приложения
 	pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// Подгружам курсор
 	pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// Указатель на кисть с цветом фона (Типо кисть - рисование)
@@ -395,8 +390,6 @@ void CameraControllAction()
 // Метод с циклом программы
 void Loop()
 {
-	InitImgui();
-
 	MSG message{ 0 }; 	// Структура сообщения к окну
 
 	// Тест трафарета и глубины
@@ -411,6 +404,9 @@ void Loop()
 	clear_color->x = 0.2f;
 	clear_color->y = 0.3f;
 	clear_color->z = 0.3f;
+
+	OpenProj();
+	Compilation();
 
 	// Пока есть сообщения
 	// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки

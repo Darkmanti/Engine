@@ -43,8 +43,6 @@ extern float					deltaTime;
 
 extern Camera					*camera;
 
-LRESULT WndEngineProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
 void InitVarInterface();
 void UninitVarInterface();
 
@@ -56,11 +54,6 @@ bool isKeyFirstPressed(int key);
 bool isKeyFirstReleased(int key);
 
 void CameraControllAction();
-
-void Debug(unsigned int str);
-void Debug(const char *sms);
-void Debug(float str);
-void Debug(int str);
 
 void Clear();
 

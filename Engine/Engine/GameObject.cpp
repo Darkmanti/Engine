@@ -11,6 +11,9 @@
 
 GameObject::GameObject(Shader* _shader, const char* dirPath)
 {
+	// Заполняем поле path
+	path = dirPath;
+
 	// Инициализируем массив с названиями скриптов в файле
 	scriptNames = new char*[16];
 
@@ -60,13 +63,13 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 		ImportObj(objPath, dirPath, Meshs);
 
-		strcpy(name, dirName);
+		path = dirName;
 
-		Debug("loading object :: "); Debug(dirName); Debug(" :: succes\n");
+		Debug("Loading object "); Debug(dirName); Debug(" succes\n");
 	}
 	else 
 	{
-		Debug("ERROR loading object :: "); Debug(dirName); Debug(" :: invalid path :: "); Debug(dirPath); Debug("\n");
+		Debug("Error loading object "); Debug(dirName); Debug(". Invalid path "); Debug(dirPath); Debug("\n");
 	}
 
 	is_Select = false;

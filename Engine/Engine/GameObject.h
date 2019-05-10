@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 class Script;
 class Vector;
 class Shader;
@@ -35,7 +37,7 @@ public:
 
 	bool		is_Select;
 
-	char		name[256];
+	std::string	path;
 
 	char		**scriptNames;
 
