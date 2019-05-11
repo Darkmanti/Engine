@@ -406,7 +406,8 @@ void Loop()
 	clear_color->z = 0.3f;
 
 	OpenProj();
-	Compilation();
+
+	glViewport(0, 0, windowWidth, windowHeight);
 
 	// Пока есть сообщения
 	// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
@@ -433,7 +434,12 @@ void Loop()
 		{
 			//AddGameObject("Resource/denis");
 			AddGameObject("Resource/city");
-			//AddGameObject("Resource/toilet");
+			AddGameObject("Resource/toilet");
+		}
+
+		if (isKeyFirstReleased(VK_B))
+		{
+			Compilation();
 		}
 
 		/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
