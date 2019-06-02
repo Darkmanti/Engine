@@ -154,9 +154,6 @@ void GameObject::Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 
 GameObject::~GameObject()
 {
-	// Инициализируем массив с названиями скриптов в файле
-	scriptNames = new char*[16];
-
 	for (int i(0); i < 16; ++i)
 	{
 		delete[] scriptNames[i];

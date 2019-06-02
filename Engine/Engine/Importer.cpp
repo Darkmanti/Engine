@@ -367,30 +367,30 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 									{
 										if (strcmp(str, "map_Kd") == 0)
 										{
-											unsigned int texture;
-											int h, w;
-											file_mtl >> str;
-											char texture_Path[StrLen];
-											strcpy(texture_Path, dirPath);
-											strcat(texture_Path, "/");
-											strcat(texture_Path, str);
-											unsigned char* image = bmp_reader(texture_Path, h, w);
+											//unsigned int texture;
+											//int h, w;
+											//file_mtl >> str;
+											//char texture_Path[StrLen];
+											//strcpy(texture_Path, dirPath);
+											//strcat(texture_Path, "/");
+											//strcat(texture_Path, str);
+											//unsigned char* image = bmp_reader(texture_Path, h, w);
 
-											glGenTextures(1, &texture);
-											glBindTexture(GL_TEXTURE_2D, texture);
+											//glGenTextures(1, &texture);
+											//glBindTexture(GL_TEXTURE_2D, texture);
 
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-											glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-											glGenerateMipmap(GL_TEXTURE_2D);
-											glBindTexture(GL_TEXTURE_2D, 0);
-											free(image);
+											//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+											//glGenerateMipmap(GL_TEXTURE_2D);
+											//glBindTexture(GL_TEXTURE_2D, 0);
+											//free(image);
 
-											Meshs[io_o].diffuse_texture = texture;
+											//Meshs[io_o].diffuse_texture = texture;
 										}
 										else if (strcmp(str, "newmtl") == 0)
 										{

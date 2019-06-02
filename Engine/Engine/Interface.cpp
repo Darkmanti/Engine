@@ -4,6 +4,9 @@
 #include <Commctrl.h>
 #pragma comment(lib,"Comctl32.Lib")
 
+#pragma resource "Engine.rc"
+#include "Resource.h"
+
 #include "GLEW/glew.h"
 
 // Первый define относится к загрузке шрифтов, второй к картинкам
@@ -230,12 +233,14 @@ uint8_t InitWindow(HINSTANCE *hInstance)
 	// Описываем поля структур
 	pWndEngineClassEx.cbSize = sizeof(WNDCLASSEX);								// Размер в байтах структуры класса
 	pWndEngineClassEx.style = CS_VREDRAW | CS_HREDRAW;							// Стиль окна
-	pWndEngineClassEx.lpfnWndProc = WindowProc;								// Указатель на оконную процедуру
+	pWndEngineClassEx.lpfnWndProc = WindowProc;									// Указатель на оконную процедуру
 	pWndEngineClassEx.hInstance = *hInstance;									// Дескриптор приложения
 	pWndEngineClassEx.hCursor = LoadCursor(NULL, IDC_ARROW);					// Подгружам курсор
 	pWndEngineClassEx.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);				// Указатель на кисть с цветом фона (Типо кисть - рисование)
 	pWndEngineClassEx.lpszClassName = "WndEngineClass";							// Наименование класса
-	pWndEngineClassEx.hIcon = LoadIcon(*hInstance, "IDI_ENGINEICON");			// Иконка
+	pWndEngineClassEx.hIcon = LoadIconA(*hInstance, (LPCSTR)IDI_ENGINE);				// Иконка
+	//pWndEngineClassEx.hIconSm = LoadIconA(*hInstance, "");					// Иконка
+	//pWndEngineClassEx.hIcon = NULL;				// Иконка
 
 	if (int8_t iError = RegisterClassEx(&pWndEngineClassEx))
 	{
@@ -408,6 +413,8 @@ void Loop()
 	OpenProj();
 
 	glViewport(0, 0, windowWidth, windowHeight);
+	projection = glm::perspective(camera->Zoom, (GLfloat)windowWidth / windowHeight, 0.1f, 5000.0f);
+	ortho = glm::ortho(0.0f, (GLfloat)windowWidth, (GLfloat)windowHeight, 0.0f, 0.0f, 100.0f);
 
 	// Пока есть сообщения
 	// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
@@ -432,9 +439,14 @@ void Loop()
 
 		if (isKeyFirstReleased(VK_G))
 		{
-			//AddGameObject("Resource/denis");
-			AddGameObject("Resource/city");
-			AddGameObject("Resource/toilet");
+			AddGameObject("Resource/denis");
+			//AddGameObject("Resource/city");
+			//AddGameObject("Resource/toilet");
+		}
+
+		if (isKeyFirstReleased(VK_S) && isKeyDown(VK_CONTROL))
+		{
+			object_list[0]->setModel(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.f, 0.f, 0.f), 1.f, glm::vec3(0.f, 1.f, 0.f));
 		}
 
 		if (isKeyFirstReleased(VK_B))

@@ -1086,9 +1086,6 @@ int Compilation()
 "																														 \n"
 "~GameObject()																											 \n"
 "{																														 \n"
-"// Инициализируем массив с названиями скриптов в файле																	 \n"
-"scriptNames = new char* [16];																							 \n"
-"																														 \n"
 "for (int i(0); i < 16; ++i)																							 \n"
 "{																														 \n"
 "delete[] scriptNames[i];																								 \n"
@@ -1241,7 +1238,9 @@ int Compilation()
 
 	// Вставить:
 	// int gameobject_count(5);\n
-	file << "int gameobject_count("; file << object_list.size(); file << ");\n";
+	file << "int gameobject_count("; 
+	file << object_list.size(); 
+	file << ");\n";
 
 	// Загрузка .obj файлов
 	// Вставить:
@@ -1252,6 +1251,7 @@ int Compilation()
 	{
 		str = std::to_string(i);
 		file << "objects[" + str + "] = new GameObject(ourShader, \"Resource/" + object_list[i]->path + "\");\n";
+		file << "objects[" + str + "]->setModel(glm::vec3(1.f, 1.f, 1.f), glm::vec3(1.f, 1.f, 1.f), 0.f, glm::vec3(1.f, 1.f, 1.f));\n";
 	}
 
 	file << ""

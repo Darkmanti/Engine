@@ -22,7 +22,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		{
 			params >> cmd;
 
-			if (cmd == "console")
+			if (cmd == "-console")
 			{
 				AllocConsole();
 				debugConsole = GetStdHandle(STD_OUTPUT_HANDLE);
