@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 class Script;
 class Vector;
 class Shader;
@@ -23,21 +21,17 @@ private:
 public:
 	GLuint		VAO, VBO, EBO;
 
-	uint64_t	Vcount, Fcount;
-
 	Shader		*shader, *selectShader;
-
-	GLuint		texture;
 
 	glm::mat4	model;
 
-	Mesh		*Meshs;
+	Mesh		*Meshes;
 
-	int			obj_count;
+	int			objCount;
 
 	bool		is_Select;
 
-	std::string	path;
+	char		path[256];
 
 	char		**scriptNames;
 

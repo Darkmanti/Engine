@@ -1,6 +1,6 @@
 # Blender v2.79 (sub 0) OBJ File: 'wood.blend'
 # www.blender.org
-mtllib Wood.mtl
+mtllib wood.mtl
 o Cube
 v -0.227598 0.008226 -0.711072
 v -0.227598 0.008226 0.711072

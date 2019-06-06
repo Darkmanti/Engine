@@ -12,7 +12,9 @@
 GameObject::GameObject(Shader* _shader, const char* dirPath)
 {
 	// Заполняем поле path
-	path = dirPath;
+	strcpy(path, dirPath);
+
+	objCount = 0;
 
 	// Инициализируем массив с названиями скриптов в файле
 	scriptNames = new char*[16];
@@ -24,53 +26,11 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 
 	shader = _shader;
 
-	const char* dirName = strrchr(dirPath, 47) + 1;
-	char objPath[512];
-	strcpy(objPath, dirPath);
-	strcat(objPath, "/");
-	strcat(objPath, dirName);
-	strcat(objPath, ".obj");
+	shader = _shader;
 
-	obj_count = 0;
+	Meshes = (Mesh*)malloc(1);
 
-	std::ifstream file;
-	file.open(objPath, std::ios_base::in);
-	if (file.is_open())
-	{
-		char str[512];
-		while (!file.eof())
-		{
-			file >> str;
-			if (strlen(str) == 1)
-			{
-				if (strcmp(str, "o") == 0)
-				{
-					++obj_count;
-				}
-				else
-				{
-					file.getline(str, 512);
-				}
-			}
-			else
-			{
-				file.getline(str, 512);
-			}
-		}
-		file.close();
-
-		Meshs = new Mesh[obj_count];
-
-		ImportObj(objPath, dirPath, Meshs);
-
-		path = dirName;
-
-		Debug("Loading object "); Debug(dirName); Debug(" succes\n");
-	}
-	else 
-	{
-		Debug("Error loading object "); Debug(dirName); Debug(". Invalid path "); Debug(dirPath); Debug("\n");
-	}
+	LoadObj(Meshes, dirPath, objCount);
 
 	is_Select = false;
 
@@ -155,9 +115,9 @@ void GameObject::Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)
 	shader->setUniform("view", view);
 	shader->setUniform("viewPos", viewPos);
 
-	for (int i = 0; i < obj_count; i++)
+	for (int i = 0; i < objCount; i++)
 	{
-		Meshs[i].DrawMesh();
+		Meshes[i].DrawMesh();
 	}
 }
 
@@ -170,8 +130,8 @@ GameObject::~GameObject()
 
 	delete[] scriptNames;
 
-	for (int i = 0; i < obj_count; i++)
+	for (int i = 0; i < objCount; i++)
 	{
-		Meshs[i].~Mesh();
+		Meshes[i].~Mesh();
 	}
 }

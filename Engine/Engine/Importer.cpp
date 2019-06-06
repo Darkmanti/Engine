@@ -1,16 +1,18 @@
+// Инклуды для БМП
 #include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <cstring>
 #include <string>
 
+// Инклуды для obj
+#include <cstring>
 #include "Debug.h"
 
+// Инклуд GLEW
 #include "GLEW/glew.h"
 
+// Класс мешей
 #include "Mesh.h"
-
-constexpr int StrLen = 512;
 
 // CIEXYZTRIPLE_ stuff
 typedef int FXPT2DOT30_;
@@ -72,19 +74,32 @@ typedef struct {
 	unsigned char  rgbReserved;
 } RGBQUAD_;
 
-unsigned char bitextract(const unsigned int byte, const unsigned int mask);
 unsigned char* bmp_reader(const char* fileName, int &h, int &w);
 
-uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
+void LoadObj(Mesh* meshs, const char* dirPath, int& objCount)
 {
-	std::ifstream file_obj;
-	file_obj.open(objPath, std::ios_base::in);
+	const char* dirName = strrchr(dirPath, 47) + 1;
+	char objPath[256];
+	strcpy(objPath, dirPath);
+	strcat(objPath, "/");
+	strcat(objPath, dirName);
+	strcat(objPath, ".obj");
 
-	// Строка для временных операций
-	char str[StrLen];
+	Debug("start loading object :: "); Debug(dirName); Debug("\n");
 
-	// Имя файла библиотеки материалов
-	char mtllib[StrLen];
+	LARGE_INTEGER fileSize;
+	GetFileSize(objPath, &fileSize);
+	fileSize.QuadPart = fileSize.QuadPart + 1;
+
+	LPVOID voidBuffer = malloc(fileSize.QuadPart);
+	ReadFileToBuffer(objPath, voidBuffer, fileSize);
+	char* buffer = (char*)voidBuffer;
+	buffer[fileSize.QuadPart - 1] = '\0';
+
+	unsigned int i(0);
+
+	// Путь к либе материалов
+	char mtlPath[256] = "";
 
 	// Количество полигонов
 	unsigned int faces_count(0);
@@ -96,45 +111,68 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 	// Количество нормалей вершин
 	unsigned int vertices_vn_count(0);
 
-	// Инициализация названий других файлов и количества вершин
-	while (!file_obj.eof())
+	while (i < fileSize.QuadPart)
 	{
-		file_obj >> str;
+		if (buffer[i] == 'v' && buffer[i + 1] == ' ')
+		{
+			// Вершины
+			vertices_v_count++;
+			while (buffer[i] != '\n')
+				i++;
+		}
+		else if (buffer[i] == 'v' && buffer[i + 1] == 't')
+		{
+			// Вершины текстурные
+			vertices_vt_count++;
+			while (buffer[i] != '\n')
+				i++;
+		}
+		else if (buffer[i] == 'v' && buffer[i + 1] == 'n')
+		{
+			// Вершины нормаль
+			vertices_vn_count++;
+			while (buffer[i] != '\n')
+				i++;
+		}
+		else if (buffer[i] == 'f')
+		{
+			// faces
+			faces_count++;
+			while (buffer[i] != '\n' && buffer[i] != '\0')
+				i++;
+		}
+		else if (buffer[i] == 'o')
+		{
+			// Объект
+			objCount++;
+			while (buffer[i] != '\n')
+				i++;
+		}
+		else if (buffer[i] == 'm')
+		{
+			// mtllib
+			char mtllib[256] = "";
+			i += 7;
+			int j(0);
+			while (buffer[i] != '\n' && buffer[i] != '\r')
+			{
+				mtllib[j] = buffer[i];
+				i++;
+				j++;
+			}
 
-		if (strlen(str) == 6)
-		{
-			if (strcmp(str, "mtllib") == 0)
-			{
-				file_obj >> str;
-				strcpy(mtllib, str);
-			}
+			strcpy(mtlPath, dirPath);
+			strcat(mtlPath, "/");
+			strcat(mtlPath, mtllib);
 		}
-		else if (strlen(str) == 1) 
+		else
 		{
-			if (strcmp(str, "f") == 0)
-			{
-				++faces_count;
-			}
-			else if (strcmp(str, "v") == 0)
-			{
-				++vertices_v_count;
-			}
+			while (buffer[i] != '\n' && buffer[i] != '\0')
+				i++;
 		}
-		else if (strlen(str) == 2)
-		{
-			if (strcmp(str, "vt") == 0)
-			{
-				++vertices_vt_count;
-			}
-			else if (strcmp(str, "vn") == 0)
-			{
-				++vertices_vn_count;
-			}
-		}
-		file_obj.getline(str, StrLen);
+
+		i++;
 	}
-
-	file_obj.close();
 
 	faces_count *= 3;
 
@@ -142,274 +180,385 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 	vertices_vt_count *= 2;
 	vertices_vn_count *= 3;
 
-	// Временный массив вершин
-	float *vertices_v_temp = new float[vertices_v_count];
-	// Временный массив вершин текстурных
-	float *vertices_vt_temp = new float[vertices_vt_count];
-	// Временный массив вершин нормалей
-	float *vertices_vn_temp = new float[vertices_vn_count];
+	realloc(meshs, sizeof(Mesh) * objCount);
 
-	// Временный массив индексов
-	unsigned int *faces_v_temp = new unsigned int[faces_count];
-	// Временный массив индексов текстурных
-	unsigned int *faces_vt_temp = new unsigned int[faces_count];
-	// Временный массив индексов нормалей
-	unsigned int *faces_vn_temp = new unsigned int[faces_count];
+	float* vertices_v_list = new float[vertices_v_count];
+	float* vertices_vt_list = new float[vertices_vt_count];
+	float* vertices_vn_list = new float[vertices_vn_count];
 
-	// Создание пути к mtllib
-	char mtllibPath[StrLen];
-	strcpy(mtllibPath, dirPath);
-	strcat(mtllibPath, "/");
-	strcat(mtllibPath, mtllib);
+	unsigned int* faces_v_list = new unsigned int[faces_count];
+	unsigned int* faces_vt_list = new unsigned int[faces_count];
+	unsigned int* faces_vn_list = new unsigned int[faces_count];
 
-	file_obj.open(objPath, std::ios_base::in);
 	unsigned int iv_v(0);	// Итератор вершин
 	unsigned int iv_vt(0);	// Итератор вершин текстурных
 	unsigned int iv_vn(0);	// Итератор вершин нормалей
 	unsigned int iv_f(0);	// Итератор индексов
-	long int io_o(-1);	// Итератор объектов
+	long int io_o(-1);		// Итератор объектов
 
-	while (!file_obj.eof())
+	i = 0;
+
+	while (i < fileSize.QuadPart)
 	{
-		file_obj >> str;
-
-		if (strlen(str) == 1)
+		if (buffer[i] == '#')
 		{
-			if (strcmp(str, "v") == 0)
+			while (buffer[i] != '\n' && buffer[i] != '\0')
+				i++;
+		}
+		else if (buffer[i] == 'm')
+		{
+			while (buffer[i] != '\n' && buffer[i] != '\0')
+				i++;
+		}
+		else if (buffer[i] == 'v' && buffer[i + 1] == ' ')
+		{
+			// vertices
+			char temp[16] = "";
+			int j(0);
+			i++;
+			i++;
+			while (buffer[i] != ' ')
 			{
-				file_obj >> str;
-				vertices_v_temp[iv_v] = std::stof(str); ++iv_v;
-				file_obj >> str;
-				vertices_v_temp[iv_v] = std::stof(str); ++iv_v;
-				file_obj >> str;
-				vertices_v_temp[iv_v] = std::stof(str); ++iv_v;
+				temp[j] = buffer[i];
+				j++;
+				i++;
 			}
-			else if (strcmp(str, "f") == 0)
+			j = 0;
+			vertices_v_list[iv_v] = atof(temp);
+			iv_v++;
+			i++;
+			while (buffer[i] != ' ')
 			{
-				file_obj.getline(str, StrLen);
-				if (strchr(str, 47) != NULL)
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			j = 0;
+			vertices_v_list[iv_v] = atof(temp);
+			iv_v++;
+			i++;
+			while (buffer[i] != '\n')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			vertices_v_list[iv_v] = atof(temp);
+			iv_v++;
+		}
+		else if (buffer[i] == 'v' && buffer[i + 1] == 't')
+		{
+			// UV coord
+			char temp[16] = "";
+			int j(0);
+			i++;
+			i++;
+			i++;
+			while (buffer[i] != ' ')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			j = 0;
+			vertices_vt_list[iv_vt] = atof(temp);
+			iv_vt++;
+			i++;
+			while (buffer[i] != '\n')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			vertices_vt_list[iv_vt] = atof(temp);
+			iv_vt++;
+		}
+		else if (buffer[i] == 'v' && buffer[i + 1] == 'n')
+		{
+			// normals
+			char temp[16] = "";
+			int j(0);
+			i++;
+			i++;
+			i++;
+			while (buffer[i] != ' ')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			j = 0;
+			vertices_vn_list[iv_vn] = atof(temp);
+			iv_vn++;
+			i++;
+			while (buffer[i] != ' ')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			j = 0;
+			vertices_vn_list[iv_vn] = atof(temp);
+			iv_vn++;
+			i++;
+			while (buffer[i] != '\n')
+			{
+				temp[j] = buffer[i];
+				j++;
+				i++;
+			}
+			vertices_vn_list[iv_vn] = atof(temp);
+			iv_vn++;
+		}
+		else if (buffer[i] == 'f')
+		{
+			// faces
+			while (buffer[i] != ' ')
+				i++;
+			for (int q = 0; q < 3; q++)
+			{
+				char temp[16] = "";
+				int j(0);
+				i++;
+
+				while (buffer[i] != '/')
 				{
-					char *str_temp = strtok(str, "/ ");
-					faces_v_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vt_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vn_temp[iv_f] = std::stoi(str_temp) - 1; ++iv_f;
-					str_temp = strtok(NULL, "/ ");
-					faces_v_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vt_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vn_temp[iv_f] = std::stoi(str_temp) - 1; ++iv_f;
-					str_temp = strtok(NULL, "/ ");
-					faces_v_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vt_temp[iv_f] = std::stoi(str_temp) - 1;
-					str_temp = strtok(NULL, "/ ");
-					faces_vn_temp[iv_f] = std::stoi(str_temp) - 1; ++iv_f;
-						
-					continue; // Необходимо для того чтобы не бралась ещё одна строка в конце общего цикла
+					temp[j] = buffer[i];
+					j++;
+					i++;
+				}
+				faces_v_list[iv_f] = atoi(temp) - 1;
+				i++;
+				j = 0;
+				memset(temp, 0, 16);
+
+				while (buffer[i] != '/')
+				{
+					temp[j] = buffer[i];
+					j++;
+					i++;
+				}
+				faces_vt_list[iv_f] = atoi(temp) - 1;
+				i++;
+				j = 0;
+				memset(temp, 0, 16);
+
+				while (buffer[i] != ' ' && buffer[i] != '\n')
+				{
+					temp[j] = buffer[i];
+					j++;
+					i++;
+				}
+				faces_vn_list[iv_f] = atoi(temp) - 1;
+				iv_f++;
+			}
+		}
+		else if (buffer[i] == 'u')
+		{
+			// Usemtl
+			i += 7;
+			char usemtl[256] = "";
+			int j(0);
+			while (buffer[i] != '\n' && buffer[i] != '\r')
+			{
+				usemtl[j] = buffer[i];
+				i++;
+				j++;
+			}
+
+			LARGE_INTEGER fileSize_mtl;
+			GetFileSize(mtlPath, &fileSize_mtl);
+			fileSize_mtl.QuadPart = fileSize_mtl.QuadPart + 1;
+
+			LPVOID mtl_void_Buffer = malloc(fileSize_mtl.QuadPart);
+			ReadFileToBuffer(mtlPath, mtl_void_Buffer, fileSize_mtl);
+			char* mtl_buffer = (char*)mtl_void_Buffer;
+			mtl_buffer[fileSize_mtl.QuadPart - 1] = '\0';
+
+			unsigned int mtl_it(0);
+
+			while (mtl_it < fileSize_mtl.QuadPart)
+			{
+				if (mtl_buffer[mtl_it] == '#')
+				{
+					// Комментарий (пропуск)
+					while (mtl_buffer[mtl_it] != '\n' && mtl_buffer[mtl_it] != '\0')
+						mtl_it++;
+				}
+				else if (mtl_buffer[mtl_it] == 'n')
+				{
+					mtl_it += 7;
+					j = 0;
+					char usemtl_cmp[256] = "";
+					while (mtl_buffer[mtl_it] != '\n' && mtl_buffer[mtl_it] != '\r')
+					{
+						usemtl_cmp[j] = mtl_buffer[mtl_it];
+						j++;
+						mtl_it++;
+					}
+
+					if (strcmp(usemtl, usemtl_cmp) == 0)
+					{
+						while (mtl_buffer[mtl_it] != 'n' && mtl_buffer[mtl_it] != '\0')
+						{
+							if (mtl_buffer[mtl_it] == 'N' && mtl_buffer[mtl_it + 1] == 's')
+							{
+								// Коэффициент specular
+							}
+							else if (mtl_buffer[mtl_it] == 'K' && mtl_buffer[mtl_it + 1] == 'a')
+							{
+								// ambient
+							}
+							else if (mtl_buffer[mtl_it] == 'K' && mtl_buffer[mtl_it + 1] == 'd')
+							{
+								// diffuse
+							}
+							else if (mtl_buffer[mtl_it] == 'K' && mtl_buffer[mtl_it + 1] == 's')
+							{
+								// Цвет specular
+							}
+							else if (mtl_buffer[mtl_it] == 'K' && mtl_buffer[mtl_it + 1] == 'e')
+							{
+								// emissive
+							}
+							else if (mtl_buffer[mtl_it] == 'N' && mtl_buffer[mtl_it + 1] == 'i')
+							{
+								// если честно не знаю что это
+							}
+							else if (mtl_buffer[mtl_it] == 'd')
+							{
+								// Прозрачность
+							}
+							else if (mtl_buffer[mtl_it] == 'm' && mtl_buffer[mtl_it + 1] == 'a' && mtl_buffer[mtl_it + 4] == 'K' && mtl_buffer[mtl_it + 5] == 'd')
+							{
+								// Дифузная текстура
+								unsigned int texture;
+								int h, w;
+
+								mtl_it += 7;
+								j = 0;
+								char textureName[256] = "";
+								while (mtl_buffer[mtl_it] != '\n' && mtl_buffer[mtl_it] != '\r' && mtl_buffer[mtl_it] != '\0')
+								{
+									textureName[j] = mtl_buffer[mtl_it];
+									mtl_it++;
+									j++;
+								}
+
+								char full_texture_path[256] = "";
+								strcpy(full_texture_path, dirPath);
+								strcat(full_texture_path, "/");
+								strcat(full_texture_path, textureName);
+
+								unsigned char* image = bmp_reader(full_texture_path, h, w);
+
+								glGenTextures(1, &texture);
+								glBindTexture(GL_TEXTURE_2D, texture);
+
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+								glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+								glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+								glGenerateMipmap(GL_TEXTURE_2D);
+								glBindTexture(GL_TEXTURE_2D, 0);
+								free(image);
+
+								meshs[io_o].diffuse_texture = texture;
+							}
+							mtl_it++;
+						}
+					}
 				}
 				else
 				{
-					for (int i = 0; i < 3; i++)
-					{
-						// На случай если f не разделенеы "/"
-					}
+					// Пропуск
+					while (mtl_buffer[mtl_it] != '\n' && mtl_buffer[mtl_it] != '\0')
+						mtl_it++;
 				}
 
+				mtl_it++;
 			}
-			else if (strcmp(str, "o") == 0)
-			{
-				if (io_o != -1)
-				{
-					// Идёт переназначение массивов вершин относительно индексов
-					unsigned int j(0);
 
-					// Итоговый массив вершин
-					float *vertices = new float[iv_f * 2 + iv_f * 3 + iv_f * 3];
-
-					for (int i = 0; i < iv_f; i++)
-					{
-						uint64_t t = faces_v_temp[i] + 1;
-						vertices[j] = vertices_v_temp[t * 3 - 3]; j++;
-						vertices[j] = vertices_v_temp[t * 3 - 2]; j++;
-						vertices[j] = vertices_v_temp[t * 3 - 1]; j++;
-					}
-
-					j = 0;
-
-					for (int i = 0; i < iv_f; i++)
-					{
-						uint64_t t = faces_vt_temp[i] + 1;
-						vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 2]; j++;
-						vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 1]; j++;
-					}
-
-					j = 0;
-
-					for (int i = 0; i < iv_f; i++)
-					{
-						uint64_t t = faces_vn_temp[i] + 1;
-						vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 3]; j++;
-						vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 2]; j++;
-						vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 1]; j++;
-					}
-
-					// Генерация VAO, VBO
-
-					glGenVertexArrays(1, &Meshs[io_o].VAO);
-					glGenBuffers(1, &Meshs[io_o].VBO);
-
-					glBindVertexArray(Meshs[io_o].VAO);
-
-					glBindBuffer(GL_ARRAY_BUFFER, Meshs[io_o].VBO);
-					glBufferData(GL_ARRAY_BUFFER, ((iv_f * 2) + (iv_f * 3) + (iv_f * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-					glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-					glEnableVertexAttribArray(0);
-
-					glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3) * sizeof(GLfloat)));
-					glEnableVertexAttribArray(1);
-
-					glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3 + iv_f * 2) * sizeof(GLfloat)));
-					glEnableVertexAttribArray(2);
-
-					glBindVertexArray(0);
-
-					Meshs[io_o].faces_Count = iv_f;
-
-					iv_f = 0;
-
-					++io_o;
-				}
-				else 
-				{
-					io_o = 0;
-				}
-			}
+			delete[] mtl_void_Buffer;
 		}
-		else if (strlen(str) == 2)
+		else if (buffer[i] == 'o' && buffer[i + 1] == ' ')
 		{
-			if (strcmp(str, "vt") == 0)
+			// Объект
+			if (io_o != -1)
 			{
-				file_obj >> str;
-				vertices_vt_temp[iv_vt] = std::stof(str); ++iv_vt;
-				file_obj >> str;
-				vertices_vt_temp[iv_vt] = std::stof(str); ++iv_vt;
-			}
-			else if (strcmp(str, "vn") == 0)
-			{
-				file_obj >> str;
-				vertices_vn_temp[iv_vn] = std::stof(str); ++iv_vn;
-				file_obj >> str;
-				vertices_vn_temp[iv_vn] = std::stof(str); ++iv_vn;
-				file_obj >> str;
-				vertices_vn_temp[iv_vn] = std::stof(str); ++iv_vn;
-			}
-		}
-		else if (strlen(str) == 6)
-		{
-			if (strcmp(str, "usemtl") == 0)
-			{
-				char newmtl[StrLen];
-				bool flag_new_material(true);
-				file_obj >> newmtl;
-				std::ifstream file_mtl;
-				file_mtl.open(mtllibPath, std::ios_base::in);
+				// Идёт переназначение массивов вершин относительно индексов
+				unsigned int j(0);
 
-				while (flag_new_material && !file_mtl.eof())
+				// Итоговый массив вершин
+				float *vertices = new float[iv_f * 2 + iv_f * 3 + iv_f * 3];
+
+				for (int q = 0; q < iv_f; q++)
 				{
-					file_mtl >> str;
-					if (strlen(str) == 6)
-					{
-						if (strcmp(str, "newmtl") == 0)
-						{
-							file_mtl >> str;
-							if (strcmp(str, newmtl) == 0)
-							{
-								while (flag_new_material && !file_mtl.eof())
-								{
-									file_mtl >> str;
-									if (strlen(str) == 2)
-									{
-										if (strcmp(str, "Ns") == 0)
-										{
-											// Коэффициент specular
-										}
-										else if (strcmp(str, "Ka") == 0)
-										{
-											// ambient
-										}
-										else if (strcmp(str, "Kd") == 0)
-										{
-											// diffuse
-										}
-										else if (strcmp(str, "Ks") == 0)
-										{
-											// Цвет specular
-										}
-										else if (strcmp(str, "Ke") == 0)
-										{
-											// emissive
-										}
-										else if (strcmp(str, "Ni") == 0)
-										{
-											// если честно не знаю что это
-										}
-									}
-									else if (strlen(str) == 1)
-									{
-										if (strcmp(str, "d") == 0)
-										{
-											// Прозрачность
-										}
-									}
-									else if (strlen(str) == 6)
-									{
-										if (strcmp(str, "map_Kd") == 0)
-										{
-											unsigned int texture;
-											int h, w;
-											file_mtl >> str;
-											char texture_Path[StrLen];
-											strcpy(texture_Path, dirPath);
-											strcat(texture_Path, "/");
-											strcat(texture_Path, str);
-											unsigned char* image = bmp_reader(texture_Path, h, w);
-
-											glGenTextures(1, &texture);
-											glBindTexture(GL_TEXTURE_2D, texture);
-
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-											glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-											glGenerateMipmap(GL_TEXTURE_2D);
-											glBindTexture(GL_TEXTURE_2D, 0);
-											free(image);
-
-											Meshs[io_o].diffuse_texture = texture;
-										}
-										else if (strcmp(str, "newmtl") == 0)
-										{
-											flag_new_material = false;
-										}
-									}
-									file_mtl.getline(str, StrLen);
-								}
-							}
-						}
-					}
-					file_mtl.getline(str, StrLen);
+					uint64_t t = faces_v_list[q] + 1;
+					vertices[j] = vertices_v_list[t * 3 - 3]; j++;
+					vertices[j] = vertices_v_list[t * 3 - 2]; j++;
+					vertices[j] = vertices_v_list[t * 3 - 1]; j++;
 				}
+
+				j = 0;
+
+				for (int q = 0; q < iv_f; q++)
+				{
+					uint64_t t = faces_vt_list[q] + 1;
+					vertices[(iv_f * 3) + j] = vertices_vt_list[t * 2 - 2]; j++;
+					vertices[(iv_f * 3) + j] = vertices_vt_list[t * 2 - 1]; j++;
+				}
+
+				j = 0;
+
+				for (int q = 0; q < iv_f; q++)
+				{
+					uint64_t t = faces_vn_list[q] + 1;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 3]; j++;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 2]; j++;
+					vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 1]; j++;
+				}
+
+				// Генерация VAO, VBO
+
+				glGenVertexArrays(1, &meshs[io_o].VAO);
+				glGenBuffers(1, &meshs[io_o].VBO);
+
+				glBindVertexArray(meshs[io_o].VAO);
+
+				glBindBuffer(GL_ARRAY_BUFFER, meshs[io_o].VBO);
+				glBufferData(GL_ARRAY_BUFFER, ((iv_f * 2) + (iv_f * 3) + (iv_f * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+				glEnableVertexAttribArray(0);
+
+				glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3) * sizeof(GLfloat)));
+				glEnableVertexAttribArray(1);
+
+				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)((iv_f * 3 + iv_f * 2) * sizeof(GLfloat)));
+				glEnableVertexAttribArray(2);
+
+				glBindVertexArray(0);
+
+				meshs[io_o].faces_Count = iv_f;
+
+				iv_f = 0;
+
+				io_o++;
+
+				delete[] vertices;
+			}
+			else
+			{
+				io_o = 0;
+				while (buffer[i] != '\0' && buffer[i] != '\n')
+					i++;
 			}
 		}
-		file_obj.getline(str, StrLen);
-		if (file_obj.eof())
+		else if (buffer[i] == '\0' || i > fileSize.QuadPart)
 		{
 			// Идёт переназначение массивов вершин относительно индексов
 			unsigned int j(0);
@@ -417,41 +566,41 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 			// Итоговый массив вершин
 			float *vertices = new float[iv_f * 2 + iv_f * 3 + iv_f * 3];
 
-			for (int i = 0; i < iv_f; i++)
+			for (int q = 0; q < iv_f; q++)
 			{
-				uint64_t t = faces_v_temp[i] + 1;
-				vertices[j] = vertices_v_temp[t * 3 - 3]; j++;
-				vertices[j] = vertices_v_temp[t * 3 - 2]; j++;
-				vertices[j] = vertices_v_temp[t * 3 - 1]; j++;
+				uint64_t t = faces_v_list[q] + 1;
+				vertices[j] = vertices_v_list[t * 3 - 3]; j++;
+				vertices[j] = vertices_v_list[t * 3 - 2]; j++;
+				vertices[j] = vertices_v_list[t * 3 - 1]; j++;
 			}
 
 			j = 0;
 
-			for (int i = 0; i < iv_f; i++)
+			for (int q = 0; q < iv_f; q++)
 			{
-				uint64_t t = faces_vt_temp[i] + 1;
-				vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 2]; j++;
-				vertices[(iv_f * 3) + j] = vertices_vt_temp[t * 2 - 1]; j++;
+				uint64_t t = faces_vt_list[q] + 1;
+				vertices[(iv_f * 3) + j] = vertices_vt_list[t * 2 - 2]; j++;
+				vertices[(iv_f * 3) + j] = vertices_vt_list[t * 2 - 1]; j++;
 			}
 
 			j = 0;
 
-			for (int i = 0; i < iv_f; i++)
+			for (int q = 0; q < iv_f; q++)
 			{
-				uint64_t t = faces_vn_temp[i] + 1;
-				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 3]; j++;
-				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 2]; j++;
-				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_temp[t * 3 - 1]; j++;
+				uint64_t t = faces_vn_list[q] + 1;
+				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 3]; j++;
+				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 2]; j++;
+				vertices[(iv_f * 3 + iv_f * 2) + j] = vertices_vn_list[t * 3 - 1]; j++;
 			}
 
 			// Генерация VAO, VBO
 
-			glGenVertexArrays(1, &Meshs[io_o].VAO);
-			glGenBuffers(1, &Meshs[io_o].VBO);
+			glGenVertexArrays(1, &meshs[io_o].VAO);
+			glGenBuffers(1, &meshs[io_o].VBO);
 
-			glBindVertexArray(Meshs[io_o].VAO);
+			glBindVertexArray(meshs[io_o].VAO);
 
-			glBindBuffer(GL_ARRAY_BUFFER, Meshs[io_o].VBO);
+			glBindBuffer(GL_ARRAY_BUFFER, meshs[io_o].VBO);
 			glBufferData(GL_ARRAY_BUFFER, ((iv_f * 2) + (iv_f * 3) + (iv_f * 3)) * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
@@ -465,16 +614,26 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 
 			glBindVertexArray(0);
 
-			Meshs[io_o].faces_Count = iv_f;
+			meshs[io_o].faces_Count = iv_f;
 
 			iv_f = 0;
 
-			++io_o;
-		}
-	}
-	file_obj.close();
+			io_o++;
 
-	return 1;
+			delete[] vertices;
+		}
+		i++;
+	}
+
+	delete[] vertices_v_list;
+	delete[] vertices_vt_list;
+	delete[] vertices_vn_list;
+
+	delete[] faces_v_list;
+	delete[] faces_vt_list;
+	delete[] faces_vn_list;
+
+	delete[] voidBuffer;
 }
 
 // read bytes

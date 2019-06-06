@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <stdint.h>
 #include <string>
 #include <Commctrl.h>
@@ -449,23 +449,6 @@ void Loop()
 		glClearColor(clear_color->x, clear_color->y, clear_color->z, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		//if (isKeyFirstReleased(VK_G))
-		//{
-		//	AddGameObject("Resource/denis");
-		//	//AddGameObject("Resource/city");
-		//	//AddGameObject("Resource/toilet");
-		//}
-
-		/*if (isKeyFirstReleased(VK_S) && isKeyDown(VK_CONTROL))
-		{
-			object_list[0]->setModel(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.f, 0.f, 0.f), 1.f, glm::vec3(0.f, 1.f, 0.f));
-		}*/
-
-		if (isKeyFirstReleased(VK_B))
-		{
-			Compilation();
-		}
-
 		/*GLfloat currentFrame = GetProcessTimes(); НУЖНО ВЗЯТЬ ВРЕМЯ РАБОТЫ!!!
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;*/
@@ -562,10 +545,6 @@ void Loop()
 				create = !create;
 			}
 
-			/*for (int n = 0; n < ; n++)
-			{
-				objects2[n] = object_list[n]->name;
-			}*/
 			if (n > 0) 
 			{
 				ImGui::Combo("Objects", &selectedObject, objectName, n);
@@ -715,19 +694,6 @@ void Loop()
 						object_list[selectedObject]->angle_z = angle_z;
 					}
 				}
-
-				/*object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_x, glm::vec3(1.0f, 0.0f, 0.0f));
-				object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_y, glm::vec3(0.0f, 1.0f, 0.0f));
-				object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_z, glm::vec3(0.0f, 0.0f, 1.0f));*/
-
-				/*glm::rotate();
-				glm::rotate();
-				glm::rotate();*/
-
-				/*if (ImGui::Button("Confirm###ConfOptions"))
-				{
-
-				}*/
 
 				ImGui::End();
 			}
