@@ -4,26 +4,28 @@
 #include <cstring>
 #include <string>
 
+#include "Debug.h"
+
 #include "GLEW/glew.h"
 
 #include "Mesh.h"
 
 constexpr int StrLen = 512;
 
-// CIEXYZTRIPLE stuff
-typedef int FXPT2DOT30;
+// CIEXYZTRIPLE_ stuff
+typedef int FXPT2DOT30_;
 
 typedef struct {
-	FXPT2DOT30 ciexyzX;
-	FXPT2DOT30 ciexyzY;
-	FXPT2DOT30 ciexyzZ;
-} CIEXYZ;
+	FXPT2DOT30_ ciexyzX;
+	FXPT2DOT30_ ciexyzY;
+	FXPT2DOT30_ ciexyzZ;
+} CIEXYZ_;
 
 typedef struct {
-	CIEXYZ  ciexyzRed;
-	CIEXYZ  ciexyzGreen;
-	CIEXYZ  ciexyzBlue;
-} CIEXYZTRIPLE;
+	CIEXYZ_  ciexyzRed;
+	CIEXYZ_  ciexyzGreen;
+	CIEXYZ_  ciexyzBlue;
+} CIEXYZTRIPLE_;
 
 // bitmap file header
 typedef struct {
@@ -32,7 +34,7 @@ typedef struct {
 	unsigned short bfReserved1;
 	unsigned short bfReserved2;
 	unsigned int   bfOffBits;
-} BITMAPFILEHEADER;
+} BITMAPFILEHEADER_;
 
 // bitmap info header
 typedef struct {
@@ -52,7 +54,7 @@ typedef struct {
 	unsigned int   biBlueMask;
 	unsigned int   biAlphaMask;
 	unsigned int   biCSType;
-	CIEXYZTRIPLE   biEndpoints;
+	CIEXYZTRIPLE_   biEndpoints;
 	unsigned int   biGammaRed;
 	unsigned int   biGammaGreen;
 	unsigned int   biGammaBlue;
@@ -60,7 +62,7 @@ typedef struct {
 	unsigned int   biProfileData;
 	unsigned int   biProfileSize;
 	unsigned int   biReserved;
-} BITMAPINFOHEADER;
+} BITMAPINFOHEADER_;
 
 // rgb quad
 typedef struct {
@@ -68,7 +70,7 @@ typedef struct {
 	unsigned char  rgbGreen;
 	unsigned char  rgbRed;
 	unsigned char  rgbReserved;
-} RGBQUAD;
+} RGBQUAD_;
 
 unsigned char bitextract(const unsigned int byte, const unsigned int mask);
 unsigned char* bmp_reader(const char* fileName, int &h, int &w);
@@ -367,30 +369,30 @@ uint32_t ImportObj(const char* objPath, const char* dirPath, Mesh* Meshs)
 									{
 										if (strcmp(str, "map_Kd") == 0)
 										{
-											//unsigned int texture;
-											//int h, w;
-											//file_mtl >> str;
-											//char texture_Path[StrLen];
-											//strcpy(texture_Path, dirPath);
-											//strcat(texture_Path, "/");
-											//strcat(texture_Path, str);
-											//unsigned char* image = bmp_reader(texture_Path, h, w);
+											unsigned int texture;
+											int h, w;
+											file_mtl >> str;
+											char texture_Path[StrLen];
+											strcpy(texture_Path, dirPath);
+											strcat(texture_Path, "/");
+											strcat(texture_Path, str);
+											unsigned char* image = bmp_reader(texture_Path, h, w);
 
-											//glGenTextures(1, &texture);
-											//glBindTexture(GL_TEXTURE_2D, texture);
+											glGenTextures(1, &texture);
+											glBindTexture(GL_TEXTURE_2D, texture);
 
-											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-											//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+											glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-											//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-											//glGenerateMipmap(GL_TEXTURE_2D);
-											//glBindTexture(GL_TEXTURE_2D, 0);
-											//free(image);
+											glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+											glGenerateMipmap(GL_TEXTURE_2D);
+											glBindTexture(GL_TEXTURE_2D, 0);
+											free(image);
 
-											//Meshs[io_o].diffuse_texture = texture;
+											Meshs[io_o].diffuse_texture = texture;
 										}
 										else if (strcmp(str, "newmtl") == 0)
 										{
@@ -484,6 +486,15 @@ void read(std::ifstream &fp, Type &result, std::size_t size) {
 unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 {
 
+	LARGE_INTEGER fileSize;
+	GetFileSize(fileName, &fileSize);
+	fileSize.QuadPart = fileSize.QuadPart + 1;
+
+	LPVOID voidBuffer = malloc(fileSize.QuadPart);
+	ReadFileToBuffer(fileName, voidBuffer, fileSize);
+	char* buffer = (char*)voidBuffer;
+	buffer[fileSize.QuadPart - 1] = '\0';
+
 	// открываем файл
 	std::ifstream fileStream(fileName, std::ifstream::binary);
 	if (!fileStream) {
@@ -492,7 +503,7 @@ unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 	}
 
 	// заголовк изображения
-	BITMAPFILEHEADER fileHeader;
+	BITMAPFILEHEADER_ fileHeader;
 	read(fileStream, fileHeader.bfType, sizeof(fileHeader.bfType));
 	read(fileStream, fileHeader.bfSize, sizeof(fileHeader.bfSize));
 	read(fileStream, fileHeader.bfReserved1, sizeof(fileHeader.bfReserved1));
@@ -505,7 +516,7 @@ unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 	}
 
 	// информация изображения
-	BITMAPINFOHEADER fileInfoHeader;
+	BITMAPINFOHEADER_ fileInfoHeader;
 	read(fileStream, fileInfoHeader.biSize, sizeof(fileInfoHeader.biSize));
 
 	// bmp core
@@ -596,11 +607,11 @@ unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 	}
 
 	// rgb info
-	RGBQUAD **rgbInfo = new RGBQUAD*[fileInfoHeader.biHeight];
+	/*RGBQUAD_ **rgbInfo = new RGBQUAD_*[fileInfoHeader.biHeight];
 
 	for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-		rgbInfo[i] = new RGBQUAD[fileInfoHeader.biWidth];
-	}
+		rgbInfo[i] = new RGBQUAD_[fileInfoHeader.biWidth];
+	}*/
 
 	// определение размера отступа в конце каждой строки
 	int linePadding = ((fileInfoHeader.biWidth * (fileInfoHeader.biBitCount / 8)) % 4) & 3;
@@ -608,66 +619,146 @@ unsigned char* bmp_reader(const char* fileName, int &h, int &w)
 	// чтение
 	unsigned int bufer;
 
+	w = fileInfoHeader.biWidth;
+	h = fileInfoHeader.biHeight;
+
+	unsigned char* out = new unsigned char[w * h * 4];
+
+	int n = 0;
+
+	int maskPaddingRed = 0;
+	int maskPaddingGreen = 0;
+	int maskPaddingBlue = 0;
+	int maskPaddingAlpha = 0;
+
+	unsigned int maskRed = fileInfoHeader.biRedMask;
+	unsigned int maskGreen = fileInfoHeader.biGreenMask;
+	unsigned int maskBlue = fileInfoHeader.biBlueMask;
+	unsigned int maskAlpha = fileInfoHeader.biAlphaMask;
+
+	if (maskRed != 0) {
+		while (!(maskRed & 1)) {
+			maskRed >>= 1;
+			maskPaddingRed++;
+		}
+	}
+
+	if (maskGreen != 0) {
+		while (!(maskGreen & 1)) {
+			maskGreen >>= 1;
+			maskPaddingGreen++;
+		}
+	}
+
+	if (maskBlue != 0) {
+		while (!(maskBlue & 1)) {
+			maskBlue >>= 1;
+			maskPaddingBlue++;
+		}
+	}
+
+	if (maskAlpha != 0) {
+		while (!(maskAlpha & 1)) {
+			maskAlpha >>= 1;
+			maskPaddingAlpha++;
+		}
+	}
+
 	for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
 		for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
 			read(fileStream, bufer, fileInfoHeader.biBitCount / 8);
 
-			rgbInfo[i][j].rgbRed = bitextract(bufer, fileInfoHeader.biRedMask);
-			rgbInfo[i][j].rgbGreen = bitextract(bufer, fileInfoHeader.biGreenMask);
-			rgbInfo[i][j].rgbBlue = bitextract(bufer, fileInfoHeader.biBlueMask);
-			rgbInfo[i][j].rgbReserved = bitextract(bufer, fileInfoHeader.biAlphaMask);
+			if(fileInfoHeader.biRedMask == 0)
+			{
+				out[n] = 0;
+			}
+			else 
+			{
+				out[n] = (bufer & fileInfoHeader.biRedMask) >> maskPaddingRed;//bitextract(bufer, fileInfoHeader.biRedMask);
+			}
+
+			if (fileInfoHeader.biGreenMask == 0)
+			{
+				out[n+1] = 0;
+			}
+			else
+			{
+				out[n+1] = (bufer & fileInfoHeader.biGreenMask) >> maskPaddingGreen;//bitextract(bufer, fileInfoHeader.biGreenMask);
+			}
+
+			if (fileInfoHeader.biBlueMask == 0)
+			{
+				out[n+2] = 0;
+			}
+			else
+			{
+				out[n+2] = (bufer & fileInfoHeader.biBlueMask) >> maskPaddingBlue;//bitextract(bufer, fileInfoHeader.biBlueMask);
+			}
+
+			if (fileInfoHeader.biAlphaMask == 0)
+			{
+				out[n+3] = 0;
+			}
+			else
+			{
+				out[n+3] = (bufer & fileInfoHeader.biAlphaMask) >> maskPaddingAlpha;//bitextract(bufer, fileInfoHeader.biAlphaMask);
+			}
+
+			n = n + 4;
 		}
 		fileStream.seekg(linePadding, std::ios_base::cur);
 	}
 
-	w = fileInfoHeader.biWidth;
+	/*w = fileInfoHeader.biWidth;
 	h = fileInfoHeader.biHeight;
 
 
-	unsigned char* out = new unsigned char[w*h * 4];
-	int n = 0;
+	unsigned char* out = new unsigned char[w * h * 4];
+	int n = 0;*/
+
+
 
 	// вывод
-	for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
-		for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
-			out[n] = rgbInfo[i][j].rgbRed;
-			out[n+1] = rgbInfo[i][j].rgbGreen;
-			out[n+2] = rgbInfo[i][j].rgbBlue;
-			out[n+3] = rgbInfo[i][j].rgbReserved;
+	//for (unsigned int i = 0; i < fileInfoHeader.biHeight; i++) {
+	//	for (unsigned int j = 0; j < fileInfoHeader.biWidth; j++) {
+	//		out[n] = rgbInfo[i][j].rgbRed;
+	//		out[n+1] = rgbInfo[i][j].rgbGreen;
+	//		out[n+2] = rgbInfo[i][j].rgbBlue;
+	//		out[n+3] = rgbInfo[i][j].rgbReserved;
 
-			++n;
-			++n;
-			++n;
-			++n;
+	//		++n;
+	//		++n;
+	//		++n;
+	//		++n;
 
-			/*std::cout << std::hex
-				<< +rgbInfo[i][j].rgbRed << " "
-				<< +rgbInfo[i][j].rgbGreen << " "
-				<< +rgbInfo[i][j].rgbBlue << " "
-				<< +rgbInfo[i][j].rgbReserved
-				<< std::endl;*/
+	//		/*std::cout << std::hex
+	//			<< +rgbInfo[i][j].rgbRed << " "
+	//			<< +rgbInfo[i][j].rgbGreen << " "
+	//			<< +rgbInfo[i][j].rgbBlue << " "
+	//			<< +rgbInfo[i][j].rgbReserved
+	//			<< std::endl;*/
 
 
-		}
-	}
+	//	}
+	//}
 	return out;
 }
 
-unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
-	if (mask == 0) {
-		return 0;
-	}
-
-	// определение количества нулевых бит справа от маски
-	int
-		maskBufer = mask,
-		maskPadding = 0;
-
-	while (!(maskBufer & 1)) {
-		maskBufer >>= 1;
-		maskPadding++;
-	}
-
-	// применение маски и смещение
-	return (byte & mask) >> maskPadding;
-}
+//unsigned char bitextract(const unsigned int byte, const unsigned int mask) {
+//	if (mask == 0) {
+//		return 0;
+//	}
+//
+//	// определение количества нулевых бит справа от маски
+//	int
+//		maskBufer = mask,
+//		maskPadding = 0;
+//
+//	while (!(maskBufer & 1)) {
+//		maskBufer >>= 1;
+//		maskPadding++;
+//	}
+//
+//	// применение маски и смещение
+//	return (byte & mask) >> maskPadding;
+//}

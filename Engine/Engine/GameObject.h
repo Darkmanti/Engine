@@ -41,9 +41,15 @@ public:
 
 	char		**scriptNames;
 
+	float        angle_x;
+	float        angle_y;
+	float        angle_z;
+
 	GameObject(Shader* _shader, const char* dirPath);
 
 	void setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, glm::vec3 axis_);
+
+	void rotateModel(float angle_, glm::vec3 axis);
 
 	void Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos);
 

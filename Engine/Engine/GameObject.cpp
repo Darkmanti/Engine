@@ -73,6 +73,10 @@ GameObject::GameObject(Shader* _shader, const char* dirPath)
 	}
 
 	is_Select = false;
+
+	angle_x = 0;
+	angle_y = 0;
+	angle_z = 0;
 }
 
 Vector &GameObject::get_location()
@@ -126,6 +130,11 @@ void GameObject::setModel(glm::vec3 trans_, glm::vec3 model_, GLfloat degree_, g
 	model = glm::translate(model, model_);
 	model = glm::rotate(model, degree_, axis_);
 	model = glm::scale(model, trans_);
+}
+
+void GameObject::rotateModel(float angle_, glm::vec3 axis)
+{
+	model = glm::rotate(model, angle_, axis);
 }
 
 void GameObject::Draw(glm::mat4 projection, glm::mat4 view, glm::vec3 viewPos)

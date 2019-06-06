@@ -8,7 +8,7 @@
 int Compilation()
 {
 	// Создание папки build
-	std::string str = "mkdir \"" + pathProj + "\\build\\\"";
+	std::string str = "mkdir \"" + pathProj + nameProj + "\\build\\\"";
 	Debug(str.c_str()); Debug("\n");
 	system(str.c_str()); Debug("\n");
 

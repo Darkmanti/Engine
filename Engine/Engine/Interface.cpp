@@ -418,6 +418,18 @@ void Loop()
 
 	// Пока есть сообщения
 	// Если система вернула отрицательный код (ошибка), то выходим из цикла обработки
+	int n = 0;
+	char* objectName[10000];
+	int selectedObject = 0;
+
+	char strName[256] = "";
+	char strPath[256] = "";
+	memset(strPath, 0, 256);
+
+	char strNameLin[256] = "";
+	char strPathLin[256] = "";
+	memset(strPathLin, 0, 256);
+
 	while (true)
 	{
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
@@ -437,17 +449,17 @@ void Loop()
 		glClearColor(clear_color->x, clear_color->y, clear_color->z, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		if (isKeyFirstReleased(VK_G))
-		{
-			AddGameObject("Resource/denis");
-			//AddGameObject("Resource/city");
-			//AddGameObject("Resource/toilet");
-		}
+		//if (isKeyFirstReleased(VK_G))
+		//{
+		//	AddGameObject("Resource/denis");
+		//	//AddGameObject("Resource/city");
+		//	//AddGameObject("Resource/toilet");
+		//}
 
-		if (isKeyFirstReleased(VK_S) && isKeyDown(VK_CONTROL))
+		/*if (isKeyFirstReleased(VK_S) && isKeyDown(VK_CONTROL))
 		{
 			object_list[0]->setModel(glm::vec3(3.0f, 3.0f, 3.0f), glm::vec3(0.f, 0.f, 0.f), 1.f, glm::vec3(0.f, 1.f, 0.f));
-		}
+		}*/
 
 		if (isKeyFirstReleased(VK_B))
 		{
@@ -477,12 +489,29 @@ void Loop()
 
 		static float f = 0.0f;
 		static int counter = 0;
+		static float vec2a[] = { 500.0f, 300.0f };
 
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+		ImGui::SetWindowSize("Hello, world!", ImVec2(float(vec2a[0]), float(vec2a[1])));
 
 		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 		ImGui::Checkbox("Another Window", &show_another_window);
+
+		static char str0[128] = "Hello, world!";
+		ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
+
+		ImGui::Text(str0);
+
+		static int i0 = 123;
+		ImGui::InputInt("input int", &i0);
+
+		static float f0 = 0.001f;
+		ImGui::InputFloat("input float", &f0, 0.01f, 1.0f, "%.2f");
+
+
+		ImGui::DragFloat2("input float2", vec2a);
 
 		ImGui::SliderFloat("float", &(camera->MovementSpeed), 10.0f, 200.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float*)clear_color); // Edit 3 floats representing a color
@@ -496,6 +525,8 @@ void Loop()
 		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("%", selectedObject);
+		ImGui::Text("%", n);
 		ImGui::End();
 
 		// 3. Show another simple window.
@@ -507,6 +538,198 @@ void Loop()
 			if (ImGui::Button("Close Me"))
 			{
 				show_another_window = false;
+			}
+
+			ImGui::End();
+		}
+
+		if (show_demo_window)
+		{
+			ImGui::Begin("!!!Demo Work place!!!");
+
+			static bool linkage = false;
+			static bool option = false;
+			static bool create = false;
+			static bool error = false;
+
+			if (ImGui::Button("linkage"))
+			{
+				linkage = !linkage;
+			}
+
+			if (ImGui::Button("Create object"))
+			{
+				create = !create;
+			}
+
+			/*for (int n = 0; n < ; n++)
+			{
+				objects2[n] = object_list[n]->name;
+			}*/
+			if (n > 0) 
+			{
+				ImGui::Combo("Objects", &selectedObject, objectName, n);
+			}
+
+			if (n > 0)
+			{
+				if (ImGui::Button("Option object"))
+				{
+					option = !option;
+				}
+			}
+
+			if (linkage)
+			{
+				ImGui::Begin("linkage project");
+
+				ImGui::InputText("input Name###InNameComp", strNameLin, IM_ARRAYSIZE(strNameLin));
+				ImGui::InputText("input Path###InPathComp", strPathLin, IM_ARRAYSIZE(strPathLin));
+
+				if (ImGui::Button("Confirm###ConfCompile"))
+				{
+					/*pathProj = strPathComp;
+					nameProj = strNameComp;*/
+					Compilation();
+					/*memset(strPathComp, 0, 256);
+					memset(strNameComp, 0, 256);*/
+				}
+
+				ImGui::End();
+			}
+
+			if (create)
+			{
+				ImGui::Begin("create object");
+
+				ImGui::InputText("input Name###InNameCreate", strName, IM_ARRAYSIZE(strName));
+				ImGui::InputText("input Path###InPathCreate", strPath, IM_ARRAYSIZE(strPath));
+
+				if (ImGui::Button("Confirm###ConfCreate"))
+				{
+					if (strPath[0] == NULL)
+					{
+						error = !error;
+					}
+					else
+					{
+						objectName[n] = new char[256];
+						strcpy(objectName[n], strName);
+						n++;
+						AddGameObject(strPath);
+						memset(strPath, 0, 256);
+						memset(strName, 0, 256);
+					}
+				}
+
+				ImGui::End();
+			}
+
+			if (error) 
+			{
+				ImGui::Begin("Error###EmptyPath");
+				ImGui::Text("you did not indicate the path");
+				if (ImGui::Button("Close")) 
+				{
+					error = !error;
+				}
+				ImGui::End();
+			}
+
+			if (option)
+			{
+				ImGui::Begin("Options");
+
+				float angle_x = object_list[selectedObject]->angle_x;
+				float angle_y = object_list[selectedObject]->angle_y;
+				float angle_z = object_list[selectedObject]->angle_z;
+
+				ImGui::Text("Coordinate");
+				ImGui::DragFloat("x###xCoordinate", &object_list[selectedObject]->model[3][0], 0.1f);
+				ImGui::DragFloat("y###yCoordinate", &object_list[selectedObject]->model[3][1], 0.1f);
+				ImGui::DragFloat("z###zCoordinate", &object_list[selectedObject]->model[3][2], 0.1f);
+				ImGui::Separator();
+
+				ImGui::Text("Scale");
+				ImGui::DragFloat("x###xScale", &object_list[selectedObject]->model[0][0], 0.1f);
+				ImGui::DragFloat("y###yScale", &object_list[selectedObject]->model[1][1], 0.1f);
+				ImGui::DragFloat("z###zScale", &object_list[selectedObject]->model[2][2], 0.1f);
+				ImGui::Separator();
+
+				ImGui::Text("Rotate");
+				ImGui::SliderFloat("x###xRotate", &angle_x, 0.0f, 6.2831f);
+				ImGui::SliderFloat("y###yRotate", &angle_y, 0.0f, 6.2831f);
+				ImGui::SliderFloat("z###zRotate", &angle_z, 0.0f, 6.2831f);
+				ImGui::Separator();
+
+				if(angle_x != object_list[selectedObject]->angle_x)
+				{
+					if (angle_x > object_list[selectedObject]->angle_x) 
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_x, glm::vec3(-1.0f, 0.0f, 0.0f));
+						object_list[selectedObject]->angle_x = 0;
+						object_list[selectedObject]->rotateModel(angle_x, glm::vec3(1.0f, 0.0f, 0.0f));
+						object_list[selectedObject]->angle_x = angle_x;
+					}
+					else 
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_x, glm::vec3(-1.0f, 0.0f, 0.0f));
+						object_list[selectedObject]->angle_x = 0;
+						object_list[selectedObject]->rotateModel(angle_x, glm::vec3(1.0f, 0.0f, 0.0f));
+						object_list[selectedObject]->angle_x = angle_x;
+					}
+				}
+
+				if (angle_y != object_list[selectedObject]->angle_y)
+				{
+					if (angle_y > object_list[selectedObject]->angle_y)
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_y, glm::vec3(0.0f, -1.0f, 0.0f));
+						object_list[selectedObject]->angle_y = 0;
+						object_list[selectedObject]->rotateModel(angle_y, glm::vec3(0.0f, 1.0f, 0.0f));
+						object_list[selectedObject]->angle_y = angle_y;
+					}
+					else
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_y, glm::vec3(0.0f, -1.0f, 0.0f));
+						object_list[selectedObject]->angle_y = 0;
+						object_list[selectedObject]->rotateModel(angle_y, glm::vec3(0.0f, 1.0f, 0.0f));
+						object_list[selectedObject]->angle_y = angle_y;
+					}
+				}
+				
+				if (angle_z != object_list[selectedObject]->angle_z)
+				{
+					if (angle_z > object_list[selectedObject]->angle_z)
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_z, glm::vec3(0.0f, 0.0f, -1.0f));
+						object_list[selectedObject]->angle_z = 0;
+						object_list[selectedObject]->rotateModel(angle_z, glm::vec3(0.0f, 0.0f, 1.0f));
+						object_list[selectedObject]->angle_z = angle_z;
+					}
+					else
+					{
+						object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_z, glm::vec3(0.0f, 0.0f, -1.0f));
+						object_list[selectedObject]->angle_z = 0;
+						object_list[selectedObject]->rotateModel(angle_z, glm::vec3(0.0f, 0.0f, 1.0f));
+						object_list[selectedObject]->angle_z = angle_z;
+					}
+				}
+
+				/*object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_x, glm::vec3(1.0f, 0.0f, 0.0f));
+				object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_y, glm::vec3(0.0f, 1.0f, 0.0f));
+				object_list[selectedObject]->rotateModel(object_list[selectedObject]->angle_z, glm::vec3(0.0f, 0.0f, 1.0f));*/
+
+				/*glm::rotate();
+				glm::rotate();
+				glm::rotate();*/
+
+				/*if (ImGui::Button("Confirm###ConfOptions"))
+				{
+
+				}*/
+
+				ImGui::End();
 			}
 
 			ImGui::End();

@@ -9,8 +9,8 @@ void NewProj()
 {
 	Debug("Create project\n");
 
-	pathProj = "C:\\Users\\admin\\Documents\\DarkMantiEngine Projects\\3d runner";
-
+	pathProj = "C:\\Users\\admin\\Documents\\DarkMantiEngine Projects\\";
+	nameProj = "3d runner";
 	// Создается папка игрового проекта
 	// В папке создается файл %nameProj%.dmep
 	// Создается папка scripts в игровом проекте
